@@ -1,32 +1,32 @@
-<!-- <h2>Rectangle Creator</h2>
-<p>Count: <input id="count" type="number" value="5"></p>
-<button id="create">Create</button>
-<button id="cancel">Cancel</button> -->
-<title>Detecting Elements</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    margin: 0;
-  }
-</style>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Figma Plugin</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<p>Detecting elements automatically...</p>
+    <div>
+        <h2>Element Detection</h2>
+        <label>
+            <input type="checkbox" id="confirmDetection" />
+            Verify detection of elements
+        </label>
+        <br>
+        <button id="startDetection">Start Detection</button>
+        <div id="message"></div>
+    </div>
+    
+    <script>document.getElementById('startDetection').onclick = () => {
+      const isChecked = document.getElementById('confirmDetection').checked;
+      if (!isChecked) {
+          document.getElementById('message').innerText = 'Please confirm detection of elements.';
+          return;
+      }
+  
+      // Send a message to the plugin to start detection
+      parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+      document.getElementById('message').innerText = 'Starting detection...';
+  };</script>
 </body>
-<script>
-
-// document.getElementById('create').onclick = () => {
-//   const textbox = document.getElementById('count');
-//   const count = parseInt(textbox.value, 10);
-//   parent.postMessage({ pluginMessage: { type: 'create-shapes', count } }, '*')
-// }
-
-// document.getElementById('cancel').onclick = () => {
-//   parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
-// }
-
-</script>
+</html>
