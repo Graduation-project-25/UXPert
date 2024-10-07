@@ -8,7 +8,7 @@
   "documentAccess": "dynamic-page",
   "editorType": [
     "figma",
-    "figjam"
+    "dev"
   ],
   "ui": "ui.html",
   "networkAccess": {

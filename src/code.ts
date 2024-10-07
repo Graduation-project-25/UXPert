@@ -1,8 +1,9 @@
 figma.showUI(__html__);
 
-figma.ui.onmessage = (msg) => {
+figma.ui.onmessage = async (msg) => {
     if (msg.type === 'start-detection') {
         // Detect all elements on the current page
+        await figma.loadAllPagesAsync(); 
         const allNodes = figma.currentPage.findAll();
 
         // Check if there are any nodes on the page
