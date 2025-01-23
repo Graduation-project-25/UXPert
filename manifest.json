@@ -10,7 +10,7 @@
     "figma",
     "dev"
   ],
-  "ui": "ui.html",
+  "ui": "project/frontend/html/ui.html",
   "networkAccess": {
     "allowedDomains": [
       "none"
