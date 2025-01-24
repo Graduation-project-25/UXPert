@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
-from EGFE_ui_extraction import extract_ui_elements, save_ui_elements
+from backend.utils.EGFE_ui_extraction import extract_ui_elements, save_ui_elements
 
 def visualize_ui_elements(image_folder, json_folder, output_folder, limit=50):
     """Visualizes the extracted UI elements on their corresponding images."""

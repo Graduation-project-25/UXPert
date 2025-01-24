@@ -5,14 +5,25 @@ import pandas as pd
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.model.evaluation import evaluate_clustering
 from backend.model.testing import assign_test_clusters, evaluate_test_clusters
-from EGFE_visualization import clustering_visualization_by_position, clustering_visulaization_by_size,  visualize_alignment_consistency,visualize_color_consistency,visualize_size_proportionality, visualize_ui_elements
-from EGFE_ui_extraction import  aggregate_ui_elements, extract_ui_elements, extract_json_file_path, split_dataset
-from EGFE_Clustering import analyze_clusters, dbscan_cluster, handle_outliers
+from backend.utils.EGFE_visualization import clustering_visualization_by_position, clustering_visulaization_by_size,  visualize_alignment_consistency,visualize_color_consistency,visualize_size_proportionality, visualize_ui_elements
+from backend.utils.EGFE_ui_extraction import  aggregate_ui_elements, extract_ui_elements, extract_json_file_path, split_dataset
+from backend.model.EGFE_Clustering import analyze_clusters, dbscan_cluster, handle_outliers
 from backend.heuristics.consistency import evaluate_consistency
 
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 1000) 
+
+
+
+
+
+from datasets import load_dataset
+
+# Load dataset from a local directory
+dataset = load_dataset("json", data_files="D:/Studying/Projects/Graduation/UXPert/project/data/raw/train_split_web70k.json")
+print(dataset)
+
 
 # dataset_folder = './project/data/raw/RICO/unique_uis/combined' 
 
