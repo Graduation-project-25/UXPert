@@ -5,9 +5,9 @@ import pandas as pd
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.model.evaluation import evaluate_clustering
 from backend.model.testing import assign_test_clusters, evaluate_test_clusters
-from backend.utils.visualization import clustering_visualization_by_position, clustering_visulaization_by_size,  visualize_alignment_consistency,visualize_color_consistency,visualize_size_proportionality, visualize_ui_elements
-from backend.utils.ui_extraction import  aggregate_ui_elements, extract_ui_elements, extract_json_file_path, split_dataset
-from backend.model.clustering import analyze_clusters, dbscan_cluster, handle_outliers
+from EGFE_visualization import clustering_visualization_by_position, clustering_visulaization_by_size,  visualize_alignment_consistency,visualize_color_consistency,visualize_size_proportionality, visualize_ui_elements
+from EGFE_ui_extraction import  aggregate_ui_elements, extract_ui_elements, extract_json_file_path, split_dataset
+from EGFE_Clustering import analyze_clusters, dbscan_cluster, handle_outliers
 from backend.heuristics.consistency import evaluate_consistency
 
 

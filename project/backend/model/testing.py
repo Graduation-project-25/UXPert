@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from scipy.spatial.distance import cdist
 
-from .clustering import save_cluster_as_json
+from .EGFE_Clustering import save_cluster_as_json
 
 
 
