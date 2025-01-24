@@ -1,12 +1,15 @@
 import os
 import shutil
-import cv2
-import json
 import numpy as np
-import pytesseract
+
 
 # Adjust the paths if needed
-dataset_folder = './project/data/raw/EGFE'  # Adjust the path if needed
+dataset_folder = './project/data/raw/RICO/unique_uis/combined' 
+dataset_folder = './project/data/raw/RICO/rico_dataset_v0.1_semantic_annotations' 
+
+# dataset_folder = './project/data/raw/EGFE' 
+# dataset_folder = './project/data/raw/RICO/unique_uis/combined' 
+# dataset_folder = './project/data/raw/MASC' 
 image_folder  = dataset_folder + '/images'  # Folder for images
 json_folder  = dataset_folder + '/jsons'  # Folder for JSON files
 output_folder = dataset_folder + '/extractedFeatures'

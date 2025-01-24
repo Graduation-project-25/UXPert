@@ -14,6 +14,7 @@ from backend.heuristics.consistency import evaluate_consistency
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 1000) 
 
+# dataset_folder = './project/data/raw/RICO/unique_uis/combined' 
 
 dataset_folder = './project/data/raw/EGFE'  # Adjust the path if needed
 image_folder  = dataset_folder + '/images'  # Folder for images
