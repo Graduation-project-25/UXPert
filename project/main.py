@@ -9,6 +9,7 @@ from backend.utils.EGFE_visualization import clustering_visualization_by_positio
 from backend.utils.RICO_visualization import visualize_rico_ui_elements
 from backend.utils.EGFE_ui_extraction import  aggregate_ui_elements, extract_egfe_ui_elements, extract_json_file_path, split_dataset
 from backend.utils.RICO_ui_extraction import extract_rico_ui_elements
+from backend.utils.RICO_ui_extraction import extract_rico_ui_elements
 from backend.model.EGFE_Clustering import analyze_clusters, dbscan_cluster, handle_outliers
 from backend.heuristics.consistency import evaluate_consistency
 
@@ -25,8 +26,8 @@ pd.set_option('display.width', 1000)
 
 
 
-dataset_folder = './data/raw/EGFE'  # Adjust the path if needed
-# dataset_folder = './data/raw/RICO/unique_uis/combined'   # Extracting Rico (unique)
+# dataset_folder = './data/raw/EGFE'  # Adjust the path if needed
+dataset_folder = './data/raw/RICO/unique_uis/combined'   # Extracting Rico (unique)
 image_folder  = dataset_folder + '/images'  # Folder for images
 json_folder  = dataset_folder + '/jsons'  # Folder for JSON files
 output_folder = dataset_folder + '/extractedFeatures'
@@ -37,51 +38,53 @@ def main():
 
     ############################# EGFE Dataset #############################################
 
-    #extract ui elements 
-    elements, normalized_data = extract_egfe_ui_elements(json_file_path)  
+    # #extract ui elements 
+    # elements, normalized_data = extract_egfe_ui_elements(json_file_path)  
 
-    # Aggregate by 'type'
-    aggregated_elements = aggregate_ui_elements(normalized_data)
-    print("Aggregated Elements:\n", aggregated_elements)
-    print("***************************************************************\n")
+    # # Aggregate by 'type'
+    # aggregated_elements = aggregate_ui_elements(normalized_data)
+    # print("Aggregated Elements:\n", aggregated_elements)
+    # print("***************************************************************\n")
 
-    # Scatter plot of UI elements
-    scatter_plot_ui_elements(normalized_data)
+    # # Scatter plot of UI elements
+    # scatter_plot_ui_elements(normalized_data)
     
-    # splitting dataset
-    X_train,X_test = split_dataset(normalized_data)
-    print("Training Data:\n", X_train)
-    print("Testing Data:\n", X_test)
-    print("***************************************************************\n")
+    # # splitting dataset
+    # X_train,X_test = split_dataset(normalized_data)
+    # print("Training Data:\n", X_train)
+    # print("Testing Data:\n", X_test)
+    # print("***************************************************************\n")
 
-    # DBSCAN Clustering
-    X_train,DBSCAN_dataset, clusters = dbscan_cluster(X_train)
-    handle_outliers(X_train)
-    evaluate_clustering(DBSCAN_dataset)
-    analyze_clusters(DBSCAN_dataset)
-    clustering_visulaization_by_size(DBSCAN_dataset,clusters)
-    clustering_visualization_by_position(DBSCAN_dataset,clusters)
-    # visualize_alignment_consistency(DBSCAN_dataset)
+    # # DBSCAN Clustering
+    # X_train,DBSCAN_dataset, clusters = dbscan_cluster(X_train)
+    # handle_outliers(X_train)
+    # evaluate_clustering(DBSCAN_dataset)
+    # analyze_clusters(DBSCAN_dataset)
+    # clustering_visulaization_by_size(DBSCAN_dataset,clusters)
+    # clustering_visualization_by_position(DBSCAN_dataset,clusters)
+    # # visualize_alignment_consistency(DBSCAN_dataset)
     
-    visualize_color_consistency(DBSCAN_dataset)
-    visualize_size_proportionality(DBSCAN_dataset)
-    visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
+    # visualize_color_consistency(DBSCAN_dataset)
+    # visualize_size_proportionality(DBSCAN_dataset)
+    # visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
 
     
-    print("#######################################################################################")
+    # print("#######################################################################################")
 
-    # Test data clustering
-    print("Clustering test data...")
-    clustered_test_data, _, _ = dbscan_cluster(X_test)
+    # # Test data clustering
+    # print("Clustering test data...")
+    # clustered_test_data, _, _ = dbscan_cluster(X_test)
 
-    print("Evaluating test data clustering...")
-    evaluate_clustering(clustered_test_data)
+    # print("Evaluating test data clustering...")
+    # evaluate_clustering(clustered_test_data)
 
-    # Assign test clusters
-    new_x_test = assign_test_clusters(DBSCAN_dataset, X_test, clusters)
+    # # Assign test clusters
+    # new_x_test = assign_test_clusters(DBSCAN_dataset, X_test, clusters)
 
-    # Evaluate test results
-    evaluate_test_clusters(new_x_test, DBSCAN_dataset)
+    # # Evaluate test results
+    # evaluate_test_clusters(new_x_test, DBSCAN_dataset)
+
+
 
 
     ############################# RICO Dataset #############################################
@@ -92,7 +95,8 @@ def main():
     output_folder = dataset_folder + '/extractedFeatures'
     os.makedirs(output_folder, exist_ok=True)
 
-    json_file_path = extract_json_file_path(json_folder,limit=10)
+    rico_elements, rico_normalized_elements = extract_rico_ui_elements(json_file_path)  
+    print(rico_normalized_elements)
 
     elements = extract_rico_ui_elements(json_file_path)
 
