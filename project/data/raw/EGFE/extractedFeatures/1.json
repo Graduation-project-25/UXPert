@@ -1,0 +1,2514 @@
+[
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 92,
+            "y": 512
+        },
+        "width": 283,
+        "height": 86,
+        "name": "Rectangle",
+        "color": [
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 86,
+            "y": 537
+        },
+        "width": 271,
+        "height": 20,
+        "name": "Rectangle",
+        "color": [
+            0.18039216,
+            0.8352941,
+            0.4509804,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 24,
+            "y": 512
+        },
+        "width": 44,
+        "height": 44,
+        "name": "Rectangle",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "symbolInstance",
+        "position": {
+            "x": 38,
+            "y": 528
+        },
+        "width": 16,
+        "height": 12,
+        "name": "Icon/disk",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 93,
+            "y": 517
+        },
+        "width": 90,
+        "height": 14,
+        "name": "Battery: 100%",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 92,
+            "y": 563
+        },
+        "width": 46,
+        "height": 11,
+        "name": "Current:",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 137,
+            "y": 563
+        },
+        "width": 52,
+        "height": 11,
+        "name": "8800 mA",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 292,
+            "y": 517
+        },
+        "width": 58,
+        "height": 14,
+        "name": "Charging",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 24,
+            "y": 618
+        },
+        "width": 44,
+        "height": 44,
+        "name": "Rectangle",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "symbolInstance",
+        "position": {
+            "x": 38,
+            "y": 634
+        },
+        "width": 16,
+        "height": 12,
+        "name": "Icon/disk",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "oval",
+        "position": {
+            "x": 92,
+            "y": 648
+        },
+        "width": 16,
+        "height": 16,
+        "name": "Oval",
+        "color": [
+            0.18039216,
+            0.8352941,
+            0.4509804,
+            1
+        ]
+    },
+    {
+        "type": "shapePath",
+        "position": {
+            "x": 97,
+            "y": 653
+        },
+        "width": 6,
+        "height": 5,
+        "name": "Path",
+        "color": [
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 117,
+            "y": 650
+        },
+        "width": 65,
+        "height": 14,
+        "name": "2.66 MB/s",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "oval",
+        "position": {
+            "x": 201,
+            "y": 648
+        },
+        "width": 16,
+        "height": 16,
+        "name": "Oval",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "shapePath",
+        "position": {
+            "x": 206,
+            "y": 654
+        },
+        "width": 6,
+        "height": 5,
+        "name": "Path",
+        "color": [
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 225,
+            "y": 650
+        },
+        "width": 66,
+        "height": 14,
+        "name": "3.04 MB/s",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 93,
+            "y": 623
+        },
+        "width": 54,
+        "height": 12,
+        "name": "Network",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 92,
+            "y": 378
+        },
+        "width": 283,
+        "height": 114,
+        "name": "Rectangle",
+        "color": [
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 24,
+            "y": 378
+        },
+        "width": 44,
+        "height": 44,
+        "name": "Rectangle",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "symbolInstance",
+        "position": {
+            "x": 38,
+            "y": 392
+        },
+        "width": 16,
+        "height": 16,
+        "name": "Icon/disk",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 92,
+            "y": 383
+        },
+        "width": 28,
+        "height": 12,
+        "name": "CPU",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 92,
+            "y": 456
+        },
+        "width": 48,
+        "height": 9,
+        "name": "Load: 11%",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 251,
+            "y": 456
+        },
+        "width": 65,
+        "height": 10,
+        "name": "Temperature:",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 318,
+            "y": 456
+        },
+        "width": 24,
+        "height": 9,
+        "name": "56ºC",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 92,
+            "y": 408
+        },
+        "width": 259,
+        "height": 36,
+        "name": "Rectangle",
+        "color": [
+            0.84705883,
+            0.84705883,
+            0.84705883,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 92,
+            "y": 409
+        },
+        "width": 7,
+        "height": 35,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 93,
+            "y": 421
+        },
+        "width": 11,
+        "height": 23,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 98,
+            "y": 416
+        },
+        "width": 11,
+        "height": 28,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 103,
+            "y": 423
+        },
+        "width": 11,
+        "height": 21,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 108,
+            "y": 416
+        },
+        "width": 11,
+        "height": 28,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 113,
+            "y": 424
+        },
+        "width": 11,
+        "height": 20,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 118,
+            "y": 422
+        },
+        "width": 11,
+        "height": 22,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 123,
+            "y": 433
+        },
+        "width": 11,
+        "height": 11,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 128,
+            "y": 430
+        },
+        "width": 11,
+        "height": 14,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 133,
+            "y": 434
+        },
+        "width": 11,
+        "height": 10,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 138,
+            "y": 434
+        },
+        "width": 11,
+        "height": 10,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 143,
+            "y": 426
+        },
+        "width": 11,
+        "height": 18,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 148,
+            "y": 432
+        },
+        "width": 11,
+        "height": 12,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 153,
+            "y": 418
+        },
+        "width": 11,
+        "height": 26,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 158,
+            "y": 425
+        },
+        "width": 11,
+        "height": 19,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 163,
+            "y": 432
+        },
+        "width": 11,
+        "height": 12,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 168,
+            "y": 435
+        },
+        "width": 11,
+        "height": 9,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 193,
+            "y": 432
+        },
+        "width": 11,
+        "height": 12,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 198,
+            "y": 429
+        },
+        "width": 11,
+        "height": 15,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 203,
+            "y": 432
+        },
+        "width": 11,
+        "height": 12,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 208,
+            "y": 426
+        },
+        "width": 11,
+        "height": 18,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 213,
+            "y": 418
+        },
+        "width": 11,
+        "height": 26,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 218,
+            "y": 429
+        },
+        "width": 11,
+        "height": 15,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 223,
+            "y": 434
+        },
+        "width": 11,
+        "height": 10,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 228,
+            "y": 426
+        },
+        "width": 11,
+        "height": 18,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 233,
+            "y": 432
+        },
+        "width": 11,
+        "height": 12,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 238,
+            "y": 427
+        },
+        "width": 11,
+        "height": 17,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 243,
+            "y": 432
+        },
+        "width": 11,
+        "height": 12,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 248,
+            "y": 429
+        },
+        "width": 11,
+        "height": 15,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 253,
+            "y": 425
+        },
+        "width": 11,
+        "height": 19,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 258,
+            "y": 430
+        },
+        "width": 11,
+        "height": 14,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 263,
+            "y": 433
+        },
+        "width": 11,
+        "height": 11,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 268,
+            "y": 432
+        },
+        "width": 11,
+        "height": 12,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 273,
+            "y": 430
+        },
+        "width": 11,
+        "height": 14,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 278,
+            "y": 429
+        },
+        "width": 11,
+        "height": 15,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 283,
+            "y": 432
+        },
+        "width": 11,
+        "height": 12,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 288,
+            "y": 429
+        },
+        "width": 11,
+        "height": 15,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 293,
+            "y": 427
+        },
+        "width": 11,
+        "height": 17,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 298,
+            "y": 434
+        },
+        "width": 11,
+        "height": 10,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 303,
+            "y": 430
+        },
+        "width": 11,
+        "height": 14,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 308,
+            "y": 434
+        },
+        "width": 11,
+        "height": 10,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 313,
+            "y": 433
+        },
+        "width": 11,
+        "height": 11,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 318,
+            "y": 431
+        },
+        "width": 11,
+        "height": 13,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 323,
+            "y": 428
+        },
+        "width": 11,
+        "height": 16,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 328,
+            "y": 425
+        },
+        "width": 11,
+        "height": 19,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 333,
+            "y": 422
+        },
+        "width": 11,
+        "height": 22,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 338,
+            "y": 415
+        },
+        "width": 11,
+        "height": 29,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 343,
+            "y": 430
+        },
+        "width": 8,
+        "height": 14,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -176,
+            "y": 404
+        },
+        "width": 19,
+        "height": 44,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -171,
+            "y": 416
+        },
+        "width": 19,
+        "height": 32,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -166,
+            "y": 411
+        },
+        "width": 19,
+        "height": 37,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -161,
+            "y": 418
+        },
+        "width": 19,
+        "height": 30,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -156,
+            "y": 411
+        },
+        "width": 19,
+        "height": 37,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -151,
+            "y": 419
+        },
+        "width": 19,
+        "height": 29,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -146,
+            "y": 417
+        },
+        "width": 19,
+        "height": 31,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -141,
+            "y": 428
+        },
+        "width": 19,
+        "height": 20,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -136,
+            "y": 425
+        },
+        "width": 19,
+        "height": 23,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -131,
+            "y": 429
+        },
+        "width": 19,
+        "height": 19,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -126,
+            "y": 429
+        },
+        "width": 19,
+        "height": 19,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -121,
+            "y": 421
+        },
+        "width": 19,
+        "height": 27,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -116,
+            "y": 427
+        },
+        "width": 19,
+        "height": 21,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -111,
+            "y": 413
+        },
+        "width": 19,
+        "height": 35,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -106,
+            "y": 420
+        },
+        "width": 19,
+        "height": 28,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -101,
+            "y": 427
+        },
+        "width": 19,
+        "height": 21,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -96,
+            "y": 430
+        },
+        "width": 19,
+        "height": 18,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -71,
+            "y": 427
+        },
+        "width": 19,
+        "height": 21,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -66,
+            "y": 424
+        },
+        "width": 19,
+        "height": 24,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -61,
+            "y": 427
+        },
+        "width": 19,
+        "height": 21,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -56,
+            "y": 421
+        },
+        "width": 19,
+        "height": 27,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -51,
+            "y": 413
+        },
+        "width": 19,
+        "height": 35,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -46,
+            "y": 424
+        },
+        "width": 19,
+        "height": 24,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -41,
+            "y": 429
+        },
+        "width": 19,
+        "height": 19,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -36,
+            "y": 421
+        },
+        "width": 19,
+        "height": 27,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -31,
+            "y": 427
+        },
+        "width": 19,
+        "height": 21,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -26,
+            "y": 422
+        },
+        "width": 19,
+        "height": 26,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -21,
+            "y": 427
+        },
+        "width": 19,
+        "height": 21,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -16,
+            "y": 424
+        },
+        "width": 19,
+        "height": 24,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -11,
+            "y": 420
+        },
+        "width": 19,
+        "height": 28,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -6,
+            "y": 425
+        },
+        "width": 19,
+        "height": 23,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": -1,
+            "y": 428
+        },
+        "width": 19,
+        "height": 20,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 4,
+            "y": 427
+        },
+        "width": 19,
+        "height": 21,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 9,
+            "y": 425
+        },
+        "width": 19,
+        "height": 23,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 14,
+            "y": 424
+        },
+        "width": 19,
+        "height": 24,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 19,
+            "y": 427
+        },
+        "width": 19,
+        "height": 21,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 24,
+            "y": 424
+        },
+        "width": 19,
+        "height": 24,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 29,
+            "y": 422
+        },
+        "width": 19,
+        "height": 26,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 34,
+            "y": 429
+        },
+        "width": 19,
+        "height": 19,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 39,
+            "y": 425
+        },
+        "width": 19,
+        "height": 23,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 44,
+            "y": 429
+        },
+        "width": 19,
+        "height": 19,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 49,
+            "y": 428
+        },
+        "width": 19,
+        "height": 20,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 54,
+            "y": 426
+        },
+        "width": 19,
+        "height": 22,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 59,
+            "y": 423
+        },
+        "width": 19,
+        "height": 25,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 64,
+            "y": 420
+        },
+        "width": 19,
+        "height": 28,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 69,
+            "y": 417
+        },
+        "width": 19,
+        "height": 31,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 74,
+            "y": 410
+        },
+        "width": 19,
+        "height": 38,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 92,
+            "y": 431
+        },
+        "width": 2,
+        "height": 13,
+        "name": "Rectangle",
+        "color": [
+            0.11764706,
+            0.5647059,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 222,
+            "y": 383
+        },
+        "width": 128,
+        "height": 14,
+        "name": "Prequency: 2.2 GHz",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 92,
+            "y": 272
+        },
+        "width": 283,
+        "height": 86,
+        "name": "Rectangle",
+        "color": [
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 92,
+            "y": 302
+        },
+        "width": 259,
+        "height": 8,
+        "name": "Rectangle",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 24,
+            "y": 272
+        },
+        "width": 44,
+        "height": 44,
+        "name": "Rectangle",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "symbolInstance",
+        "position": {
+            "x": 38,
+            "y": 286
+        },
+        "width": 16,
+        "height": 16,
+        "name": "Icon/disk",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 86,
+            "y": 297
+        },
+        "width": 265,
+        "height": 20,
+        "name": "Rectangle",
+        "color": [
+            1,
+            0.2784314,
+            0.34117648,
+            1
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 93,
+            "y": 278
+        },
+        "width": 52,
+        "height": 13,
+        "name": "Memory",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 92,
+            "y": 322
+        },
+        "width": 63,
+        "height": 9,
+        "name": "Free: 102 MB",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 184,
+            "y": 322
+        },
+        "width": 69,
+        "height": 9,
+        "name": "Used: 13.8 GB",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 281,
+            "y": 322
+        },
+        "width": 66,
+        "height": 9,
+        "name": "Cache: 1.1 GB",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 92,
+            "y": 140
+        },
+        "width": 283,
+        "height": 112,
+        "name": "Rectangle",
+        "color": [
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 92,
+            "y": 224
+        },
+        "width": 120,
+        "height": 8,
+        "name": "Rectangle",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            0.96862745
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 86,
+            "y": 219
+        },
+        "width": 76,
+        "height": 20,
+        "name": "Rectangle",
+        "color": [
+            0.18039216,
+            0.8352941,
+            0.4509804,
+            1
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 93,
+            "y": 183
+        },
+        "width": 97,
+        "height": 12,
+        "name": "Macintosh SSD",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 92,
+            "y": 204
+        },
+        "width": 83,
+        "height": 10,
+        "name": "62.5 GB / 120 GB",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 231,
+            "y": 224
+        },
+        "width": 120,
+        "height": 8,
+        "name": "Rectangle",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 225,
+            "y": 219
+        },
+        "width": 107,
+        "height": 20,
+        "name": "Rectangle",
+        "color": [
+            1,
+            0.64705884,
+            0.007843138,
+            1
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 231,
+            "y": 183
+        },
+        "width": 34,
+        "height": 12,
+        "name": "Work",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 231,
+            "y": 204
+        },
+        "width": 83,
+        "height": 10,
+        "name": "94.9 GB / 120 GB",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 24,
+            "y": 140
+        },
+        "width": 44,
+        "height": 44,
+        "name": "Rectangle",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "symbolInstance",
+        "position": {
+            "x": 38,
+            "y": 155
+        },
+        "width": 16,
+        "height": 14,
+        "name": "Icon/disk",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 92,
+            "y": 145
+        },
+        "width": 50,
+        "height": 14,
+        "name": "Storage",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "oval",
+        "position": {
+            "x": 24,
+            "y": 732
+        },
+        "width": 44,
+        "height": 44,
+        "name": "Oval",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "symbolInstance",
+        "position": {
+            "x": 36,
+            "y": 744
+        },
+        "width": 20,
+        "height": 20,
+        "name": "Icon/Light/setting",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "oval",
+        "position": {
+            "x": 307,
+            "y": 732
+        },
+        "width": 44,
+        "height": 44,
+        "name": "Oval",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "symbolInstance",
+        "position": {
+            "x": 319,
+            "y": 744
+        },
+        "width": 20,
+        "height": 20,
+        "name": "Icon/Light/setting",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "oval",
+        "position": {
+            "x": 24,
+            "y": 732
+        },
+        "width": 44,
+        "height": 44,
+        "name": "Oval",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "symbolInstance",
+        "position": {
+            "x": 36,
+            "y": 747
+        },
+        "width": 16,
+        "height": 11,
+        "name": "Icon/Light/setting",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "rectangle",
+        "position": {
+            "x": 124,
+            "y": 732
+        },
+        "width": 128,
+        "height": 44,
+        "name": "Rectangle",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "shapePath",
+        "position": {
+            "x": 153,
+            "y": 747
+        },
+        "width": 12,
+        "height": 17,
+        "name": "Path",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "shapePath",
+        "position": {
+            "x": 141,
+            "y": 744
+        },
+        "width": 12,
+        "height": 17,
+        "name": "Path",
+        "color": [
+            0.16862746,
+            0.16862746,
+            0.23921569,
+            1
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 182,
+            "y": 748
+        },
+        "width": 48,
+        "height": 12,
+        "name": "Refresh",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 97,
+            "y": 59
+        },
+        "width": 165,
+        "height": 18,
+        "name": "Sang’s Macbook Pro",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "symbolInstance",
+        "position": {
+            "x": 267,
+            "y": 64
+        },
+        "width": 10,
+        "height": 6,
+        "name": "Icon/Light/setting",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "text",
+        "position": {
+            "x": 177,
+            "y": 85
+        },
+        "width": 36,
+        "height": 11,
+        "name": "Online",
+        "color": [
+            0,
+            0,
+            0,
+            0
+        ]
+    },
+    {
+        "type": "oval",
+        "position": {
+            "x": 163,
+            "y": 86
+        },
+        "width": 8,
+        "height": 8,
+        "name": "Oval",
+        "color": [
+            0.18039216,
+            0.8352941,
+            0.4509804,
+            1
+        ]
+    }
+]
