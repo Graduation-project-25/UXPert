@@ -15,32 +15,15 @@ def extract_json_file_path(json_folder,limit=50):
 
 def extract_ui_elements(json_file_path, dataset_type):
     """Extracts UI elements from a given JSON file."""
-    with open(json_file_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    
     elements = []
 
     if dataset_type == 'EGFE':
-        for layer in data.get('layers', []):
-            rect = layer.get('rect', {})
-            element = {
-                'type': layer.get('_class', ''),
-                'position': {
-                    'x': rect.get('x', 0),
-                    'y': rect.get('y', 0)
-                },
-                'width': rect.get('width', 0),
-                'height': rect.get('height', 0),
-                'name': layer.get('name', ''),  # Using 'name' as the text/label
-                'color': layer.get('color', '')
-            }
-            elements.append(element)
-
+        elements = extract_egfe_ui_elements(json_file_path)
     elif dataset_type == 'Rico':
         elements = extract_rico_ui_elements(json_file_path)
 
-    # print (elements)
-    # print("Extracted Elements:\n", json.dumps(elements, indent=4))
+    print (elements)
+    print("Extracted Elements:\n", json.dumps(elements, indent=4))
 
     # Normalize json data into a flat table
     df = pd.json_normalize(elements)
@@ -51,6 +34,29 @@ def extract_ui_elements(json_file_path, dataset_type):
     print("***************************************************************\n")    
     
     return elements, normalized_data
+
+def extract_egfe_ui_elements(json_file_path):
+    """Extracts UI elements for EGFE dataset."""
+    with open(json_file_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    
+    elements = []
+    for layer in data.get('layers', []):
+        rect = layer.get('rect', {})
+        element = {
+            'type': layer.get('_class', ''),
+            'position': {
+                'x': rect.get('x', 0),
+                'y': rect.get('y', 0)
+            },
+            'width': rect.get('width', 0),
+            'height': rect.get('height', 0),
+            'name': layer.get('name', ''),  # Using 'name' as the text/label
+            'color': layer.get('color', '')
+        }
+        elements.append(element)
+
+    return elements
 
 def extract_rico_ui_elements(json_file_path):
     """Extract UI elements from Rico dataset."""
