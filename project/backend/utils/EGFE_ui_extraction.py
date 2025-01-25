@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
 
+
 def extract_json_file_path(json_folder,limit=50):
     json_files = [f for f in os.listdir(json_folder) if f.endswith('.json')][:limit]
     index =0
@@ -13,30 +14,30 @@ def extract_json_file_path(json_folder,limit=50):
     json_file_path = os.path.join(json_folder, json_files[index])
     return json_file_path
 
-def extract_ui_elements(json_file_path, dataset_type):
-    """Extracts UI elements from a given JSON file."""
-    elements = []
+# def extract_ui_elements(json_file_path, dataset_type):
+#     """Extracts UI elements from a given JSON file."""
+#     elements = []
 
-    if dataset_type == 'EGFE':
-        elements = extract_egfe_ui_elements(json_file_path)
-    elif dataset_type == 'Rico':
-        elements = extract_rico_ui_elements(json_file_path)
+#     if dataset_type == 'EGFE':
+#         elements = extract_egfe_ui_elements(json_file_path)
+#     elif dataset_type == 'Rico':
+#         elements = extract_rico_ui_elements(json_file_path)
 
-    print (elements)
-    print("Extracted Elements:\n", json.dumps(elements, indent=4))
+#     print (elements)
+#     print("Extracted Elements:\n", json.dumps(elements, indent=4))
 
-    # Normalize json data into a flat table
-    df = pd.json_normalize(elements)
+#     # Normalize json data into a flat table
+#     df = pd.json_normalize(elements)
 
-    # Normalize into scaled data 
-    normalized_data = normalize_ui_elements(elements, df)
-    print("Normalized, Scaled Data:\n", normalized_data)
-    print("***************************************************************\n")    
+#     # Normalize into scaled data 
+#     normalized_data = normalize_ui_elements(elements, df)
+#     print("Normalized, Scaled Data:\n", normalized_data)
+#     print("***************************************************************\n")    
     
-    return elements, normalized_data
+#     return elements, normalized_data
 
 def extract_egfe_ui_elements(json_file_path):
-    """Extracts UI elements for EGFE dataset."""
+    """Extracts UI elements from a given JSON file."""
     with open(json_file_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
     
@@ -55,40 +56,21 @@ def extract_egfe_ui_elements(json_file_path):
             'color': layer.get('color', '')
         }
         elements.append(element)
+    #print (elements)
+    #print("Extracted Elements:\n", json.dumps(elements, indent=4))
 
-    return elements
+    # Normalize json data into a flat table
+    df = pd.json_normalize(elements)
 
-def extract_rico_ui_elements(json_file_path):
-    """Extract UI elements from Rico dataset."""
-    with open(json_file_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+    # Normalize into scaled data 
+    normalized_data = normalize_ui_elements(elements, df)
+    print("Normalized, Scaled Data:\n", normalized_data)
+    print("***************************************************************\n")    
 
-    elements = []
 
-    def traverse(node):
-        if isinstance(node, dict):
-            bounds = node.get("bounds", [0, 0, 0, 0])
-            element = {
-                "type": node.get("class", ""),
-                "position": {"x": bounds[0], "y": bounds[1]},
-                "width": bounds[2] - bounds[0],
-                "height": bounds[3] - bounds[1],
-                "name": node.get("text", node.get("content-desc", "")),
-                "clickable": node.get("clickable", False),
-                "visibility": node.get("visibility", ""),
-                "enabled": node.get("enabled", True),
-            }
-            elements.append(element)
+    
+    return elements, normalized_data
 
-            # Recursively process children
-            for child in node.get("children", []):
-                traverse(child)
-
-    # Start traversal from the root element
-    if "activity" in data and "root" in data["activity"]:
-        traverse(data["activity"]["root"])
-
-    return elements
 
 def normalize_ui_elements(elements, df):
     # Scaling width, height, position.x, position.y
