@@ -22,12 +22,12 @@ from datasets import load_dataset
 base_dir = os.path.dirname(os.path.abspath(__file__))  # Gets the directory of the current script
 project_dir = os.path.join(base_dir, "UXPert", "project", "data", "raw")
 
-# Use the relative path
-data_file_path = os.path.join(project_dir, "train_split_web70k.json")
+# # Use the relative path
+# data_file_path = os.path.join(project_dir, "train_split_web70k.json")
 
-# Load dataset from a local directory
-dataset = load_dataset("json", data_files=data_file_path)
-print(dataset)
+# # Load dataset from a local directory
+# dataset = load_dataset("json", data_files=data_file_path)
+# print(dataset)
 
 
 # dataset_folder = './project/data/raw/RICO/unique_uis/combined' 
