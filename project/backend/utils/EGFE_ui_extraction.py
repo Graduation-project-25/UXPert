@@ -42,11 +42,10 @@ def extract_egfe_ui_elements(json_file_path):
 
     # Normalize into scaled data 
     normalized_data = normalize_ui_elements(elements, df)
-    print("Normalized, Scaled Data:\n", normalized_data)
-    print("***************************************************************\n")    
+    # print("Normalized, Scaled Data:\n", normalized_data)
+    # print("***************************************************************\n")    
 
     return elements, normalized_data
-
 
 def normalize_ui_elements(elements, df):
     # Scaling width, height, position.x, position.y
@@ -63,7 +62,6 @@ def save_ui_elements(elements, output_path):
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(elements, f, ensure_ascii=False, indent=4)
     print(f"Saved extracted elements to: {output_path}")
-
 
 def aggregate_ui_elements(df):
     """Aggregate UI elements by name and compute average position and size."""
