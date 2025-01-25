@@ -14,28 +14,6 @@ def extract_json_file_path(json_folder,limit=50):
     json_file_path = os.path.join(json_folder, json_files[index])
     return json_file_path
 
-# def extract_ui_elements(json_file_path, dataset_type):
-#     """Extracts UI elements from a given JSON file."""
-#     elements = []
-
-#     if dataset_type == 'EGFE':
-#         elements = extract_egfe_ui_elements(json_file_path)
-#     elif dataset_type == 'Rico':
-#         elements = extract_rico_ui_elements(json_file_path)
-
-#     print (elements)
-#     print("Extracted Elements:\n", json.dumps(elements, indent=4))
-
-#     # Normalize json data into a flat table
-#     df = pd.json_normalize(elements)
-
-#     # Normalize into scaled data 
-#     normalized_data = normalize_ui_elements(elements, df)
-#     print("Normalized, Scaled Data:\n", normalized_data)
-#     print("***************************************************************\n")    
-    
-#     return elements, normalized_data
-
 def extract_egfe_ui_elements(json_file_path):
     """Extracts UI elements from a given JSON file."""
     with open(json_file_path, 'r', encoding='utf-8') as f:
@@ -67,8 +45,6 @@ def extract_egfe_ui_elements(json_file_path):
     print("Normalized, Scaled Data:\n", normalized_data)
     print("***************************************************************\n")    
 
-
-    
     return elements, normalized_data
 
 
