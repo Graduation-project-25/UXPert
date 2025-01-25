@@ -31,4 +31,7 @@ def extract_rico_ui_elements(json_file_path):
     if "activity" in data and "root" in data["activity"]:
         traverse(data["activity"]["root"])
 
+    print (elements)
+    print("Extracted Elements:\n", json.dumps(elements, indent=4))
+
     return elements

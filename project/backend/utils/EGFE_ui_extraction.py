@@ -4,8 +4,6 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
-
-
 def extract_json_file_path(json_folder,limit=50):
     json_files = [f for f in os.listdir(json_folder) if f.endswith('.json')][:limit]
     index =0
