@@ -39,18 +39,18 @@ def extract_ui_elements(json_file_path, dataset_type):
     elif dataset_type == 'Rico':
         elements = extract_rico_ui_elements(json_file_path)
 
-    print (elements)
-    print("Extracted Elements:\n", json.dumps(elements, indent=4))
+    # print (elements)
+    # print("Extracted Elements:\n", json.dumps(elements, indent=4))
 
     # Normalize json data into a flat table
-    # df = pd.json_normalize(elements)
+    df = pd.json_normalize(elements)
 
     # Normalize into scaled data 
-    # normalized_data = normalize_ui_elements(elements, df)
-    # print("Normalized, Scaled Data:\n", normalized_data)
-    # print("***************************************************************\n")    
+    normalized_data = normalize_ui_elements(elements, df)
+    print("Normalized, Scaled Data:\n", normalized_data)
+    print("***************************************************************\n")    
     
-    return elements
+    return elements, normalized_data
 
 def extract_rico_ui_elements(json_file_path):
     """Extract UI elements from Rico dataset."""

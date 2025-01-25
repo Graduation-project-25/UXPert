@@ -27,8 +27,8 @@ pd.set_option('display.width', 1000)
 
 # dataset_folder = './project/data/raw/RICO/unique_uis/combined' 
 
-# dataset_folder = './project/data/raw/EGFE'  # Adjust the path if needed
-dataset_folder = './project/data/raw/RICO/unique_uis/combined'   # Extracting Rico (unique)
+dataset_folder = './project/data/raw/EGFE'  # Adjust the path if needed
+# dataset_folder = './project/data/raw/RICO/unique_uis/combined'   # Extracting Rico (unique)
 image_folder  = dataset_folder + '/images'  # Folder for images
 json_folder  = dataset_folder + '/jsons'  # Folder for JSON files
 output_folder = dataset_folder + '/extractedFeatures'
@@ -38,8 +38,8 @@ def main():
     json_file_path = extract_json_file_path(json_folder,limit=10)
     #extract ui elements 
     dataset_types = ['EGFE', 'Rico']
-    # elements, normalized_data = extract_ui_elements(json_file_path, dataset_types[0])   # EGFE
-    elements = extract_ui_elements(json_file_path, dataset_types[1])    # Rico
+    elements, normalized_data = extract_ui_elements(json_file_path, dataset_types[0])   # EGFE
+    # elements = extract_ui_elements(json_file_path, dataset_types[1])    # Rico
 
     # Aggregate by 'type'
     aggregated_elements = aggregate_ui_elements(normalized_data)
