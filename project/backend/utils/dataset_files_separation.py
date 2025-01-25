@@ -7,9 +7,9 @@ import numpy as np
 # dataset_folder = './project/data/raw/RICO/unique_uis/combined' 
 # dataset_folder = './project/data/raw/RICO/rico_dataset_v0.1_semantic_annotations' 
 
-dataset_folder = './data/raw/EGFE' 
-# dataset_folder = './project/data/raw/RICO/unique_uis/combined' 
-# dataset_folder = './project/data/raw/MASC' 
+# dataset_folder = './data/raw/EGFE' 
+dataset_folder = './data/raw/RICO/unique_uis/combined' 
+# dataset_folder = './data/raw/MASC' 
 image_folder  = dataset_folder + '/images'  # Folder for images
 json_folder  = dataset_folder + '/jsons'  # Folder for JSON files
 output_folder = dataset_folder + '/extractedFeatures'
