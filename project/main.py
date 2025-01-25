@@ -26,8 +26,8 @@ pd.set_option('display.width', 1000)
 
 
 
-# dataset_folder = './data/raw/EGFE'  # Adjust the path if needed
-dataset_folder = './data/raw/RICO/unique_uis/combined'   # Extracting Rico (unique)
+dataset_folder = './data/raw/EGFE'  # Adjust the path if needed
+# dataset_folder = './data/raw/RICO/unique_uis/combined'   # Extracting Rico (unique)
 image_folder  = dataset_folder + '/images'  # Folder for images
 json_folder  = dataset_folder + '/jsons'  # Folder for JSON files
 output_folder = dataset_folder + '/extractedFeatures'
