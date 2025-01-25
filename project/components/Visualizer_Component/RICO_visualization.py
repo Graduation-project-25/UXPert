@@ -1,8 +1,8 @@
 import os
 import cv2
 import json
-from backend.utils.EGFE_ui_extraction import save_ui_elements
-from backend.utils.RICO_ui_extraction import extract_rico_ui_elements
+from components.src.feature_extraction.EGFE_ui_extraction import save_ui_elements
+from components.src.feature_extraction.RICO_ui_extraction import extract_rico_ui_elements
 
 def visualize_rico_ui_elements(image_folder, json_folder, output_folder, limit=50):
     """Visualizes the extracted UI elements on their corresponding images."""

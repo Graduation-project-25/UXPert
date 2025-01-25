@@ -3,27 +3,19 @@ import sys
 import pandas as pd
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from backend.model.evaluation import evaluate_clustering
-from backend.model.testing import assign_test_clusters, evaluate_test_clusters
-from backend.utils.EGFE_visualization import clustering_visualization_by_position, clustering_visulaization_by_size, scatter_plot_ui_elements,  visualize_alignment_consistency,visualize_color_consistency,visualize_size_proportionality, visualize_ui_elements
-from backend.utils.EGFE_ui_extraction import  aggregate_ui_elements, extract_egfe_ui_elements, extract_json_file_path, split_dataset
-from backend.model.EGFE_Clustering import analyze_clusters, dbscan_cluster, handle_outliers
-from backend.heuristics.consistency import evaluate_consistency
+
+from components.Clustering_Component.EGFE_clustering import analyze_clusters, dbscan_cluster, handle_outliers
+from components.Clustering_Component.EGFE_clustering_evaluation import evaluate_clustering
+from components.Clustering_Component.EGFE_clustering_testing import assign_test_clusters, evaluate_test_clusters
+from components.Feature_Extractor_Component.EGFE_ui_extraction import aggregate_ui_elements, extract_egfe_ui_elements, extract_json_file_path, split_dataset
+from components.Visualizer_Component.EGFE_visualization import clustering_visualization_by_position, clustering_visulaization_by_size, scatter_plot_ui_elements, visualize_color_consistency, visualize_size_proportionality, visualize_ui_elements
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 1000) 
 
-
-# from datasets import load_dataset
-
-# # Load dataset from a local directory
-# dataset = load_dataset("json", data_files="D:/Studying/Projects/Graduation/UXPert/project/data/raw/train_split_web70k.json")
-# print(dataset)
-
-dataset_folder = './data/raw/EGFE'  # Adjust the path if needed
-# dataset_folder = './data/raw/RICO/unique_uis/combined'   # Extracting Rico (unique)
-image_folder  = dataset_folder + '/images'  # Folder for images
-json_folder  = dataset_folder + '/jsons'  # Folder for JSON files
+dataset_folder = './data/raw/EGFE'
+image_folder  = dataset_folder + '/images'  
+json_folder  = dataset_folder + '/jsons' 
 output_folder = dataset_folder + '/extractedFeatures'
 os.makedirs(output_folder, exist_ok=True)
 

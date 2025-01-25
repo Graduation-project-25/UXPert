@@ -4,8 +4,10 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import DBSCAN
 from sklearn.metrics import davies_bouldin_score, silhouette_score
-from backend.heuristics.consistency import evaluate_consistency
-from backend.utils.csv_exporting import export_to_csv
+
+from components.Feedback_Generator_Component.heuristics.consistency import evaluate_consistency
+from utils.csv_exporting import export_to_csv
+
 
 def dbscan_cluster(X_train):
     X_train=X_train[['width', 'height', 'position.x', 'position.y'] + 
