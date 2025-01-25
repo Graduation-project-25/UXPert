@@ -38,7 +38,7 @@ def main():
     json_file_path = extract_json_file_path(json_folder,limit=10)
     #extract ui elements 
     dataset_types = ['EGFE', 'Rico']
-    # elements, normalized_data = extract_ui_elements(json_file_path, dataset_types[0])   # EGFE
+    elements, normalized_data = extract_ui_elements(json_file_path, dataset_types[0])   # EGFE
     elements = extract_ui_elements(json_file_path, dataset_types[1])    # Rico
 
     # Aggregate by 'type'
