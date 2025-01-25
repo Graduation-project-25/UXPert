@@ -1,6 +1,6 @@
 import os
 
-def export_to_csv(df, file_name, folder="./project/output"):
+def export_to_csv(df, file_name, folder="./output"):
     # Ensure the output folder exists
     os.makedirs(folder, exist_ok=True)
 
