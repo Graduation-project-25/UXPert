@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <title>Figma Plugin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div>
+        <h2>Element Detection</h2>
+        <label>
+            <input type="checkbox" id="confirmDetection" />
+            Verify detection of elements
+        </label>
+        <br>
+        <button id="startDetection">Start Detection</button>
+        <div id="message"></div>
+    </div>
+    
+    <script>document.getElementById('startDetection').onclick = () => {
+      const isChecked = document.getElementById('confirmDetection').checked;
+      if (!isChecked) {
+          document.getElementById('message').innerText = 'Please confirm detection of elements.';
+          return;
+      }
+  
+      // Send a message to the plugin to start detection
+      parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+      document.getElementById('message').innerText = 'Starting detection...';
+  };</script>
+</body>
+</html>
