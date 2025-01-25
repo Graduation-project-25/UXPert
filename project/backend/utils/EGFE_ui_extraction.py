@@ -13,26 +13,32 @@ def extract_json_file_path(json_folder,limit=50):
     json_file_path = os.path.join(json_folder, json_files[index])
     return json_file_path
 
-def extract_ui_elements(json_file_path):
+def extract_ui_elements(json_file_path, dataset_type):
     """Extracts UI elements from a given JSON file."""
     with open(json_file_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
     
     elements = []
-    for layer in data.get('layers', []):
-        rect = layer.get('rect', {})
-        element = {
-            'type': layer.get('_class', ''),
-            'position': {
-                'x': rect.get('x', 0),
-                'y': rect.get('y', 0)
-            },
-            'width': rect.get('width', 0),
-            'height': rect.get('height', 0),
-            'name': layer.get('name', ''),  # Using 'name' as the text/label
-            'color': layer.get('color', '')
-        }
-        elements.append(element)
+
+    if dataset_type == 'EGFE':
+        for layer in data.get('layers', []):
+            rect = layer.get('rect', {})
+            element = {
+                'type': layer.get('_class', ''),
+                'position': {
+                    'x': rect.get('x', 0),
+                    'y': rect.get('y', 0)
+                },
+                'width': rect.get('width', 0),
+                'height': rect.get('height', 0),
+                'name': layer.get('name', ''),  # Using 'name' as the text/label
+                'color': layer.get('color', '')
+            }
+            elements.append(element)
+
+    elif dataset_type == 'Rico':
+        return
+
     #print (elements)
     #print("Extracted Elements:\n", json.dumps(elements, indent=4))
 
@@ -43,8 +49,6 @@ def extract_ui_elements(json_file_path):
     normalized_data = normalize_ui_elements(elements, df)
     print("Normalized, Scaled Data:\n", normalized_data)
     print("***************************************************************\n")    
-
-
     
     return elements, normalized_data
 
