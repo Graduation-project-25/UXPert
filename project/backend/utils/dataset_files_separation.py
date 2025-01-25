@@ -7,7 +7,7 @@ import numpy as np
 # dataset_folder = './project/data/raw/RICO/unique_uis/combined' 
 # dataset_folder = './project/data/raw/RICO/rico_dataset_v0.1_semantic_annotations' 
 
-dataset_folder = './project/data/raw/EGFE' 
+dataset_folder = './data/raw/EGFE' 
 # dataset_folder = './project/data/raw/RICO/unique_uis/combined' 
 # dataset_folder = './project/data/raw/MASC' 
 image_folder  = dataset_folder + '/images'  # Folder for images

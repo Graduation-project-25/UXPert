@@ -25,10 +25,9 @@ pd.set_option('display.width', 1000)
 # print(dataset)
 
 
-# dataset_folder = './project/data/raw/RICO/unique_uis/combined' 
 
-dataset_folder = './project/data/raw/EGFE'  # Adjust the path if needed
-# dataset_folder = './project/data/raw/RICO/unique_uis/combined'   # Extracting Rico (unique)
+# dataset_folder = './project/data/raw/EGFE'  # Adjust the path if needed
+dataset_folder = './data/raw/RICO/unique_uis/combined'   # Extracting Rico (unique)
 image_folder  = dataset_folder + '/images'  # Folder for images
 json_folder  = dataset_folder + '/jsons'  # Folder for JSON files
 output_folder = dataset_folder + '/extractedFeatures'
@@ -38,18 +37,18 @@ def main():
     json_file_path = extract_json_file_path(json_folder,limit=10)
     #extract ui elements 
     dataset_types = ['EGFE', 'Rico']
-    elements, normalized_data = extract_ui_elements(json_file_path, dataset_types[0])   # EGFE
-    # elements = extract_ui_elements(json_file_path, dataset_types[1])    # Rico
+    # elements, normalized_data = extract_ui_elements(json_file_path, dataset_types[0])   # EGFE
+    elements = extract_ui_elements(json_file_path, dataset_types[1])    # Rico
 
     # Aggregate by 'type'
     # aggregated_elements = aggregate_ui_elements(normalized_data)
-    # #print("Aggregated Elements:\n", aggregated_elements)
-    # print("***************************************************************\n")
+    #print("Aggregated Elements:\n", aggregated_elements)
+    print("***************************************************************\n")
 
-    # # Scatter plot of UI elements
-    # #scatter_plot_ui_elements(normalized_data)
+    # Scatter plot of UI elements
+    #scatter_plot_ui_elements(normalized_data)
     
-    # #splitting dataset
+    #splitting dataset
     # X_train,X_test = split_dataset(normalized_data)
     # print("Training Data:\n", X_train)
     # print("Testing Data:\n", X_test)
