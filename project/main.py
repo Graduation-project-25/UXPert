@@ -18,11 +18,11 @@ pd.set_option('display.width', 1000)
 
 
 
-from datasets import load_dataset
+# from datasets import load_dataset
 
-# Load dataset from a local directory
-dataset = load_dataset("json", data_files="D:/Studying/Projects/Graduation/UXPert/project/data/raw/train_split_web70k.json")
-print(dataset)
+# # Load dataset from a local directory
+# dataset = load_dataset("json", data_files="D:/Studying/Projects/Graduation/UXPert/project/data/raw/train_split_web70k.json")
+# print(dataset)
 
 
 # dataset_folder = './project/data/raw/RICO/unique_uis/combined' 
