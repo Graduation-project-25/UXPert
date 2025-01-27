@@ -7,9 +7,14 @@ out/
 dist/
 code.js
 
+.env
+cert.pem
+csr.pem
+key.pem
+
 RICO/
 EGFE/
 MASC/
 WebUI/
 __pycache__/
-.config
+
