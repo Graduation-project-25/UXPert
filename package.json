@@ -13,11 +13,11 @@
   "license": "",
   "devDependencies": {
     "@figma/eslint-plugin-figma-plugins": "*",
-    "@figma/plugin-typings": "^1.100.2",
+    "@figma/plugin-typings": "^1.106.0",
     "@typescript-eslint/eslint-plugin": "^6.12.0",
     "@typescript-eslint/parser": "^6.12.0",
     "eslint": "^8.54.0",
-    "typescript": "^5.6.2"
+    "typescript": "^5.7.3"
   },
   "eslintConfig": {
     "extends": [
