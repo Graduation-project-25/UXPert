@@ -1,3 +1,4 @@
+import json
 import requests
 
 config = {}
@@ -13,7 +14,21 @@ headers = {
 response = requests.get(f'https://api.figma.com/v1/files/{config["FILE_KEY"]}', headers=headers)
 
 if response.status_code == 200:
+    
     data = response.json()
     print(data)
+    # Format the extracted features (you can modify this depending on which data you want to extract)
+    features = {
+        'document': data.get('document', {}),
+        'last_modified': data.get('lastModified', ''),
+        'name': data.get('name', ''),
+        'file_key': config["FILE_KEY"]
+    }
+    
+    # Save the features to a JSON file
+    with open('figma_features.json', 'w') as json_file:
+        json.dump(features, json_file, indent=4)
+    
+    print("Features have been saved to 'figma_features.json'.")
 else:
     print('Error:', response.status_code, response.text)
