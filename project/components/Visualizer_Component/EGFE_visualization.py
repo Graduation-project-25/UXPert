@@ -6,7 +6,7 @@ import seaborn as sns
 import pandas as pd
 
 from components.Feature_Extractor_Component.EGFE_ui_extraction import extract_egfe_ui_elements, save_ui_elements
-from components.Visualizer_Component.visualizer import visualizer
+from components.visualizer import visualizer
 
 class EGFE_Visualization(visualizer):
     def visualize_ui_elements(self, image_folder, json_folder, output_folder, limit=50):
