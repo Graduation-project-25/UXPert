@@ -20,6 +20,10 @@ class Visualizer(ABC):
         pass
 
     @abstractmethod
+    def clustering_visualization_by_size(self, DBSCAN_dataset, clusters):
+        pass
+
+    @abstractmethod
     def clustering_visualization_by_position(self, DBSCAN_dataset, clusters):
         pass
 
