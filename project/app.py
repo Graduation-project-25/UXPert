@@ -15,6 +15,8 @@ def index():
 def process_data():
     # Parse the JSON data from the request
     data = request.json
+    print("Received data:", data)  # Debugging line to inspect the incoming data
+
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
@@ -27,28 +29,8 @@ def process_data():
         "element_count": element_count
     })
 
-# Another example route for testing success
-@app.route("/test", methods=["GET"])
-def test():
-    return jsonify({"success": True, "message": "Test endpoint works!"})
-
 if __name__ == "__main__":
     app.run(host="localhost", port=3000, debug=True)
 
 
-
-#     Root Route (/):
-
-# Simple GET endpoint to confirm that the backend is running.
-# The Figma plugin can use this endpoint to check the connection.
-# Data Processing Route (/process):
-
-# Example POST endpoint for processing data sent from the Figma plugin.
-# Accepts JSON input with an elements array and calculates the number of elements.
-# Test Route (/test):
-
-# A basic GET endpoint to return a success message.
-# Development Server:
-
-# Runs on http://localhost:3000 to match the URL in your JavaScript code.
 
