@@ -2,56 +2,44 @@ figma.showUI(__html__);
 
 figma.ui.onmessage = async (msg) => {
     if (msg.type === 'start-detection') {
-        // Detect all elements on the current page
         await figma.loadAllPagesAsync();
         const allNodes = figma.currentPage.findAll();
 
-        // Check if there are any nodes on the page
-        if (allNodes.length === 0) {
-            console.log('No elements found on the page.');
-            figma.notify('No elements found on the page.');
+        // Filter out elements that are hidden (visible = false)
+        const visibleNodes = allNodes.filter(node => node.visible);
+
+        if (visibleNodes.length === 0) {
+            console.log('No visible elements found on the page.');
+            figma.notify('No visible elements found on the page.');
             figma.closePlugin();
         } else {
-            console.log(`Detected ${allNodes.length} elements:`);
+            console.log(`Detected ${visibleNodes.length} visible elements:`);
+            visibleNodes.forEach((node, index) => {
+                console.log(`Element ${index + 1}:`);
+                console.log(`Name: ${node.name}`);
+                console.log(`Type: ${node.type}`);
 
-            // Serialize nodes into a JSON-compatible structure
-            const serializedNodes = allNodes.map(node => ({
-                name: node.name,
-                type: node.type,
-                width: 'width' in node ? node.width : null,
-                height: 'height' in node ? node.height : null,
-                x: 'x' in node ? node.x : null,
-                y: 'y' in node ? node.y : null,
-                rotation: 'rotation' in node ? node.rotation : null,
-                fills: 'fills' in node && Array.isArray(node.fills) ? node.fills : null,
-                characters: 'characters' in node ? node.characters : null,
-            }));
-
-            console.log("Serialized elements:", serializedNodes);
-
-            try {
-                // Send the serialized nodes to the Flask backend
-                const response = await fetch('http://localhost:3000/process', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ elements: serializedNodes }),
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                // Additional properties
+                if ('width' in node && 'height' in node) {
+                    console.log(`Width: ${node.width}, Height: ${node.height}`);
                 }
+                if ('x' in node && 'y' in node) {
+                    console.log(`Position: (X: ${node.x}, Y: ${node.y})`);
+                }
+                if ('rotation' in node) {
+                    console.log(`Rotation: ${node.rotation}°`);
+                }
+                if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
+                    const firstFill = node.fills[0] as Paint;
+                    console.log(`Fill color: ${JSON.stringify(firstFill)}`);
+                }
+                if ('characters' in node) {
+                    console.log(`Text Content: ${node.characters}`);
+                }
+                console.log('--------------------------------');
+            });
 
-                const responseText = await response.text(); // Get plain text response from Flask
-                console.log(responseText); // Expected: "Elements logged successfully!"
-                figma.notify(`${serializedNodes.length} elements sent successfully!`);
-            } catch (error) {
-                console.error('Error during fetch:', error);
-                figma.notify('Failed to send elements to backend.');
-            }
-
-            figma.closePlugin();
+            figma.notify(`${visibleNodes.length} visible elements detected!`);
         }
     }
 };
