@@ -6,6 +6,7 @@ import seaborn as sns
 import pandas as pd
 
 from components.Feature_Extractor_Component.EGFE_ui_extraction import extract_egfe_ui_elements, save_ui_elements
+from visualizer import visualizer
 
 def visualize_ui_elements(image_folder, json_folder, output_folder, limit=50):
     """Visualizes the extracted UI elements on their corresponding images."""
@@ -82,7 +83,7 @@ def scatter_plot_ui_elements(df):
     plt.show()
 
 
-def clustering_visulaization_by_size(DBSCAN_dataset,clusters):
+def clustering_visualization_by_size(DBSCAN_dataset,clusters):
     # Plot noise points (-1)
     if -1 in clusters: 
         # Assert 'Cluster' in DBSCAN_dataset.columns, "Column 'Cluster' not found in DBSCAN_dataset"
