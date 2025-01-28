@@ -3,7 +3,8 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-from feature_extractor import FeatureExtractorInterface
+
+from components.Feature_Extractor_Component.feature_extractor import FeatureExtractorInterface
 
 class EGFE_FeatureExtraction(FeatureExtractorInterface):
     

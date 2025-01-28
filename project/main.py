@@ -7,8 +7,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Clustering_Component.EGFE_clustering import EGFEClustering
 from components.Clustering_Component.EGFE_clustering_evaluation import EGFEClusteringEvaluation
 from components.Clustering_Component.EGFE_clustering_testing import EGFEClusteringTesting
-from components.Feature_Extractor_Component.EGFE_ui_extraction import aggregate_ui_elements, extract_egfe_ui_elements, extract_json_file_path, split_dataset
-from components.Visualizer_Component.EGFE_visualization import clustering_visualization_by_position, clustering_visulaization_by_size, scatter_plot_ui_elements, visualize_color_consistency, visualize_size_proportionality, visualize_ui_elements
+from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
+from components.Visualizer_Component.EGFE_visualization import clustering_visualization_by_position, scatter_plot_ui_elements, visualize_color_consistency, visualize_size_proportionality, visualize_ui_elements
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 1000) 
@@ -23,15 +23,17 @@ def main():
     egfe_clustering = EGFEClustering()
     egfe_clustering_evaluation = EGFEClusteringEvaluation()
     egfe_clustering_testing = EGFEClusteringTesting()
-    json_file_path = extract_json_file_path(json_folder,limit=10)
+    egfe_ui_extraction = EGFE_FeatureExtraction()
+
+    json_file_path = egfe_ui_extraction.extract_json_file_path(json_folder,limit=10)
 
     ############################# EGFE Dataset #############################################
 
     #extract ui elements 
-    elements, normalized_data = extract_egfe_ui_elements(json_file_path)  
+    elements, normalized_data = egfe_ui_extraction.extract_ui_elements(json_file_path)  
 
     # Aggregate by 'type'
-    aggregated_elements = aggregate_ui_elements(normalized_data)
+    aggregated_elements = egfe_ui_extraction.aggregate_ui_elements(normalized_data)
     print("Aggregated Elements:\n", aggregated_elements)
     print("***************************************************************\n")
 
@@ -39,7 +41,7 @@ def main():
     scatter_plot_ui_elements(normalized_data)
     
     # splitting dataset
-    X_train,X_test = split_dataset(normalized_data)
+    X_train,X_test = egfe_ui_extraction.split_dataset(normalized_data)
     print("Training Data:\n", X_train)
     print("Testing Data:\n", X_test)
     print("***************************************************************\n")
@@ -49,13 +51,13 @@ def main():
     egfe_clustering.handle_outliers(X_train)
     egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
     egfe_clustering.analyze_clusters(DBSCAN_dataset)
-    clustering_visulaization_by_size(DBSCAN_dataset,clusters)
-    clustering_visualization_by_position(DBSCAN_dataset,clusters)
+    # clustering_visulaization_by_size(DBSCAN_dataset,clusters)
+    # clustering_visualization_by_position(DBSCAN_dataset,clusters)
     # visualize_alignment_consistency(DBSCAN_dataset)
     
-    visualize_color_consistency(DBSCAN_dataset)
-    visualize_size_proportionality(DBSCAN_dataset)
-    visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
+    # visualize_color_consistency(DBSCAN_dataset)
+    # visualize_size_proportionality(DBSCAN_dataset)
+    # visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
 
     
     print("#######################################################################################")
