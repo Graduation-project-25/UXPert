@@ -13,61 +13,45 @@ figma.ui.onmessage = async (msg) => {
             figma.closePlugin();
         } else {
             console.log(`Detected ${allNodes.length} elements:`);
-            allNodes.forEach((node, index) => {
-                console.log(`Element ${index + 1}:`);
-                console.log(`Name: ${node.name}`);
-                console.log(`Type: ${node.type}`);
 
-                // Log other properties if applicable
-                if ('width' in node && 'height' in node) {
-                    console.log(`Width: ${node.width}, Height: ${node.height}`);
-                }
-                if ('x' in node && 'y' in node) {
-                    console.log(`Position: (X: ${node.x}, Y: ${node.y})`);
-                }
-                if ('rotation' in node) {
-                    console.log(`Rotation: ${node.rotation}°`);
-                }
-                if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
-                    const firstFill = node.fills[0] as Paint;
-                    console.log(`Fill color: ${JSON.stringify(firstFill)}`);
-                }
-                if ('characters' in node) {
-                    console.log(`Text Content: ${node.characters}`);
-                }
-                console.log('--------------------------------');
-            });
+            // Serialize nodes into a JSON-compatible structure
+            const serializedNodes = allNodes.map(node => ({
+                name: node.name,
+                type: node.type,
+                width: 'width' in node ? node.width : null,
+                height: 'height' in node ? node.height : null,
+                x: 'x' in node ? node.x : null,
+                y: 'y' in node ? node.y : null,
+                rotation: 'rotation' in node ? node.rotation : null,
+                fills: 'fills' in node && Array.isArray(node.fills) ? node.fills : null,
+                characters: 'characters' in node ? node.characters : null,
+            }));
 
-            figma.notify(`${allNodes.length} elements detected!`);
+            console.log("Serialized elements:", serializedNodes);
 
-
-
-            (async () => {
+            try {
                 // Send the serialized nodes to the Flask backend
-                try {
-                    const response = await fetch('http://localhost:3000/process', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ elements: allNodes }), 
-                    });
-                    if (!response.ok) {
-                        console.log("Sending data:", { elements: allNodes });
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    console.log("Sending data:", { elements: allNodes });
+                const response = await fetch('http://localhost:3000/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ elements: serializedNodes }),
+                });
 
-                    const json = await response.text();  // It's plain text, not JSON
-                    console.log(json);  // Expected: "Backend is running successfully!"
-                } catch (error) {
-                    console.error('Error during fetch:', error);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
-                figma.closePlugin()
-            })()
+                const responseText = await response.text(); // Get plain text response from Flask
+                console.log(responseText); // Expected: "Elements logged successfully!"
+                figma.notify(`${serializedNodes.length} elements sent successfully!`);
+            } catch (error) {
+                console.error('Error during fetch:', error);
+                figma.notify('Failed to send elements to backend.');
+            }
 
-
+            figma.closePlugin();
         }
     }
 };
