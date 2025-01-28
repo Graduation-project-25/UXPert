@@ -8,6 +8,7 @@ dist/
 code.js
 
 .env
+.config
 cert.pem
 csr.pem
 key.pem
