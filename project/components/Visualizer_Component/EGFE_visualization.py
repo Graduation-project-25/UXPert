@@ -5,10 +5,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-from components.Feature_Extractor_Component.EGFE_ui_extraction import extract_egfe_ui_elements, save_ui_elements
-from components.visualizer import visualizer
+from components.Visualizer_Component.visualizer import VisualizerInterface
+from project.components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
 
-class EGFE_Visualization(visualizer):
+class EGFE_Visualization(VisualizerInterface):
+    egfe_ui_extraction = EGFE_FeatureExtraction()
     def visualize_ui_elements(self, image_folder, json_folder, output_folder, limit=50):
         """Visualizes the extracted UI elements on their corresponding images."""
         json_files = [f for f in os.listdir(json_folder) if f.endswith('.json')][:limit]
@@ -24,10 +25,10 @@ class EGFE_Visualization(visualizer):
             output_path = os.path.join(output_folder, json_files[index])
 
             print(f"Processing: {json_file_path}")
-            ui_elements, normalized_data = extract_egfe_ui_elements(json_file_path)
+            ui_elements, normalized_data = self.egfe_ui_extraction.extract_ui_elements(json_file_path)
 
             # Save the extracted elements to the output folder
-            save_ui_elements(ui_elements, output_path)
+            self.egfe_ui_extraction.save_ui_elements(ui_elements, output_path)
 
             # Load image and draw bounding boxes
             image = cv2.imread(image_path)

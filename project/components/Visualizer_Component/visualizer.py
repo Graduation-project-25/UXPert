@@ -6,10 +6,8 @@ import seaborn as sns
 import pandas as pd
 from abc import ABC, abstractmethod
 
-from components.Feature_Extractor_Component.EGFE_ui_extraction import extract_egfe_ui_elements, save_ui_elements
 
-
-class Visualizer(ABC):
+class VisualizerInterface(ABC):
 
     @abstractmethod
     def visualize_ui_elements(self, image_folder, json_folder, output_folder, limit=50):
