@@ -1,5 +1,5 @@
 // script.js
-const backendUrl = "http://127.0.0.1:5000"; // Localhost for development
+const backendUrl = "http://localhost:3000"; // Localhost for development
 
 document.getElementById('startDetection').onclick = () => {
     const isChecked = document.getElementById('confirmDetection').checked;
@@ -8,13 +8,21 @@ document.getElementById('startDetection').onclick = () => {
         return;
     }
 
-    // Send a message to the plugin to start detection
-    parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+    try {
+        // Send a message to the plugin to start detection
+        parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+        showMessage('Starting detection...');
+    } catch (error) {
+        console.error('Error sending message to parent:', error);
+        showMessage('Failed to start detection.');
+    } 
     document.getElementById('message').innerText = 'Starting detection...';
 };
 
 
 async function fetchBackend() {
+    console.log("Starting fetch to backend..."); // Debug log
+
     try {
         const response = await fetch(`${backendUrl}/`, {
             method: "GET",

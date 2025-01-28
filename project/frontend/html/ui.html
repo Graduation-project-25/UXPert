@@ -28,7 +28,7 @@
           return;
       }
   
-      // Send a message to the plugin to start detection
+    //   Sending a message from the plugin code to the UI
       parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
       document.getElementById('message').innerText = 'Starting detection...';
   };</script>

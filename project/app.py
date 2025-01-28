@@ -1,70 +1,54 @@
-import os
-import requests
 from flask import Flask, request, jsonify
-from components.Clustering_Component.EGFE_clustering import dbscan_cluster
-from components.Feature_Extractor_Component.EGFE_ui_extraction import extract_egfe_ui_elements, aggregate_ui_elements
-from components.Visualizer_Component.EGFE_visualization import scatter_plot_ui_elements
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
-# Figma API configuration
-FIGMA_API_BASE = "https://api.figma.com/v1"
-FIGMA_TOKEN = "figd_Bz3iqc9-MD4gr1P3CVPHoBjVq-bzkznu1dPWcX4d"  # Replace with your Figma Token
+# Root route for testing connectivity
+@app.route("/", methods=["GET"])
+def index():
+    print("Root route accessed")  # Log when the route is accessed
+    return "Backend is running successfully!"
 
-@app.route("/")
-def home():
-    return "Figma Integration Service is Running!"
+# Example route for processing data
+@app.route("/process", methods=["POST"])
+def process_data():
+    # Parse the JSON data from the request
+    data = request.json
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
 
-# Fetch file details from Figma
-@app.route("/figma/file/<file_key>", methods=["GET"])
-def get_figma_file(file_key):
-    url = f"{FIGMA_API_BASE}/files/{file_key}"
-    headers = {"Authorization": f"Bearer {FIGMA_TOKEN}"}
-
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return jsonify(response.json())
-    else:
-        return jsonify({"error": "Failed to fetch Figma file"}), response.status_code
-
-# Extract UI elements and process them
-@app.route("/figma/file/<file_key>/process", methods=["POST"])
-def process_figma_file(file_key):
-    url = f"{FIGMA_API_BASE}/files/{file_key}"
-    headers = {"Authorization": f"Bearer {FIGMA_TOKEN}"}
-    response = requests.get(url, headers=headers)
-
-    if response.status_code != 200:
-        return jsonify({"error": "Failed to fetch Figma file"}), response.status_code
-
-    # Extract UI elements from Figma response
-    figma_data = response.json()
-    json_file_path = f"./data/figma_{file_key}.json"
-    with open(json_file_path, "w") as f:
-        f.write(response.text)
-
-    elements, normalized_data = extract_egfe_ui_elements([json_file_path])
-    aggregated_elements = aggregate_ui_elements(normalized_data)
-
-    # Visualize data
-    scatter_plot_ui_elements(normalized_data)
-
-    # Perform clustering
-    clustered_data, dbscan_dataset, clusters = dbscan_cluster(normalized_data)
+    # Perform some processing (example: counting the number of elements)
+    elements = data.get("elements", [])
+    element_count = len(elements)
 
     return jsonify({
-        "status": "success",
-        "aggregated_elements": aggregated_elements.to_dict(),
-        "clusters": clusters,
+        "message": "Data processed successfully!",
+        "element_count": element_count
     })
 
-# Open a Figma file directly in Figma Desktop
-@app.route("/figma/open/<file_key>", methods=["GET"])
-def open_figma_file(file_key):
-    figma_url = f"figma://file/{file_key}"
-    return jsonify({"figma_url": figma_url})
+# Another example route for testing success
+@app.route("/test", methods=["GET"])
+def test():
+    return jsonify({"success": True, "message": "Test endpoint works!"})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="localhost", port=3000, debug=True)
 
-# curl -H "Authorization: Bearer <figd_Bz3iqc9-MD4gr1P3CVPHoBjVq-bzkznu1dPWcX4d>" "https://api.figma.com/v1/files/<YOUR_FILE_KEY>"
+
+
+#     Root Route (/):
+
+# Simple GET endpoint to confirm that the backend is running.
+# The Figma plugin can use this endpoint to check the connection.
+# Data Processing Route (/process):
+
+# Example POST endpoint for processing data sent from the Figma plugin.
+# Accepts JSON input with an elements array and calculates the number of elements.
+# Test Route (/test):
+
+# A basic GET endpoint to return a success message.
+# Development Server:
+
+# Runs on http://localhost:3000 to match the URL in your JavaScript code.
+
