@@ -1,36 +1,36 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from flask_cors import CORS
 
+# Initialize the Flask application
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
 
-# Root route for testing connectivity
-@app.route("/", methods=["GET"])
-def index():
-    print("Root route accessed")  # Log when the route is accessed
-    return "Backend is running successfully!"
+# Enable CORS with credentials support
+CORS(app, supports_credentials=True)
 
-# Example route for processing data
-@app.route("/process", methods=["POST"])
-def process_data():
-    # Parse the JSON data from the request
-    data = request.json
-    print("Received data:", data)  # Debugging line to inspect the incoming data
+# Define the '/process' route to handle POST and OPTIONS requests
+@app.route('/process', methods=['POST', 'OPTIONS'])
+def process_elements():
+    if request.method == 'OPTIONS':
+        # Handle preflight request for CORS
+        return '', 200  # Respond with HTTP 200 for preflight
 
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
+    # Parse JSON data from the request
+    data = request.get_json()
+    elements = data.get('elements', [])
 
-    # Perform some processing (example: counting the number of elements)
-    elements = data.get("elements", [])
-    element_count = len(elements)
+    # Log the received elements to the console
+    print("Received elements from Figma plugin:")
+    for index, element in enumerate(elements):
+        print(f"Element {index + 1}: {element}")
 
-    return jsonify({
-        "message": "Data processed successfully!",
-        "element_count": element_count
-    })
+    # Send a response back to the client
+    return "Elements logged successfully!", 200
 
-if __name__ == "__main__":
-    app.run(host="localhost", port=3000, debug=True)
+# Add a simple route for the root path
+@app.route('/', methods=['GET'])
+def home():
+    return "Welcome to the Flask server!", 200
 
-
-
+# Run the application
+if __name__ == '__main__':
+    app.run(port=3000)
