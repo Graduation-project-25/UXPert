@@ -103,13 +103,13 @@
                                 "strokeWeight": 1.0,
                                 "strokeAlign": "INSIDE",
                                 "absoluteBoundingBox": {
-                                    "x": 12.0,
+                                    "x": -35.0,
                                     "y": -182.0,
                                     "width": 275.0,
                                     "height": 107.0
                                 },
                                 "absoluteRenderBounds": {
-                                    "x": 12.0,
+                                    "x": -35.0,
                                     "y": -182.0,
                                     "width": 275.0,
                                     "height": 107.0
@@ -119,51 +119,6 @@
                                     "horizontal": "LEFT"
                                 },
                                 "effects": [],
-                                "interactions": []
-                            },
-                            {
-                                "id": "2:3",
-                                "name": "Ellipse 1",
-                                "type": "ELLIPSE",
-                                "scrollBehavior": "SCROLLS",
-                                "blendMode": "PASS_THROUGH",
-                                "fills": [
-                                    {
-                                        "blendMode": "NORMAL",
-                                        "type": "SOLID",
-                                        "color": {
-                                            "r": 1.0,
-                                            "g": 0.0,
-                                            "b": 0.0,
-                                            "a": 1.0
-                                        }
-                                    }
-                                ],
-                                "strokes": [],
-                                "strokeWeight": 1.0,
-                                "strokeAlign": "INSIDE",
-                                "absoluteBoundingBox": {
-                                    "x": 39.0,
-                                    "y": 30.0,
-                                    "width": 149.0,
-                                    "height": 144.0
-                                },
-                                "absoluteRenderBounds": {
-                                    "x": 39.0,
-                                    "y": 30.0,
-                                    "width": 149.0,
-                                    "height": 144.0
-                                },
-                                "constraints": {
-                                    "vertical": "TOP",
-                                    "horizontal": "LEFT"
-                                },
-                                "effects": [],
-                                "arcData": {
-                                    "startingAngle": 0.0,
-                                    "endingAngle": 6.2831854820251465,
-                                    "innerRadius": 0.0
-                                },
                                 "interactions": []
                             }
                         ],
@@ -220,6 +175,51 @@
                         },
                         "effects": [],
                         "interactions": []
+                    },
+                    {
+                        "id": "2:3",
+                        "name": "Ellipse 1",
+                        "type": "ELLIPSE",
+                        "scrollBehavior": "SCROLLS",
+                        "blendMode": "PASS_THROUGH",
+                        "fills": [
+                            {
+                                "blendMode": "NORMAL",
+                                "type": "SOLID",
+                                "color": {
+                                    "r": 1.0,
+                                    "g": 0.0,
+                                    "b": 0.0,
+                                    "a": 1.0
+                                }
+                            }
+                        ],
+                        "strokes": [],
+                        "strokeWeight": 1.0,
+                        "strokeAlign": "INSIDE",
+                        "absoluteBoundingBox": {
+                            "x": -410.0,
+                            "y": -303.0,
+                            "width": 149.0,
+                            "height": 144.0
+                        },
+                        "absoluteRenderBounds": {
+                            "x": -410.0,
+                            "y": -303.0,
+                            "width": 149.0,
+                            "height": 144.0
+                        },
+                        "constraints": {
+                            "vertical": "TOP",
+                            "horizontal": "LEFT"
+                        },
+                        "effects": [],
+                        "arcData": {
+                            "startingAngle": 0.0,
+                            "endingAngle": 6.2831854820251465,
+                            "innerRadius": 0.0
+                        },
+                        "interactions": []
                     }
                 ],
                 "backgroundColor": {
@@ -242,7 +242,7 @@
             }
         ]
     },
-    "last_modified": "2025-01-28T19:43:41Z",
+    "last_modified": "2025-01-28T21:55:05Z",
     "name": "simple test design",
     "file_key": "MJhMxsdLTxSLTZv59hEqKK"
 }
