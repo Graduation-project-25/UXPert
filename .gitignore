@@ -21,3 +21,4 @@ MASC/
 WebUI/
 __pycache__/
 
+.config
