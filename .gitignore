@@ -9,9 +9,11 @@ code.js
 
 .env
 .config
+figma_features.json
 cert.pem
 csr.pem
 key.pem
+
 
 RICO/
 EGFE/
