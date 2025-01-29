@@ -1,4 +1,13 @@
 figma.showUI(__html__);
+// async function fetchUserDesigns(userId: string) {
+//     try {
+//         const response = await fetch(`http://localhost:3000/designs/${userId}`);
+//         const designs = await response.json();
+//         console.log("User Designs:", designs);
+//     } catch (error) {
+//         console.error("Error fetching designs:", error);
+//     }
+// }
 
 figma.ui.onmessage = async (msg) => {
     if (msg.type === 'start-detection') {
@@ -19,6 +28,7 @@ figma.ui.onmessage = async (msg) => {
 
             // Serialize nodes into a JSON-compatible structure
             const serializedNodes = visibleNodes.map(node => ({
+                
                 name: node.name,
                 type: node.type,
                 width: 'width' in node ? node.width : null,
@@ -32,26 +42,31 @@ figma.ui.onmessage = async (msg) => {
 
             console.log("Serialized visible elements:", serializedNodes);
 
-            try {
-                // Send the serialized nodes to the Flask backend
-                const response = await fetch('http://localhost:3000/process', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ elements: serializedNodes }),
-                });
+            const userId = "user123";  // This should be dynamically set based on the logged-in user
 
+            try {
+                const response = await fetch("http://localhost:3000/process", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,  // Include the user ID
+                        elements: serializedNodes,  // Send extracted UI elements
+                    }),
+                });
+            
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-
-                const responseText = await response.text(); // Get plain text response from Flask
-                console.log(responseText); // Expected: "Elements logged successfully!"
+            
+                const responseData = await response.json();
+                console.log(responseData);
                 figma.notify(`${serializedNodes.length} visible elements sent successfully!`);
+                // fetchUserDesigns("user123")
             } catch (error) {
-                console.error('Error during fetch:', error);
-                figma.notify('Failed to send elements to backend.');
+                console.error("Error during fetch:", error);
+                figma.notify("Failed to send elements to backend.");
             }
 
             figma.closePlugin();
