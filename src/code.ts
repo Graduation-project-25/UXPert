@@ -15,32 +15,40 @@ figma.ui.onmessage = async (msg) => {
         await figma.loadAllPagesAsync();
         const allNodes = figma.currentPage.findAll();
 
-        // Filter out elements that are hidden (visible = false)
+        // Filter for visible nodes only
         const visibleNodes = allNodes.filter(node => node.visible);
 
-        // Check if there are any visible nodes
-        if (visibleNodes.length === 0) {
-            console.log('No visible elements found on the page.');
-            figma.notify('No visible elements found on the page.');
+        // Further filter to include only Frames and elements inside Frames
+        const filteredNodes = visibleNodes.filter(node => 
+            node.type === "FRAME" || (node.parent && node.parent.type === "FRAME")
+        );
+
+        // Check if there are any valid elements left after filtering
+        if (filteredNodes.length === 0) {
+            console.log('No valid Frames or elements inside Frames found.');
+            figma.notify('No valid Frames or elements inside Frames found.');
             figma.closePlugin();
-        } else {
-            console.log(`Detected ${visibleNodes.length} visible elements:`);
+            return;
+        }
 
-            // Serialize nodes into a JSON-compatible structure
-            const serializedNodes = visibleNodes.map(node => ({
-                
-                name: node.name,
-                type: node.type,
-                width: 'width' in node ? node.width : null,
-                height: 'height' in node ? node.height : null,
-                x: 'x' in node ? node.x : null,
-                y: 'y' in node ? node.y : null,
-                rotation: 'rotation' in node ? node.rotation : null,
-                fills: 'fills' in node && Array.isArray(node.fills) ? node.fills : null,
-                characters: 'characters' in node ? node.characters : null,
-            }));
+        console.log(`Detected ${filteredNodes.length} valid Frames or elements inside Frames:`);
 
-            console.log("Serialized visible elements:", serializedNodes);
+        // Serialize nodes into a JSON-compatible structure
+        const serializedNodes = filteredNodes.map(node => ({
+            name: node.name,
+            type: node.type,
+            width: 'width' in node ? node.width : null,
+            height: 'height' in node ? node.height : null,
+            x: 'x' in node ? node.x : null,
+            y: 'y' in node ? node.y : null,
+            rotation: 'rotation' in node ? node.rotation : null,
+            fills: 'fills' in node && Array.isArray(node.fills) ? node.fills : null,
+            characters: 'characters' in node ? node.characters : null,
+            insideFrame: node.type === "FRAME" ? false : true, // True if the element is inside a Frame
+            frameName: node.type === "FRAME" ? node.name : node.parent?.name, // If it's a Frame, use its own name
+        }));
+
+        console.log("Serialized Frames and elements inside Frames:", serializedNodes);
 
             const userId = "user123";  // This should be dynamically set based on the logged-in user
 
@@ -60,16 +68,15 @@ figma.ui.onmessage = async (msg) => {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
             
-                const responseData = await response.json();
-                console.log(responseData);
-                figma.notify(`${serializedNodes.length} visible elements sent successfully!`);
+                const responseText = await response.text(); // Get plain text response from Flask
+            console.log(responseText); // Expected: "Elements logged successfully!"
+            figma.notify(`${serializedNodes.length} Frames or elements inside Frames sent successfully!`);
                 // fetchUserDesigns("user123")
             } catch (error) {
                 console.error("Error during fetch:", error);
                 figma.notify("Failed to send elements to backend.");
             }
 
-            figma.closePlugin();
-        }
+        figma.closePlugin();
     }
 };
