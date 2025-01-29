@@ -4,11 +4,11 @@ import pandas as pd
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from components.Clustering_Component.EGFE_clustering import analyze_clusters, dbscan_cluster, handle_outliers
-from components.Clustering_Component.EGFE_clustering_evaluation import evaluate_clustering
-from components.Clustering_Component.EGFE_clustering_testing import assign_test_clusters, evaluate_test_clusters
-from components.Feature_Extractor_Component.EGFE_ui_extraction import aggregate_ui_elements, extract_egfe_ui_elements, extract_json_file_path, split_dataset
-from components.Visualizer_Component.EGFE_visualization import clustering_visualization_by_position, clustering_visulaization_by_size, scatter_plot_ui_elements, visualize_color_consistency, visualize_size_proportionality, visualize_ui_elements
+from components.Clustering_Component.EGFE_clustering import EGFEClustering
+from components.Clustering_Component.EGFE_clustering_evaluation import EGFEClusteringEvaluation
+from components.Clustering_Component.EGFE_clustering_testing import EGFEClusteringTesting
+from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
+from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 1000) 
@@ -20,55 +20,60 @@ output_folder = dataset_folder + '/extractedFeatures'
 os.makedirs(output_folder, exist_ok=True)
 
 def main():
-    json_file_path = extract_json_file_path(json_folder,limit=10)
+    egfe_clustering = EGFEClustering()
+    egfe_clustering_evaluation = EGFEClusteringEvaluation()
+    egfe_clustering_testing = EGFEClusteringTesting()
+    egfe_ui_extraction = EGFE_FeatureExtraction()
+    egfe_visualization = EGFE_Visualization()
+
+    json_file_path = egfe_ui_extraction.extract_json_file_path(json_folder,limit=10)
 
     ############################# EGFE Dataset #############################################
 
     #extract ui elements 
-    elements, normalized_data = extract_egfe_ui_elements(json_file_path)  
+    elements, normalized_data = egfe_ui_extraction.extract_ui_elements(json_file_path)  
 
     # Aggregate by 'type'
-    aggregated_elements = aggregate_ui_elements(normalized_data)
+    aggregated_elements = egfe_ui_extraction.aggregate_ui_elements(normalized_data)
     print("Aggregated Elements:\n", aggregated_elements)
     print("***************************************************************\n")
 
     # Scatter plot of UI elements
-    scatter_plot_ui_elements(normalized_data)
+    egfe_visualization.scatter_plot_ui_elements(normalized_data)
     
     # splitting dataset
-    X_train,X_test = split_dataset(normalized_data)
+    X_train,X_test = egfe_ui_extraction.split_dataset(normalized_data)
     print("Training Data:\n", X_train)
     print("Testing Data:\n", X_test)
     print("***************************************************************\n")
 
     # DBSCAN Clustering
-    X_train,DBSCAN_dataset, clusters = dbscan_cluster(X_train)
-    handle_outliers(X_train)
-    evaluate_clustering(DBSCAN_dataset)
-    analyze_clusters(DBSCAN_dataset)
-    clustering_visulaization_by_size(DBSCAN_dataset,clusters)
-    clustering_visualization_by_position(DBSCAN_dataset,clusters)
-    # visualize_alignment_consistency(DBSCAN_dataset)
-    
-    visualize_color_consistency(DBSCAN_dataset)
-    visualize_size_proportionality(DBSCAN_dataset)
-    visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
+    X_train,DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster(X_train)
+    egfe_clustering.handle_outliers(X_train)
+    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+    egfe_clustering.analyze_clusters(DBSCAN_dataset)
+    egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
+    egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
+    egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
+    egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
+    egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
+    egfe_visualization.visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
 
     
     print("#######################################################################################")
 
     # Test data clustering
     print("Clustering test data...")
-    clustered_test_data, _, _ = dbscan_cluster(X_test)
+    clustered_test_data, _, _ = egfe_clustering.dbscan_cluster(X_test)
 
     print("Evaluating test data clustering...")
-    evaluate_clustering(clustered_test_data)
+    egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
 
     # Assign test clusters
-    new_x_test = assign_test_clusters(DBSCAN_dataset, X_test, clusters)
+    new_x_test = egfe_clustering_testing.assign_test_clusters(DBSCAN_dataset, X_test, clusters)
 
     # Evaluate test results
-    evaluate_test_clusters(new_x_test, DBSCAN_dataset)
+    egfe_clustering_testing.evaluate_test_clusters(new_x_test, DBSCAN_dataset)
 
 
 

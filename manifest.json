@@ -12,8 +12,8 @@
   ],
   "ui": "project/frontend/html/ui.html",
   "networkAccess": {
-    "allowedDomains": [
-      "none"
-    ]
+    "allowedDomains": ["*"],
+    "reasoning": "MyPlugin queries responses",
+    "devAllowedDomains": ["http://localhost:3000/"]
   }
 }
