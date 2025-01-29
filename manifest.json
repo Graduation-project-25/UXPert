@@ -2,6 +2,7 @@
   "name": "UXPert",
   "id": "1424055249669342851",
   "api": "1.0.0",
+  "permissions": ["currentuser"],
   "main": "dist/code.js",
   "capabilities": [],
   "enableProposedApi": false,

@@ -24,17 +24,17 @@ def process_elements():
 
     # Parse JSON data from the request
     data = request.get_json()
-    user_id = data.get("user_id", "unknown_user")
-    user_name = data.get("user_name", "Unknown User")
-    design_name = data.get("design_name", "Untitled Design")
+    # user_id = data.get("user_id", "unknown_user")
+    user_name = data.get('user_name', "Unknown User")
+    design_name = data.get('design_name', "Untitled Design")
     elements = data.get('elements', [])
 
-    if not user_id or not elements:
+    if  not elements:
         return jsonify({"error": "Missing user_id or elements"}), 400
 
     # Create a document for MongoDB
     design_document = {
-        "user_id": user_id,
+       
         "user_name": user_name,
         "design_name": design_name,
         "elements": elements, 
@@ -42,7 +42,7 @@ def process_elements():
     }
 
     # Log the received elements
-    print(f"Received design from {user_name} ({user_id}): {design_name}")
+    print(f"Received design from {user_name} : {design_name}")
     for index, element in enumerate(elements):
         print(f"Element {index + 1}: {element}")
 
