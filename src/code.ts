@@ -1,16 +1,12 @@
 figma.showUI(__html__);
-// async function fetchUserDesigns(userId: string) {
-//     try {
-//         const response = await fetch(`http://localhost:3000/designs/${userId}`);
-//         const designs = await response.json();
-//         console.log("User Designs:", designs);
-//     } catch (error) {
-//         console.error("Error fetching designs:", error);
-//     }
-// }
 
 figma.ui.onmessage = async (msg) => {
     if (msg.type === 'start-detection') {
+        // Get user information
+        const userId = figma.currentUser?.id || "unknown_user";
+        // const userName = figma.currentUser ? figma.currentUser.name  : "Unknown User";
+        // const designName = figma.root.name || "Untitled Design";
+
         // Load all pages asynchronously
         await figma.loadAllPagesAsync();
         const allNodes = figma.currentPage.findAll();
@@ -23,7 +19,6 @@ figma.ui.onmessage = async (msg) => {
             node.type === "FRAME" || (node.parent && node.parent.type === "FRAME")
         );
 
-        // Check if there are any valid elements left after filtering
         if (filteredNodes.length === 0) {
             console.log('No valid Frames or elements inside Frames found.');
             figma.notify('No valid Frames or elements inside Frames found.');
@@ -44,38 +39,39 @@ figma.ui.onmessage = async (msg) => {
             rotation: 'rotation' in node ? node.rotation : null,
             fills: 'fills' in node && Array.isArray(node.fills) ? node.fills : null,
             characters: 'characters' in node ? node.characters : null,
-            insideFrame: node.type === "FRAME" ? false : true, // True if the element is inside a Frame
-            frameName: node.type === "FRAME" ? node.name : node.parent?.name, // If it's a Frame, use its own name
+            insideFrame: node.type === "FRAME" ? false : true,
+            frameName: node.type === "FRAME" ? node.name : node.parent?.name,
         }));
 
         console.log("Serialized Frames and elements inside Frames:", serializedNodes);
+        const user_name = msg.user_name || "Unknown User";
+        const design_name = msg.design_name || "Untitled Design";
 
-            const userId = "user123";  // This should be dynamically set based on the logged-in user
+        try {
+            const response = await fetch("http://localhost:3000/process", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    user_id: userId,  
+                    user_name,
+                    design_name,
+                    elements: serializedNodes,  
+                }),
+            });
 
-            try {
-                const response = await fetch("http://localhost:3000/process", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        user_id: userId,  // Include the user ID
-                        elements: serializedNodes,  // Send extracted UI elements
-                    }),
-                });
-            
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-            
-                const responseText = await response.text(); // Get plain text response from Flask
-            console.log(responseText); // Expected: "Elements logged successfully!"
-            figma.notify(`${serializedNodes.length} Frames or elements inside Frames sent successfully!`);
-                // fetchUserDesigns("user123")
-            } catch (error) {
-                console.error("Error during fetch:", error);
-                figma.notify("Failed to send elements to backend.");
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
             }
+
+            const responseText = await response.text(); 
+            console.log(responseText);
+            figma.notify(`${serializedNodes.length} Frames or elements inside Frames sent successfully!`);
+        } catch (error) {
+            console.error("Error during fetch:", error);
+            figma.notify("Failed to send elements to backend.");
+        }
 
         figma.closePlugin();
     }
