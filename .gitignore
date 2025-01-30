@@ -3,20 +3,23 @@
 *.log.*
 node_modules
 
+#plugin
+code.js
 out/
 dist/
-code.js
 
-.env
-.config
 figma_features.json
-cert.pem
-csr.pem
-key.pem
 
-
+#Datasets
 RICO/
 EGFE/
 MASC/
 WebUI/
+
+#python
 __pycache__/
+
+#configuration
+.env
+.config
+csr/
