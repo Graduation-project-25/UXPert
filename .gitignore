@@ -9,7 +9,7 @@ code.js
 
 .env
 .config
-figma_features.json
+design_features.json
 cert.pem
 csr.pem
 key.pem
