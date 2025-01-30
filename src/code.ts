@@ -1,7 +1,10 @@
+// Figma Plugin Code
+
 figma.showUI(__html__);
 
 figma.ui.onmessage = async (msg) => {
     if (msg.type === 'start-detection') {
+        // Load all pages and find visible nodes (Frames or elements inside Frames)
         await figma.loadAllPagesAsync();
         const allNodes = figma.currentPage.findAll();
         const visibleNodes = allNodes.filter(node => node.visible);
@@ -15,6 +18,7 @@ figma.ui.onmessage = async (msg) => {
             return;
         }
 
+        // Serialize UI elements data
         const serializedNodes = filteredNodes.map(node => ({
             name: node.name,
             type: node.type,
@@ -29,16 +33,14 @@ figma.ui.onmessage = async (msg) => {
             frameName: node.type === "FRAME" ? node.name : node.parent?.name,
         }));
 
-     
         const user_name = figma.currentUser ? figma.currentUser.name : "Unknown User";
-
-       
         const design_name = figma.root.name ?? "Untitled Design";
 
         console.log(`Detected User: ${user_name}`);
         console.log(`Detected Design Name: ${design_name}`);
 
         try {
+            // Send serialized nodes to backend
             const response = await fetch("http://localhost:3000/process", {
                 method: "POST",
                 headers: {
@@ -63,6 +65,7 @@ figma.ui.onmessage = async (msg) => {
             figma.notify("Failed to send elements to backend.");
         }
 
+        // Close the plugin after processing
         figma.closePlugin();
     }
 };
