@@ -24,10 +24,8 @@ figma.ui.onmessage = async (msg) => {
             type: node.type,
             width: 'width' in node ? node.width : null,
             height: 'height' in node ? node.height : null,
-            position: { 
-                x: 'x' in node ? node.x : null, 
-                y: 'y' in node ? node.y : null 
-            },
+            x: 'x' in node ? node.x : null,
+            y: 'y' in node ? node.y : null,
             rotation: 'rotation' in node ? node.rotation : null,
             fills: 'fills' in node && Array.isArray(node.fills) ? node.fills : null,
             characters: 'characters' in node ? node.characters : null,
@@ -81,6 +79,7 @@ figma.ui.onmessage = async (msg) => {
             // figma.notify(`Clustering completed! Found ${clusterResult.clusters.length} clusters.`);
         } catch (error) {
             console.error("Error during fetch:", error);
+            figma.notify("Failed to send elements to backend.");
             figma.notify("Failed to process elements.");
         }
 
