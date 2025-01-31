@@ -1,7 +1,10 @@
+// Figma Plugin Code
+
 figma.showUI(__html__);
 
 figma.ui.onmessage = async (msg) => {
     if (msg.type === 'start-detection') {
+        // Load all pages and find visible nodes (Frames or elements inside Frames)
         await figma.loadAllPagesAsync();
         const allNodes = figma.currentPage.findAll();
         const visibleNodes = allNodes.filter(node => node.visible);
@@ -15,6 +18,7 @@ figma.ui.onmessage = async (msg) => {
             return;
         }
 
+        // Serialize UI elements data
         const serializedNodes = filteredNodes.map(node => ({
             name: node.name,
             type: node.type,
@@ -39,6 +43,7 @@ figma.ui.onmessage = async (msg) => {
 
         try {
             // Step 1: Send extracted features to /process
+            // Send serialized nodes to backend
             const processResponse = await fetch("http://localhost:3000/process", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -72,6 +77,7 @@ figma.notify(`Clustering completed! Found ${clusterResult.clusters.length} clust
             figma.notify("Failed to send elements or cluster data.");
         }
 
+        // Close the plugin after processing
         figma.closePlugin();
     }
 };

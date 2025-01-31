@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -18,9 +19,6 @@ with open('.config', 'r') as f:
 
 # Initialize the Flask application
 app = Flask(__name__)
-client = MongoClient("mongodb://localhost:27017/") 
-db = client[config["DATABASE_NAME"]]  
-designs_collection = db[config["COLLECTION_NAME"]]  
 
 CORS(app, supports_credentials=True)
 clustering = EGFEClustering()
@@ -72,34 +70,33 @@ def process_elements():
 
     # Parse JSON data from the request
     data = request.get_json()
-    # user_id = data.get("user_id", "unknown_user")
     user_name = data.get('user_name', "Unknown User")
     design_name = data.get('design_name', "Untitled Design")
     elements = data.get('elements', [])
 
-    if  not elements:
-        return jsonify({"error": "Missing user_id or elements"}), 400
-
-    # Create a document for MongoDB
-    design_document = {
-       
-        "user_name": user_name,
-        "design_name": design_name,
-        "elements": elements, 
-        "created_at": datetime.utcnow(), 
-    }
+    if not elements:
+        return jsonify({"error": "Missing user_name or elements"}), 400
 
     # Log the received elements
     print(f"Received design from {user_name} : {design_name}")
     for index, element in enumerate(elements):
         print(f"Element {index + 1}: {element}")
 
-    # Save to MongoDB
-    result = designs_collection.insert_one(design_document)
+    # Save the features to a JSON file
+    features = {
+        "user_name": user_name,
+        "design_name": design_name,
+        "elements": elements,
+        
+    }
+
+    with open('design_features.json', 'w') as json_file:
+        json.dump(features, json_file, indent=4)
+    
+    print("Design features have been saved to 'design_features.json'.")
 
     return jsonify({
-        "message": "Design saved successfully!",
-        "design_id": str(result.inserted_id),
+        "message": "Design features saved successfully!",
         "status": 200
     }), 200
 

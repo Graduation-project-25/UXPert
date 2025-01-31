@@ -12,7 +12,6 @@ from components.Visualizer_Component.EGFE_visualization import EGFE_Visualizatio
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 1000) 
-
 dataset_folder = './data/raw/EGFE'
 image_folder  = dataset_folder + '/images'  
 json_folder  = dataset_folder + '/jsons' 
@@ -74,7 +73,6 @@ def main():
 
     # Evaluate test results
     egfe_clustering_testing.evaluate_test_clusters(new_x_test, DBSCAN_dataset)
-
 
 
 

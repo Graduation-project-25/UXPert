@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.cluster import DBSCAN
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
 from components.Clustering_Component.clustering import ClusteringInterface
+from project.components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from utils.csv_exporting import export_to_csv
 
 class EGFEClustering(ClusteringInterface):
@@ -65,6 +66,16 @@ class EGFEClustering(ClusteringInterface):
                                         (group['position.y'].max() - group['position.y'].min()))
             alignment_consistency = consistency.calculate_alignment_consistency(group)
             consistency_scores = consistency.evaluate_rule(group)
+            
+
+            # Testing Factory Design Pattern
+            heuristic_instance = HeuristicFactory.check_rule("consistency")
+            print("Factory pattern Testing" , heuristic_instance.evaluate_rule(group))
+            minimalist_instance = HeuristicFactory.check_rule("minimalist")
+            minimalist_instance.evaluate_rule(group)  # Outputs "Minimalist Rule"
+
+            #########
+
             # Store analysis
             cluster_analysis.append({
                 "Cluster": cluster_id,
@@ -86,3 +97,4 @@ class EGFEClustering(ClusteringInterface):
         # export_to_csv(analysis_df, "cluster_analysis.csv")
 
         # return analysis_df
+

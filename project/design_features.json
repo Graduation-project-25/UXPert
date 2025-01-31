@@ -1,0 +1,110 @@
+{
+    "user_name": "Asmaa",
+    "design_name": "simple test design",
+    "elements": [
+        {
+            "name": "iPhone 16 - 1",
+            "type": "FRAME",
+            "width": 393,
+            "height": 852,
+            "x": -83,
+            "y": -501,
+            "rotation": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "visible": true,
+                    "opacity": 1,
+                    "blendMode": "NORMAL",
+                    "color": {
+                        "r": 1,
+                        "g": 1,
+                        "b": 1
+                    },
+                    "boundVariables": {}
+                }
+            ],
+            "characters": null,
+            "insideFrame": false,
+            "frameName": "iPhone 16 - 1"
+        },
+        {
+            "name": "Text",
+            "type": "TEXT",
+            "width": 66,
+            "height": 39,
+            "x": 144,
+            "y": 107,
+            "rotation": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "visible": true,
+                    "opacity": 1,
+                    "blendMode": "NORMAL",
+                    "color": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 0
+                    },
+                    "boundVariables": {}
+                }
+            ],
+            "characters": "Text",
+            "insideFrame": true,
+            "frameName": "iPhone 16 - 1"
+        },
+        {
+            "name": "Rectangle 1",
+            "type": "RECTANGLE",
+            "width": 275,
+            "height": 107,
+            "x": 48,
+            "y": 319,
+            "rotation": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "visible": true,
+                    "opacity": 1,
+                    "blendMode": "NORMAL",
+                    "color": {
+                        "r": 0.11521240323781967,
+                        "g": 0.01626533828675747,
+                        "b": 0.6099478602409363
+                    },
+                    "boundVariables": {}
+                }
+            ],
+            "characters": null,
+            "insideFrame": true,
+            "frameName": "iPhone 16 - 1"
+        },
+        {
+            "name": "Ellipse 1",
+            "type": "ELLIPSE",
+            "width": 149,
+            "height": 144,
+            "x": 122,
+            "y": 242,
+            "rotation": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "visible": true,
+                    "opacity": 1,
+                    "blendMode": "NORMAL",
+                    "color": {
+                        "r": 1,
+                        "g": 0,
+                        "b": 0
+                    },
+                    "boundVariables": {}
+                }
+            ],
+            "characters": null,
+            "insideFrame": true,
+            "frameName": "iPhone 16 - 1"
+        }
+    ]
+}
