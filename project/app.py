@@ -2,6 +2,13 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from pymongo import MongoClient
+import pandas as pd
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from components.Clustering_Component.EGFE_clustering import EGFEClustering
+from components.Clustering_Component.EGFE_clustering_evaluation import EGFEClusteringEvaluation
+from components.Clustering_Component.EGFE_clustering_testing import EGFEClusteringTesting
 
 config = {}
 with open('.config', 'r') as f:
@@ -16,6 +23,47 @@ db = client[config["DATABASE_NAME"]]
 designs_collection = db[config["COLLECTION_NAME"]]  
 
 CORS(app, supports_credentials=True)
+clustering = EGFEClustering()
+evaluation = EGFEClusteringEvaluation()
+testing = EGFEClusteringTesting()
+
+@app.route('/cluster', methods=['POST'])
+def cluster_elements():
+    try:
+        # Step 1: Receive Extracted Features
+        data = request.get_json()
+        df = pd.DataFrame(data)  # Convert JSON to DataFrame
+
+        # Step 2: Apply DBSCAN Clustering
+        X_train, DBSCAN_dataset, clusters = clustering.dbscan_cluster(df)
+
+        # Step 3: Evaluate Clustering Quality
+        evaluation.evaluate_clustering(DBSCAN_dataset)
+
+        # Step 4: Analyze Clusters (Consistency Scores)
+        clustering.analyze_clusters(DBSCAN_dataset)
+
+        return jsonify({"message": "Clustering completed", "clusters": clusters.tolist()})
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/assign-test-clusters', methods=['POST'])
+def assign_test_clusters():
+    try:
+        # Step 1: Receive Training & Test Data
+        data = request.get_json()
+        X_train = pd.DataFrame(data['train'])
+        X_test = pd.DataFrame(data['test'])
+
+        # Step 2: Assign Clusters to Test Elements
+        assigned_clusters = testing.assign_test_clusters(X_train, X_test, None)
+
+        return jsonify({"message": "Test Clustering Done", "clusters": assigned_clusters.to_dict(orient='records')})
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    
 
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():

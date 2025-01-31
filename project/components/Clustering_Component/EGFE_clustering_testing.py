@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 from scipy.spatial.distance import cdist
 
-from project.components.Clustering_Component.clustering_testing import ClusteringTestingInterface
-from project.components.Clustering_Component.EGFE_clustering import EGFEClustering
+from components.Clustering_Component.clustering_testing import ClusteringTestingInterface
+from components.Clustering_Component.EGFE_clustering import EGFEClustering
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 200) 
