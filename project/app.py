@@ -38,7 +38,7 @@ def process_elements():
         "user_name": user_name,
         "design_name": design_name,
         "elements": elements,
-        "created_at": datetime.utcnow().isoformat()  # Convert datetime to string for JSON
+        
     }
 
     with open('design_features.json', 'w') as json_file:
