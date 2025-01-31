@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.cluster import DBSCAN
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
 from components.Clustering_Component.clustering import ClusteringInterface
-from project.components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
+from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from utils.csv_exporting import export_to_csv
 
 class EGFEClustering(ClusteringInterface):
