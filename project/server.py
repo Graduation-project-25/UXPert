@@ -1,85 +1,59 @@
 import json
-import os
+from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+config = {}
+with open('.config', 'r') as f:
+    for line in f:
+        key, value = line.strip().split('=')
+        config[key] = value
 
-os.makedirs("designs", exist_ok=True)
-
-
+# Initialize the Flask application
 app = Flask(__name__)
+
 CORS(app, supports_credentials=True)
-
-
-def analyze_design(elements):
-    issues = []
-
-
-    colors = set()
-    for element in elements:
-        if 'color' in element:
-            colors.add(tuple(element['color']))
-    
-    if len(colors) > 3: 
-        issues.append("🚨 Too many different colors used, consider reducing them.")
-
-    
-    button_sizes = []
-    for element in elements:
-        if element.get('type') == 'button':
-            button_sizes.append((element['width'], element['height']))
-    
-    if len(set(button_sizes)) > 2:  
-        issues.append("⚠️ Inconsistent button sizes detected.")
-
- 
-    positions = [element.get("x", 0) for element in elements]
-    if len(set(positions)) > 3:
-        issues.append("🔍 Elements are not aligned properly.")
-
-    return issues
-
 
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
     if request.method == 'OPTIONS':
         return '', 200  
 
-
+    # Parse JSON data from the request
     data = request.get_json()
     user_name = data.get('user_name', "Unknown User")
     design_name = data.get('design_name', "Untitled Design")
     elements = data.get('elements', [])
 
     if not elements:
-        return jsonify({"error": "No elements found"}), 400
+        return jsonify({"error": "Missing user_name or elements"}), 400
 
- 
-    issues = analyze_design(elements)
+    # Log the received elements
+    print(f"Received design from {user_name} : {design_name}")
+    for index, element in enumerate(elements):
+        print(f"Element {index + 1}: {element}")
 
-   
-    design_data = {
+    # Save the features to a JSON file
+    features = {
         "user_name": user_name,
         "design_name": design_name,
         "elements": elements,
-        "issues": issues
+        
     }
 
-    file_path = f"designs/{user_name}_{design_name}.json"
-    with open(file_path, 'w') as json_file:
-        json.dump(design_data, json_file, indent=4)
-
-    print(f"✅ Design saved: {file_path}")
+    with open('design_features.json', 'w') as json_file:
+        json.dump(features, json_file, indent=4)
+    
+    print("Design features have been saved to 'design_features.json'.")
 
     return jsonify({
-        "message": "Design analyzed successfully!",
-        "issues": issues  
+        "message": "Design features saved successfully!",
+        "status": 200
     }), 200
-
 
 @app.route('/', methods=['GET'])
 def home():
-    return "🚀 Welcome to the UX Analysis API!", 200
+    return "Welcome to the Flask server!", 200
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
