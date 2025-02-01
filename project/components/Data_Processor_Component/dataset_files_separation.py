@@ -23,9 +23,9 @@ class FileSeparator(DataProcessor):
             # Check if it's a file and separate based on the file extension
             if os.path.isfile(file_path):
                 if filename.endswith('.png') or filename.endswith('.jpg'):
-                    shutil.move(file_path, image_folder)
+                    shutil.move(file_path, self.image_folder)
                 elif filename.endswith('.json'):
-                    shutil.move(file_path, json_folder)
+                    shutil.move(file_path, self.json_folder)
 
         print("Files have been separated into 'images' and 'jsons' folders.")
 

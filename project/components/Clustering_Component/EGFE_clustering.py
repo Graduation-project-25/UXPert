@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.cluster import DBSCAN
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
 from components.Clustering_Component.clustering import ClusteringInterface
-from project.components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
+from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from utils.csv_exporting import export_to_csv
 
 class EGFEClustering(ClusteringInterface):
@@ -49,7 +49,7 @@ class EGFEClustering(ClusteringInterface):
     def save_cluster_as_json(self,clusters,cluster_json_path, group_by):
         clusters_dict = clusters.groupby(group_by).apply(lambda df: df.to_dict(orient='records'), include_groups=False).to_dict()
         with open(cluster_json_path, 'w', encoding='utf-8') as json_file:
-            json.dump(clusters_dict, json_file, indent=4, ensure_ascii=False)
+            json.dump(clusters_dict, json_file, indent=4, ensure_ascii=False) 
 
     def analyze_clusters(self,df):
         consistency = Consistency()
@@ -97,4 +97,3 @@ class EGFEClustering(ClusteringInterface):
         # export_to_csv(analysis_df, "cluster_analysis.csv")
 
         # return analysis_df
-

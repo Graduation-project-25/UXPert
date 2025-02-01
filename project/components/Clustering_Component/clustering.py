@@ -17,5 +17,3 @@ class ClusteringInterface(ABC):
     @abstractmethod
     def save_cluster_as_json(self,clusters,cluster_json_path, group_by):
         pass
-
-
