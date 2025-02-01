@@ -60,23 +60,23 @@ figma.ui.onmessage = async (msg) => {
             console.log(` ${filteredNodes.length}Features saved successfully!`);
             figma.notify(` ${filteredNodes.length}Features saved successfully!`);
 
-            // // Step 2: Send the extracted features for clustering
-            // console.log("Sending extracted features for clustering...");
+            // Step 2: Send the extracted features for clustering
+            console.log("Sending extracted features for clustering...");
 
-            // const clusterResponse = await fetch("http://localhost:3000/cluster", {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json" },
-            //     body: JSON.stringify(serializedNodes),
-            // });
+            const clusterResponse = await fetch("http://localhost:3000/cluster", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(serializedNodes),
+            });
 
-            // if (!clusterResponse.ok) {
-            //     throw new Error(`HTTP error! Status: ${clusterResponse.status}`);
-            // }
+            if (!clusterResponse.ok) {
+                throw new Error(`HTTP error! Status: ${clusterResponse.status}`);
+            }
 
-            // const clusterResult = await clusterResponse.json() as { clusters: any[] };
-            // console.log("Clustering response:", clusterResult);
+            const clusterResult = await clusterResponse.json() as { clusters: any[] };
+            console.log("Clustering response:", clusterResult);
 
-            // figma.notify(`Clustering completed! Found ${clusterResult.clusters.length} clusters.`);
+            figma.notify(`Clustering completed! Found ${clusterResult.clusters.length} clusters.`);
         } catch (error) {
             console.error("Error during fetch:", error);
             figma.notify("Failed to send elements to backend.");

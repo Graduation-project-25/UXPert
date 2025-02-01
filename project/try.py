@@ -42,36 +42,42 @@ def process_elements():
         return '', 200  
 
     try:
-        # Parse JSON data from request
         data = request.get_json()
+        print("Received data:", data)  # Debugging step
+
         user_name = data.get('user_name', "Unknown User")
         design_name = data.get('design_name', "Untitled Design")
         elements = data.get('elements', [])
 
         if not elements:
+            print("Error: No elements provided")
             return jsonify({"error": "No elements provided"}), 400
 
         print(f"Processing design from {user_name}: {design_name}")
-
+        
         # Convert JSON data to DataFrame
         df = pd.DataFrame(elements)
+        print("DataFrame created:", df.head())  # Debugging step
 
-        # Step 1: Normalize Data (Use class instance) ✅
+        # Step 1: Normalize Data
         normalized_df = feature_extractor.normalize_ui_elements(elements, df)
+        print("Normalized Data:", normalized_df.head())  # Debugging step
 
-        # Step 2: Aggregate Data (Use class instance) ✅
+        # Step 2: Aggregate Data
         aggregated_df = feature_extractor.aggregate_ui_elements(normalized_df)
+        print("Aggregated Data:", aggregated_df.head())  # Debugging step
 
         # Step 3: Apply DBSCAN Clustering
         X_train, DBSCAN_dataset, clusters = clustering.dbscan_cluster(aggregated_df)
+        print("Clusters generated:", clusters.tolist())  # Debugging step
 
         # Step 4: Evaluate Clustering
         evaluation.evaluate_clustering(DBSCAN_dataset)
 
-        # Step 5: Analyze Clusters (Consistency Scores)
+        # Step 5: Analyze Clusters
         clustering.analyze_clusters(DBSCAN_dataset)
 
-        # Save Extracted Features & Clustering Results to MongoDB
+        # Save to MongoDB
         features_entry = {
             "user_name": user_name,
             "design_name": design_name,
@@ -80,8 +86,8 @@ def process_elements():
             "aggregated_data": aggregated_df.to_dict(orient='records'),
             "clusters": clusters.tolist(),
         }
-
         designs_collection.insert_one(features_entry)
+        print("Successfully inserted into MongoDB")  # Debugging step
 
         return jsonify({
             "message": "Processing completed and stored in DB!",
@@ -90,7 +96,9 @@ def process_elements():
         }), 200
 
     except Exception as e:
+        print("Error encountered:", str(e))  # Print full error in Flask terminal
         return jsonify({"error": str(e)}), 500
+
 
 
 @app.route('/cluster', methods=['POST'])
