@@ -1,5 +1,3 @@
-// Figma Plugin Code
-
 figma.showUI(__html__);
 
 figma.ui.onmessage = async (msg) => {
@@ -18,20 +16,31 @@ figma.ui.onmessage = async (msg) => {
             return;
         }
 
-        // Serialize UI elements data
-        const serializedNodes = filteredNodes.map(node => ({
-            name: node.name,
-            type: node.type,
-            width: 'width' in node ? node.width : null,
-            height: 'height' in node ? node.height : null,
-            x: 'x' in node ? node.x : null,
-            y: 'y' in node ? node.y : null,
-            rotation: 'rotation' in node ? node.rotation : null,
-            fills: 'fills' in node && Array.isArray(node.fills) ? node.fills : null,
-            characters: 'characters' in node ? node.characters : null,
-            insideFrame: node.type === "FRAME" ? false : true,
-            frameName: node.type === "FRAME" ? node.name : node.parent?.name,
-        }));
+ const serializedNodes = filteredNodes.map(node => {
+    let color = { r: 0, g: 0, b: 0 }; // Default color
+
+    if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
+        const firstFill = node.fills[0];
+        if (firstFill.type === "SOLID" && firstFill.color) {
+            color = firstFill.color;
+        }
+    }
+
+    return {
+        name: node.name,
+        type: node.type,
+        width: 'width' in node ? node.width : null,
+        height: 'height' in node ? node.height : null,
+        "position.x": 'x' in node ? node.x : null, // Flattened position.x
+        "position.y": 'y' in node ? node.y : null, // Flattened position.y
+        rotation: 'rotation' in node ? node.rotation : null,
+        color_r: color.r,  
+        color_g: color.g,  
+        color_b: color.b,  
+        insideFrame: node.type === "FRAME" ? false : true,
+        frameName: node.type === "FRAME" ? node.name : node.parent?.name,
+    };
+});
 
         const user_name = figma.currentUser ? figma.currentUser.name : "Unknown User";
         const design_name = figma.root.name ?? "Untitled Design";
@@ -57,26 +66,9 @@ figma.ui.onmessage = async (msg) => {
                 throw new Error(`HTTP error! Status: ${processResponse.status}`);
             }
 
-            console.log(` ${filteredNodes.length}Features saved successfully!`);
-            figma.notify(` ${filteredNodes.length}Features saved successfully!`);
+            console.log(` ${filteredNodes.length} Features saved successfully!`);
+            figma.notify(` ${filteredNodes.length} Features saved successfully!`);
 
-            // Step 2: Send the extracted features for clustering
-            console.log("Sending extracted features for clustering...");
-
-            const clusterResponse = await fetch("http://localhost:3000/cluster", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(serializedNodes),
-            });
-
-            if (!clusterResponse.ok) {
-                throw new Error(`HTTP error! Status: ${clusterResponse.status}`);
-            }
-
-            const clusterResult = await clusterResponse.json() as { clusters: any[] };
-            console.log("Clustering response:", clusterResult);
-
-            figma.notify(`Clustering completed! Found ${clusterResult.clusters.length} clusters.`);
         } catch (error) {
             console.error("Error during fetch:", error);
             figma.notify("Failed to send elements to backend.");
