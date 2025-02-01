@@ -9,7 +9,7 @@ from components.Feature_Extractor_Component.feature_extractor import FeatureExtr
 class EGFE_FeatureExtraction(FeatureExtractorInterface):
     
     def extract_json_file_path(self, json_folder, limit=50):
-        json_files = [f for f in os.listdir(json_folder) if f.endswith('.json')][:limit]
+        json_files = [f for f in os.listdir(json_folder) if f.endswith('.json')]
         index =0
         if index >= len(json_files):
             index = 0
@@ -48,60 +48,6 @@ class EGFE_FeatureExtraction(FeatureExtractorInterface):
         # print("***************************************************************\n")    
 
         return elements, normalized_data
-
-    def save_ui_elements(self, elements, screen_size, output_path):
-        """Saves the extracted UI elements along with screen size to a JSON file."""
-        data_to_save = {
-            "screen_size": {"width": screen_size[0], "height": screen_size[1]},
-            "elements": elements
-        }
-
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(data_to_save, f, ensure_ascii=False, indent=4)
-
-        print(f"Saved extracted elements and screen size to: {output_path}")
-
-
-    def estimate_screen_size(self, design_json):
-        """Estimates the screen size based on UI elements' positions and dimensions."""
-        max_x = max_y = 0
-
-        for element in design_json.get("elements", []):
-            x, y = element.get("x", 0), element.get("y", 0)
-            width, height = element.get("width", 0), element.get("height", 0)
-
-            max_x = max(max_x, x + width)
-            max_y = max(max_y, y + height)
-
-        return int(max_x), int(max_y)  # Return estimated width and height
-
-
-    def process_ui_elements(self, json_folder, image_folder, output_folder):
-        """Processes UI JSON files, extracts elements, estimates screen size, and saves the results."""
-        json_files = [f for f in os.listdir(json_folder) if f.endswith('.json')]
-
-        for json_file in json_files:
-            json_file_path = os.path.join(json_folder, json_file)
-            output_path = os.path.join(output_folder, json_file)
-
-            try:
-                print(f"Processing: {json_file_path}")
-
-                # Load the JSON data
-                with open(json_file_path, 'r', encoding='utf-8') as f:
-                    design_json = json.load(f)
-
-                # Extract UI elements
-                ui_elements, normalized_data = self.extract_ui_elements(json_file_path)
-
-                # Estimate screen size
-                screen_size = self.estimate_screen_size(design_json)
-                
-                # Save the extracted elements and screen size
-                self.save_ui_elements(ui_elements, screen_size, output_path)
-
-            except Exception as e:
-                print(f"Error processing {json_file_path}: {e}")
 
     def normalize_ui_elements(self, elements, df):
         # Scaling width, height, position.x, position.y
