@@ -15,7 +15,7 @@ pd.set_option('display.width', 1000)
 dataset_folder = './data/raw/EGFE'
 image_folder  = dataset_folder + '/images'  
 json_folder  = dataset_folder + '/jsons' 
-output_folder = dataset_folder + '/extractedFeatures'
+output_folder = dataset_folder + '/excdtractedFeatures'
 os.makedirs(output_folder, exist_ok=True)
 
 def main():
@@ -31,6 +31,10 @@ def main():
 
     #extract ui elements 
     elements, normalized_data = egfe_ui_extraction.extract_ui_elements(json_file_path)  
+
+    #save json
+    egfe_ui_extraction.process_ui_elements(json_folder, image_folder, output_folder)
+
 
     # Aggregate by 'type'
     aggregated_elements = egfe_ui_extraction.aggregate_ui_elements(normalized_data)
@@ -56,9 +60,11 @@ def main():
     egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
     egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
     egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
+
+
+    #visualize ui elements
     egfe_visualization.visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
 
-    
     print("#######################################################################################")
 
     # Test data clustering

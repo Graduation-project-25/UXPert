@@ -18,9 +18,18 @@ class FeatureExtractorInterface(ABC):
         pass
 
     @abstractmethod
+    def estimate_screen_size(self,design_json):
+        pass
+
+    @abstractmethod
+    def process_ui_elements(self,json_folder, image_folder, output_folder):
+        pass
+
+    @abstractmethod
     def aggregate_ui_elements(self, df):
         pass
 
     @abstractmethod
     def split_dataset(self, df):
         pass
+

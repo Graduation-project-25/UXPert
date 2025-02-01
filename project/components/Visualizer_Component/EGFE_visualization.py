@@ -2,8 +2,7 @@ import os
 import cv2
 from matplotlib import pyplot as plt
 import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
+
 
 from components.Visualizer_Component.visualizer import VisualizerInterface
 from project.components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
@@ -22,13 +21,13 @@ class EGFE_Visualization(VisualizerInterface):
             json_file_path = os.path.join(json_folder, json_files[index])
             image_name = json_files[index].replace('.json', '.png')
             image_path = os.path.join(image_folder, image_name)
-            output_path = os.path.join(output_folder, json_files[index])
+            # output_path = os.path.join(output_folder, json_files[index])
 
             print(f"Processing: {json_file_path}")
             ui_elements, normalized_data = self.egfe_ui_extraction.extract_ui_elements(json_file_path)
 
             # Save the extracted elements to the output folder
-            self.egfe_ui_extraction.save_ui_elements(ui_elements, output_path)
+            # self.egfe_ui_extraction.save_ui_elements(ui_elements, output_path)
 
             # Load image and draw bounding boxes
             image = cv2.imread(image_path)
