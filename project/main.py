@@ -50,21 +50,21 @@ def main():
     # splitter.save_split_files(train_folder, test_folder)
 
 
-    # normalized_data, normalized_screen_size = egfe_ui_normalizing.get_all_normalized_json_files(train_folder)
+    normalized_data, normalized_screen_size = egfe_ui_normalizing.get_all_normalized_json_files(train_folder)
     # print(normalize_elements)
 
     # Aggregate by 'type'
-    df = egfe_ui_processing.convert_json_to_dataframe(train_folder)
-    aggregated_elements = egfe_ui_processing.aggregate_ui_elements(df)
-    print("Aggregated Elements:\n", aggregated_elements)
-    print("***************************************************************\n")
+    # df = egfe_ui_processing.convert_json_to_dataframe(train_folder)
+    # aggregated_elements = egfe_ui_processing.aggregate_ui_elements(df)
+    # print("Aggregated Elements:\n", aggregated_elements)
+    # print("***************************************************************\n")
 
     # Scatter plot of UI elements
     # egfe_visualization.scatter_plot_ui_elements(normalized_data)
     
 
     # DBSCAN Clustering
-    X_train,DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster()
+    X_train,DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster(normalized_data)
     # egfe_clustering.handle_outliers(X_train)
     # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
     # egfe_clustering.analyze_clusters(DBSCAN_dataset)

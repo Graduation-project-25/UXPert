@@ -7,19 +7,15 @@ from components.Feedback_Generator_Component.heuristics.consistency import Consi
 from components.Clustering_Component.clustering import ClusteringInterface
 from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNormalizing
+from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from utils.csv_exporting import export_to_csv
 
 class EGFEClustering(ClusteringInterface):    
-
-    # def __init__(self, eps=0.5, min_samples=5):
-    #     self.eps = eps
-    #     self.min_samples = min_samples
-
-
     def __init__(self, train_folder,output_folder):
         self.train_folder = train_folder
         self.output_folder = output_folder
         self.egfe_ui_normalizing = EGFE_UiNormalizing()
+        self.egfe_ui_processing = EGFE_UiProcessing()
 
     def load_train_data(self):
         """Load and merge all JSON files from the training folder into a DataFrame."""
@@ -39,13 +35,17 @@ class EGFEClustering(ClusteringInterface):
         return pd.concat(all_data, ignore_index=True)
     
 
-    def dbscan_cluster(self):
-        X_train = self.load_train_data()
+    def dbscan_cluster(self, X_train):
+        # X_train = self.load_train_data()
 
         X_train=X_train[['width', 'height', 'position.x', 'position.y'] + 
                     [col for col in X_train.columns if col.startswith('color_')] + 
                     [col for col in X_train.columns if col.startswith('type_')]]
+
+        X_train = self.egfe_ui_processing.clean_data(X_train)
+
         print('New X_train\n', X_train)
+
 
         # Fit the DBSCAN model
         clustering = DBSCAN(eps=0.5, min_samples=5).fit(X_train)
