@@ -27,40 +27,40 @@ def main():
     egfe_ui_processing = EGFE_UiProcessing()
     egfe_visualization = EGFE_Visualization()
 
-    # json_file_path = egfe_ui_extraction.extract_json_file_path(json_folder,limit=10)
+    json_file_path = egfe_ui_extraction.extract_json_file_path(json_folder,limit=10)
 
     ############################# EGFE Dataset #############################################
 
-    #extract ui elements 
-    # elements, normalized_data = egfe_ui_extraction.extract_ui_elements(json_file_path) 
+    # extract ui elements 
+    elements, normalized_data = egfe_ui_extraction.extract_ui_elements(json_file_path) 
 
-    # #save json
-    egfe_ui_processing.process_ui_elements(json_folder, output_folder)
+    #save json in extracted features
+    # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
 
-    # # Aggregate by 'type'
-    # aggregated_elements = egfe_ui_extraction.aggregate_ui_elements(normalized_data)
-    # print("Aggregated Elements:\n", aggregated_elements)
-    # print("***************************************************************\n")
+    # Aggregate by 'type'
+    aggregated_elements = egfe_ui_extraction.aggregate_ui_elements(normalized_data)
+    print("Aggregated Elements:\n", aggregated_elements)
+    print("***************************************************************\n")
 
-    # # Scatter plot of UI elements
-    # egfe_visualization.scatter_plot_ui_elements(normalized_data)
+    # Scatter plot of UI elements
+    egfe_visualization.scatter_plot_ui_elements(normalized_data)
     
-    # # splitting dataset
-    # X_train,X_test = egfe_ui_extraction.split_dataset(normalized_data)
-    # print("Training Data:\n", X_train)
-    # print("Testing Data:\n", X_test)
-    # print("***************************************************************\n")
+    # splitting dataset
+    X_train,X_test = egfe_ui_extraction.split_dataset(normalized_data)
+    print("Training Data:\n", X_train)
+    print("Testing Data:\n", X_test)
+    print("***************************************************************\n")
 
-    # # DBSCAN Clustering
-    # X_train,DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster(X_train)
-    # egfe_clustering.handle_outliers(X_train)
-    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
-    # egfe_clustering.analyze_clusters(DBSCAN_dataset)
-    # egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
-    # egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
-    # egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
-    # egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
-    # egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
+    # DBSCAN Clustering
+    X_train,DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster(X_train)
+    egfe_clustering.handle_outliers(X_train)
+    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+    egfe_clustering.analyze_clusters(DBSCAN_dataset)
+    egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
+    egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
+    egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
+    egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
+    egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
 
 
     # #visualize ui elements
@@ -68,18 +68,18 @@ def main():
 
     # print("#######################################################################################")
 
-    # # Test data clustering
-    # print("Clustering test data...")
-    # clustered_test_data, _, _ = egfe_clustering.dbscan_cluster(X_test)
+    # Test data clustering
+    print("Clustering test data...")
+    clustered_test_data, _, _ = egfe_clustering.dbscan_cluster(X_test)
 
-    # print("Evaluating test data clustering...")
-    # egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
+    print("Evaluating test data clustering...")
+    egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
 
-    # # Assign test clusters
-    # new_x_test = egfe_clustering_testing.assign_test_clusters(DBSCAN_dataset, X_test, clusters)
+    # Assign test clusters
+    new_x_test = egfe_clustering_testing.assign_test_clusters(DBSCAN_dataset, X_test, clusters)
 
-    # # Evaluate test results
-    # egfe_clustering_testing.evaluate_test_clusters(new_x_test, DBSCAN_dataset)
+    # Evaluate test results
+    egfe_clustering_testing.evaluate_test_clusters(new_x_test, DBSCAN_dataset)
 
 
   

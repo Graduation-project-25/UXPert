@@ -7,7 +7,8 @@ from components.Clustering_Component.clustering import ClusteringInterface
 from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from utils.csv_exporting import export_to_csv
 
-class EGFEClustering(ClusteringInterface):
+class EGFEClustering(ClusteringInterface):    
+
     def __init__(self, eps=0.5, min_samples=5):
         self.eps = eps
         self.min_samples = min_samples
@@ -53,6 +54,8 @@ class EGFEClustering(ClusteringInterface):
 
     def analyze_clusters(self,df):
         consistency = Consistency()
+        consistency_instance = HeuristicFactory.check_rule("consistency")
+
         # Group by cluster
         cluster_groups = df.groupby('Cluster')
 
@@ -65,16 +68,8 @@ class EGFEClustering(ClusteringInterface):
             avg_density = num_elements / ((group['position.x'].max() - group['position.x'].min()) *
                                         (group['position.y'].max() - group['position.y'].min()))
             alignment_consistency = consistency.calculate_alignment_consistency(group)
-            consistency_scores = consistency.evaluate_rule(group)
-            
-
-            # Testing Factory Design Pattern
-            heuristic_instance = HeuristicFactory.check_rule("consistency")
-            print("Factory pattern Testing" , heuristic_instance.evaluate_rule(group))
-            minimalist_instance = HeuristicFactory.check_rule("minimalist")
-            minimalist_instance.evaluate_rule(group)  # Outputs "Minimalist Rule"
-
-            #########
+            consistency_scores = consistency_instance.evaluate_rule(group)
+            print("Factory pattern Testing, Consistency" , consistency_scores)
 
             # Store analysis
             cluster_analysis.append({

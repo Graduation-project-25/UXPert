@@ -29,6 +29,12 @@ class Minimalist(HeuristicInterface):
             feedback["status"] = "The design follows the minimalism principle."
 
         return feedback
+    
+    def whitespace_ratio(self):
+        screen_area = 0
+
+
+
 
 # For test only (to be removed)
 # # Example Usage
