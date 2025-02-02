@@ -79,9 +79,3 @@ class EGFE_UiProcessing(UiProcessorInterface):
 
 
         # Define the function to process all JSON files in a directory
-   
-    def split_dataset(self, df):
-        """Splits the dataset into training and testing sets."""
-        X=df
-        X_train, X_test = train_test_split(X, test_size=0.2, random_state=42)
-        return X_train, X_test

@@ -12,8 +12,3 @@ class UiProcessorInterface(ABC):
     @abstractmethod
     def aggregate_ui_elements(self, df):
         pass
-
-    @abstractmethod
-    def split_dataset(self, df):
-        pass
-

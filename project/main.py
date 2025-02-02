@@ -4,6 +4,7 @@ import pandas as pd
 
 
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Clustering_Component.EGFE_clustering import EGFEClustering
@@ -12,6 +13,7 @@ from components.Clustering_Component.EGFE_clustering_testing import EGFEClusteri
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNormalizing
+from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 1000) 
@@ -21,6 +23,8 @@ dataset_folder = './data/raw/EGFE'
 image_folder  = dataset_folder + '/images'  
 json_folder  = dataset_folder + '/jsons' 
 output_folder = dataset_folder + '/extractedFeatures'
+train_folder = output_folder + '/train'
+test_folder = output_folder + '/test'
 os.makedirs(output_folder, exist_ok=True)
 
 def main():
@@ -33,14 +37,18 @@ def main():
     egfe_ui_processing = EGFE_UiProcessing()
     egfe_visualization = EGFE_Visualization()
     egfe_ui_normalizing = EGFE_UiNormalizing()
+    splitter = JSONDataSplitter(output_folder)
 
 
 
 
     # save json in extracted features folder
-    egfe_ui_processing.process_ui_elements(json_folder, output_folder)
+    # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
 
-    # normalized_data, normalized_screen_size = egfe_ui_normalizing.get_all_normalized_json_files(output_folder)
+    # splitter.save_split_files(train_folder, test_folder)
+
+
+    normalized_data, normalized_screen_size = egfe_ui_normalizing.get_all_normalized_json_files(train_folder)
     # print(normalize_elements)
 
     # Aggregate by 'type'
