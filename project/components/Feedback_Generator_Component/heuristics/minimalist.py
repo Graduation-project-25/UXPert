@@ -4,6 +4,18 @@ class Minimalist(HeuristicInterface):
     def evaluate_rule(self,cluster_data):
         print("Minimalist Rule")
 
+    def count_ui_elements(elements, threshold_min=3, threshold_max=10):
+        count = len(elements)
+        
+        if count < threshold_min:
+            status = 'Too Few - Screen might be too empty'
+        elif count > threshold_max:
+            status = 'Too Many - Needs reduction'
+        else:
+            status = 'Balanced - Design is optimal'
+        
+        return count, status
+
     def numberOfElements(self, cluster_data):
         num_elements = len(cluster_data) # Count total elements
 
@@ -34,16 +46,3 @@ class Minimalist(HeuristicInterface):
         screen_area = 0
 
 
-
-
-# For test only (to be removed)
-# # Example Usage
-# cluster_data = [
-#     {"type": "button", "name": "Submit", "position": {"x": 50, "y": 100}, "width": 100, "height": 50},
-#     {"type": "button", "name": "Submit", "position": {"x": 200, "y": 100}, "width": 100, "height": 50},
-#     {"type": "button", "name": "Submit", "position": {"x": 350, "y": 100}, "width": 100, "height": 50},
-#     {"type": "button", "name": "Submit", "position": {"x": 500, "y": 100}, "width": 100, "height": 50},
-#     {"type": "text", "name": "Title", "position": {"x": 50, "y": 200}, "width": 200, "height": 50},
-# ]
-
-# print(numberOfElements(None, cluster_data))
