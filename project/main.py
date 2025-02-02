@@ -54,9 +54,10 @@ def main():
     # print(normalize_elements)
 
     # Aggregate by 'type'
-    # aggregated_elements = egfe_ui_processing.aggregate_ui_elements(normalized_data)
-    # print("Aggregated Elements:\n", aggregated_elements)
-    # print("***************************************************************\n")
+    df = egfe_ui_processing.convert_json_to_dataframe(train_folder)
+    aggregated_elements = egfe_ui_processing.aggregate_ui_elements(df)
+    print("Aggregated Elements:\n", aggregated_elements)
+    print("***************************************************************\n")
 
     # Scatter plot of UI elements
     # egfe_visualization.scatter_plot_ui_elements(normalized_data)
