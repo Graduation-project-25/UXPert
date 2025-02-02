@@ -40,16 +40,16 @@ def main():
     # save json in extracted features folder
     egfe_ui_processing.process_ui_elements(json_folder, output_folder)
 
-    normalized_data = egfe_ui_normalizing.get_all_normalized_json_files(output_folder)
+    normalized_data, normalized_screen_size = egfe_ui_normalizing.get_all_normalized_json_files(output_folder)
     # print(normalize_elements)
 
-    # # Aggregate by 'type'
+    # Aggregate by 'type'
     # aggregated_elements = egfe_ui_processing.aggregate_ui_elements(normalized_data)
     # print("Aggregated Elements:\n", aggregated_elements)
     # print("***************************************************************\n")
 
-    # # Scatter plot of UI elements
-    # egfe_visualization.scatter_plot_ui_elements(normalized_data)
+    # Scatter plot of UI elements
+    egfe_visualization.scatter_plot_ui_elements(normalized_data)
     
     # # splitting dataset
     # X_train,X_test = egfe_ui_extraction.split_dataset(normalized_data)
