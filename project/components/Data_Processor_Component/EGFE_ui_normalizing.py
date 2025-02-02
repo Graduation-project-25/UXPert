@@ -25,7 +25,7 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
         df = pd.get_dummies(df, columns=['type'], prefix='type')  # One-hot encode the 'type' column
         df = df.astype({col: 'int' for col in df.columns if col.startswith('type_')})  # Convert Boolean columns to 0 and 1
         
-        return df
+        return df 
 
     def normalize_screen_size(self, screen_size):
         # Ensure screen_size contains 'width' and 'height'
@@ -61,7 +61,8 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
         json_file_paths = self.egfe_ui_extraction.extract_json_file_paths(json_folder)
 
         # Initialize an empty list to store the normalized data for all files
-        # all_normalized_data = []
+        all_normalized_data = []
+        all_screen_sizes = []
 
         for json_file_path in json_file_paths:
             print(f"Processing file: {json_file_path}")
@@ -71,14 +72,24 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
                 data = json.load(f)
 
             # Get normalized data
-            normalized_data,normalized_screen_size = self.get_normalized_data(data)
+            normalized_elements,normalized_screen_size = self.get_normalized_data(data)
             
-            # Append the result to the list
-            # all_normalized_data.append(normalized_data)
+            # Add file name to the DataFrame for tracking
+            normalized_elements["file_name"] = json_file_path.split("/")[-1]  
+
+            # Append the results to lists
+            all_normalized_data.append(normalized_elements)
+            all_screen_sizes.append(normalized_screen_size)
 
             print(normalized_screen_size)
-            print(normalized_data)
+            print(normalized_elements)
             
             print("***************************************************************************")
+        if not all_normalized_data:
+            raise ValueError("No valid JSON files were found or processed.")
 
-        return normalized_data, normalized_screen_size
+        # Concatenate all DataFrames
+        combined_elements_df = pd.concat(all_normalized_data, ignore_index=True)
+        combined_screen_sizes_df = pd.concat(all_screen_sizes, ignore_index=True)
+
+        return combined_elements_df, combined_screen_sizes_df

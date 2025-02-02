@@ -5,6 +5,9 @@ class ClusteringInterface(ABC):
     @abstractmethod
     def dbscan_cluster(self, X_train):
         pass
+    @abstractmethod
+    def load_train_data(self):
+        pass
 
     @abstractmethod
     def handle_outliers(self, X_train):

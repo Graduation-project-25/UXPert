@@ -30,14 +30,14 @@ os.makedirs(output_folder, exist_ok=True)
 def main():
 
     ############################# EGFE Dataset #############################################
-    egfe_clustering = EGFEClustering()
     egfe_clustering_evaluation = EGFEClusteringEvaluation()
-    egfe_clustering_testing = EGFEClusteringTesting()
+    # egfe_clustering_testing = EGFEClusteringTesting()
     egfe_ui_extraction = EGFE_FeatureExtraction()
-    egfe_ui_processing = EGFE_UiProcessing()
     egfe_visualization = EGFE_Visualization()
-    egfe_ui_normalizing = EGFE_UiNormalizing()
     splitter = JSONDataSplitter(output_folder)
+    egfe_ui_processing = EGFE_UiProcessing()
+    egfe_ui_normalizing = EGFE_UiNormalizing()
+    egfe_clustering = EGFEClustering(train_folder,output_folder)
 
 
 
@@ -45,10 +45,12 @@ def main():
     # save json in extracted features folder
     # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
 
+
+    #splitting to test and train
     # splitter.save_split_files(train_folder, test_folder)
 
 
-    normalized_data, normalized_screen_size = egfe_ui_normalizing.get_all_normalized_json_files(train_folder)
+    # normalized_data, normalized_screen_size = egfe_ui_normalizing.get_all_normalized_json_files(train_folder)
     # print(normalize_elements)
 
     # Aggregate by 'type'
@@ -59,14 +61,9 @@ def main():
     # Scatter plot of UI elements
     # egfe_visualization.scatter_plot_ui_elements(normalized_data)
     
-    # Splitting dataset
-    # X_train,X_test = egfe_ui_extraction.split_dataset(normalized_data)
-    # print("Training Data:\n", X_train)
-    # print("Testing Data:\n", X_test)
-    # print("***************************************************************\n")
 
     # DBSCAN Clustering
-    # X_train,DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster(X_train)
+    X_train,DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster()
     # egfe_clustering.handle_outliers(X_train)
     # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
     # egfe_clustering.analyze_clusters(DBSCAN_dataset)
