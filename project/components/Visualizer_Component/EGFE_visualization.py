@@ -10,6 +10,7 @@ from project.components.Feature_Extractor_Component.EGFE_ui_extraction import EG
 class EGFE_Visualization(VisualizerInterface):
     def __init__(self):
         self.egfe_ui_extraction = EGFE_FeatureExtraction()
+        
     def visualize_ui_elements(self, image_folder, json_folder, output_folder, limit=50):
         """Visualizes the extracted UI elements on their corresponding images."""
         json_files = [f for f in os.listdir(json_folder) if f.endswith('.json')][:limit]
@@ -25,7 +26,7 @@ class EGFE_Visualization(VisualizerInterface):
             # output_path = os.path.join(output_folder, json_files[index])
 
             print(f"Processing: {json_file_path}")
-            ui_elements, normalized_data = self.egfe_ui_extraction.extract_ui_elements(json_file_path)
+            ui_elements = self.egfe_ui_extraction.extract_ui_elements(json_file_path)
 
             # Save the extracted elements to the output folder
             # self.egfe_ui_extraction.save_ui_elements(ui_elements, output_path)
@@ -69,7 +70,7 @@ class EGFE_Visualization(VisualizerInterface):
     def scatter_plot_ui_elements(self, df):
         """Generates a scatter plot for UI elements based on position and size."""
         # plt.figure(figsize=(8, 6))
-        
+
         # Scatter plot for position.x vs position.y
         plt.scatter(df['position.x'], df['position.y'], c='blue', label='Position', alpha=0.6)
         

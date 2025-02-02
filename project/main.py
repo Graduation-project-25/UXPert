@@ -51,13 +51,13 @@ def main():
     # Scatter plot of UI elements
     egfe_visualization.scatter_plot_ui_elements(normalized_data)
     
-    # # splitting dataset
+    # Splitting dataset
     # X_train,X_test = egfe_ui_extraction.split_dataset(normalized_data)
     # print("Training Data:\n", X_train)
     # print("Testing Data:\n", X_test)
     # print("***************************************************************\n")
 
-    # # DBSCAN Clustering
+    # DBSCAN Clustering
     # X_train,DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster(X_train)
     # egfe_clustering.handle_outliers(X_train)
     # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
@@ -69,8 +69,8 @@ def main():
     # egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
 
 
-    # # #visualize ui elements
-    # # egfe_visualization.visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
+    # Visualize ui elements
+    egfe_visualization.visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
 
     # # print("#######################################################################################")
 
