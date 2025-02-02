@@ -30,7 +30,7 @@ class Minimalist(HeuristicInterface):
 
         return feedback
     
-    def whitespace_ratio(self):
+    def whitespace_ratio(self, cluster_data):
         screen_area = 0
 
 

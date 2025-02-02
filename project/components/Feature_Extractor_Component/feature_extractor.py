@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class FeatureExtractorInterface(ABC):
     @abstractmethod
-    def extract_json_file_path(self, json_folder, limit=50):
+    def extract_json_file_paths(self, json_folder):
         pass
 
     @abstractmethod
@@ -10,14 +10,6 @@ class FeatureExtractorInterface(ABC):
         pass
 
     @abstractmethod
-    def normalize_ui_elements(self, elements, df):
-        pass
-
-    @abstractmethod
-    def aggregate_ui_elements(self, df):
-        pass
-
-    @abstractmethod
-    def split_dataset(self, df):
+    def extract_elements_and_screen_size (self, json_file_path):
         pass
 

@@ -8,7 +8,8 @@ from components.Visualizer_Component.visualizer import VisualizerInterface
 from project.components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
 
 class EGFE_Visualization(VisualizerInterface):
-    egfe_ui_extraction = EGFE_FeatureExtraction()
+    def __init__(self):
+        self.egfe_ui_extraction = EGFE_FeatureExtraction()
     def visualize_ui_elements(self, image_folder, json_folder, output_folder, limit=50):
         """Visualizes the extracted UI elements on their corresponding images."""
         json_files = [f for f in os.listdir(json_folder) if f.endswith('.json')][:limit]

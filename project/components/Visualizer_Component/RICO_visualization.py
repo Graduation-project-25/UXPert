@@ -1,8 +1,6 @@
 import os
 import cv2
 import json
-from components.src.feature_extraction.EGFE_ui_extraction import save_ui_elements
-from components.src.feature_extraction.RICO_ui_extraction import extract_rico_ui_elements
 from components.Visualizer_Component.visualizer import visualizer
 
 class Rico_Visualization(visualizer):

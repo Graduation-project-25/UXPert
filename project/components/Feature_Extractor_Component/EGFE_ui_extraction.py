@@ -1,26 +1,32 @@
 import json
 import os
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 
 from components.Feature_Extractor_Component.feature_extractor import FeatureExtractorInterface
 
-class EGFE_FeatureExtraction(FeatureExtractorInterface):
-    
-    def extract_json_file_path(self, json_folder, limit=50):
-        json_files = [f for f in os.listdir(json_folder) if f.endswith('.json')]
-        index =0
-        if index >= len(json_files):
-            index = 0
-        json_file_path = os.path.join(json_folder, json_files[index])
-        return json_file_path
 
+class EGFE_FeatureExtraction(FeatureExtractorInterface):
+    def extract_json_file_paths(self, json_folder):
+        # List all JSON files in the directory
+        json_files = [f for f in os.listdir(json_folder) if f.endswith('.json')]
+        
+        if not json_files:  # Check if there are no JSON files
+            raise FileNotFoundError("No JSON files found in the folder.")
+        
+        # Return full paths to each JSON file
+        json_file_paths = [os.path.join(json_folder, f) for f in json_files]
+        return json_file_paths
+
+
+    #extracts ui from json
     def extract_ui_elements(self, json_file_path):
         """Extracts UI elements from a given JSON file."""
         with open(json_file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        
+
+        # Extract screen size
+        screen_size = data.get("screen_size", {"screen_width": 0, "screen_height": 0})
+
+        # Extract elements
         elements = []
         for layer in data.get('layers', []):
             rect = layer.get('rect', {})
@@ -36,43 +42,37 @@ class EGFE_FeatureExtraction(FeatureExtractorInterface):
                 'color': layer.get('color', '')
             }
             elements.append(element)
-        #print (elements)
-        #print("Extracted Elements:\n", json.dumps(elements, indent=4))
+        # print (elements)
+        # print("Extracted Elements:\n", json.dumps(elements, indent=4))
+        return elements
 
-        # Normalize json data into a flat table
-        df = pd.json_normalize(elements)
+    def extract_elements_and_screen_size (self, json_file_path):
+        """Extracts UI elements and Screen Size from a given JSON file."""
 
-        # Normalize into scaled data 
-        normalized_data = self.normalize_ui_elements(elements, df)
-        # print("Normalized, Scaled Data:\n", normalized_data)
-        # print("***************************************************************\n")    
+        with open(json_file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
 
-        return elements, normalized_data
+        # Extract screen size
+        screen_size = data.get("screen_size", {"width": 0, "height": 0})
 
-    def normalize_ui_elements(self, elements, df):
-        # Scaling width, height, position.x, position.y
-        scale = MinMaxScaler()
-        X = df[['width', 'height', 'position.x', 'position.y']]
-        df[['width', 'height', 'position.x', 'position.y']] = scale.fit_transform(X)
-        
-        # Extract RGBA values and one-hot encode the 'type' column
-        df[['color_r', 'color_g', 'color_b', 'color_a']] = pd.DataFrame(df['color'].tolist(), index=df.index) # RGBA
-        df = pd.get_dummies(df, columns=['type'], prefix='type') # One-hot encode the 'type' column
-        df = df.astype({col: 'int' for col in df.columns if col.startswith('type_')}) # Convert Boolean columns to 0 and 1
-        return df
+        # Extract elements
+        elements = []
+        for element in data.get("elements", []):
+            extracted_element = {
+                "type": element.get("type", ""),
+                "position": {
+                    "x": element.get("position", {}).get("x", 0),
+                    "y": element.get("position", {}).get("y", 0)
+                },
+                "width": element.get("width", 0),
+                "height": element.get("height", 0),
+                "name": element.get("name", ""),
+                "color": element.get("color", [0, 0, 0, 1])  # Default to black (RGBA)
+            }
+            elements.append(extracted_element)
 
-    def aggregate_ui_elements(self, df):
-        """Aggregate UI elements by name and compute average position and size."""
-        aggregated = df.groupby('name').agg({
-            'position.x': 'mean',
-            'position.y': 'mean',
-            'width': 'mean',
-            'height': 'mean'
-        }).reset_index()
-        return aggregated
+        # print("Extracted Elements:\n", json.dumps(elements, indent=4))  
+        # print("\nScreen Size:\n", json.dumps(screen_size, indent=4))  
 
-    def split_dataset(self, df):
-        """Splits the dataset into training and testing sets."""
-        X=df
-        X_train, X_test = train_test_split(X, test_size=0.2, random_state=42)
-        return X_train, X_test
+        return screen_size, elements
+    
