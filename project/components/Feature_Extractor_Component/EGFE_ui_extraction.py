@@ -16,7 +16,6 @@ class EGFE_FeatureExtraction(FeatureExtractorInterface):
         json_file_paths = [os.path.join(json_folder, f) for f in json_files]
         return json_file_paths
 
-
     #extracts ui from json
     def extract_ui_elements(self, json_file_path):
         """Extracts UI elements from a given JSON file."""
