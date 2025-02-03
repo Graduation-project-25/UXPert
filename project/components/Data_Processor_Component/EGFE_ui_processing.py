@@ -46,7 +46,7 @@ class EGFE_UiProcessing(UiProcessorInterface):
             json_file_path = os.path.join(json_folder, json_file)
             output_path = os.path.join(output_folder, json_file)
 
-            try:
+            try: 
                 image_name = os.path.splitext(json_file)[0]
 
                 # Extract UI elements

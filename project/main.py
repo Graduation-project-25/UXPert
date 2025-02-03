@@ -35,7 +35,7 @@ def main():
     egfe_clustering = EGFEClustering(train_folder,output_folder)
     egfe_ui_extraction = EGFE_FeatureExtraction()
     egfe_visualization = EGFE_Visualization()
-    # egfe_clustering_testing = EGFEClusteringTesting()
+    egfe_clustering_testing = EGFEClusteringTesting()
     minimalist = Minimalist()
 
 
@@ -49,34 +49,6 @@ def main():
     # Normalization
     # train_data = egfe_ui_processing.convert_json_to_dataframe(train_folder)
     # normalized_elements, normalized_screen_size = egfe_ui_normalizing.get_normalized_data(train_data)
-    # print("Normalized screen size")
-    # print(normalized_screen_size)
-    # print("Normalized elements")
-    # print(normalized_elements)
-
-    data = {
-        "screen_size": {
-            "screen_width": 1920,
-            "screen_height": 1080
-        },
-        "elements": [
-            {
-                "position": { "x": 100, "y": 200 },
-                "width": 300,
-                "height": 400,
-                "color": [255, 0, 0, 1],
-                "type": "button"
-            }
-        ]
-    }
-
-    # normalizer = EGFE_UiNormalizing()
-    # normalized_elements, normalized_screen = normalizer.get_normalized_data(data)
-    # print("Normalized screen size")
-    # print(normalized_screen)
-    # print("Normalized elements")
-    # print(normalized_elements)
-
 
 
     # Scatter plot of UI elements
@@ -93,7 +65,7 @@ def main():
 
 
     #Test DBSCAN size and posititon clustering
-    # DBSCAN_size_and_position_dataset, size_and_position_clusters = egfe_clustering.dbscan_cluster_based_on_size_and_position()
+    DBSCAN_size_and_position_dataset, size_and_position_clusters = egfe_clustering.dbscan_cluster_based_on_size_and_position()
     # egfe_clustering.handle_color_and_type_outliers(DBSCAN_size_and_position_dataset)
     # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_size_and_position_dataset)
 
