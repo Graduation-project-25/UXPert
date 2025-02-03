@@ -27,10 +27,6 @@ class EGFE_Visualization(VisualizerInterface):
 
             print(f"Processing: {json_file_path}")
             ui_elements = self.egfe_ui_extraction.extract_ui_elements(json_file_path)
-
-            # Save the extracted elements to the output folder
-            # self.egfe_ui_extraction.save_ui_elements(ui_elements, output_path)
-
             # Load image and draw bounding boxes
             image = cv2.imread(image_path)
             if image is None:

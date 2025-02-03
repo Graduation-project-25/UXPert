@@ -90,8 +90,8 @@ class EGFEClustering(ClusteringInterface):
         DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
         print('DBSCAN_dataset:\n', DBSCAN_dataset)
 
-        # cluster_json_path = os.path.join(self.output_folder, "X-train clusters.json")      
-        # self.save_cluster_as_json(X_train,cluster_json_path,'Cluster')
+        cluster_json_path = os.path.join(self.output_folder, "X-train clusters.json")      
+        self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
 
         points_in_each_cluster = DBSCAN_dataset.Cluster.value_counts().to_frame()
         print(points_in_each_cluster)
