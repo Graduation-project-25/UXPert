@@ -70,21 +70,31 @@ class EGFEClustering(ClusteringInterface):
         DBSCAN_dataset = X_train_selected.copy()
         DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
         #save cluster in json
-        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors.json")      
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors and type.json")      
         self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
         print('Number of instances in each cluster\n',DBSCAN_dataset[['Cluster']].value_counts())  # View the number of instances in each cluster
         clusters = np.unique(clustering.labels_)
         return DBSCAN_dataset, clusters 
 
+    def dbscan_cluster_based_on_size_and_position(self):
+        X_train = self.egfe_load_data.load_train_data()
+        X_train = X_train[['width', 'height', 'position.x', 'position.y']]
+        print(X_train)
+        print(X_train.columns)
 
-    def get_dataset_with_cluseters(self, X_train, clustering, file_name):
+
+        # Fit the DBSCAN model
+        clustering = DBSCAN(eps=0.3, min_samples=1).fit(X_train)
+
+        # Prepare the dataset with clusters
         DBSCAN_dataset = X_train.copy()
         DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
-        cluster_json_path = os.path.join(self.output_folder, file_name)      
+        #save cluster in json
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on size and position.json")      
         self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
+        print('Number of instances in each cluster\n',DBSCAN_dataset[['Cluster']].value_counts())  # View the number of instances in each cluster
         clusters = np.unique(clustering.labels_)
-        return DBSCAN_dataset, clusters
-
+        return DBSCAN_dataset, clusters 
 
     def handle_outliers(self, X_train):
         # Identify Outliers
