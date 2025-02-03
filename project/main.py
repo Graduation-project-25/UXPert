@@ -57,12 +57,12 @@ def main():
     
 
     # DBSCAN Clustering
-    X_train, DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster(normalized_data)
-    egfe_clustering.handle_outliers(X_train)
-    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
-    egfe_clustering.analyze_clusters(DBSCAN_dataset)
-    egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
-    egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
+    DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster()
+    egfe_clustering.handle_outliers(DBSCAN_dataset)
+    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+    # egfe_clustering.analyze_clusters(DBSCAN_dataset)
+    # egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
+    # egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
     # egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
     # egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
     # egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
@@ -76,7 +76,7 @@ def main():
     ## Visualize ui elements
     # egfe_visualization.visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
 
-    print("#######################################################################################")
+    # print("#######################################################################################")
 
     # # Test data clustering
     # print("Clustering test data...")
@@ -94,9 +94,13 @@ def main():
     # print(type(DBSCAN_dataset))
     # print(DBSCAN_dataset.head() if isinstance(DBSCAN_dataset, pd.DataFrame) else DBSCAN_dataset)
 
-    element_count, status = minimalist.count_ui_elements(DBSCAN_dataset)
-    print("Number of elements = ", element_count)
-    print("Status of the elements = ", status)
+
+
+
+    #Test Minimalist
+    # element_count, status = minimalist.count_ui_elements(DBSCAN_dataset)
+    # print("Number of elements = ", element_count)
+    # print("Status of the elements = ", status)
 
   
 
