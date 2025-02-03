@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 class ClusteringInterface(ABC):
 
     @abstractmethod
-    def dbscan_cluster(self):
+    def dbscan_cluster(self, feature):
         pass
 
     @abstractmethod

@@ -23,11 +23,12 @@ class EGFEClustering(ClusteringInterface):
 
     def dbscan_cluster(self, feature):
         if feature == 'color':
-            self.dbscan_cluster_based_on_color_and_type()
+            DBSCAN_dataset, clusters = self.dbscan_cluster_based_on_color_and_type()
         elif feature == 'position':
-            self.dbscan_cluster_based_on_position_and_type()
+            DBSCAN_dataset, clusters = self.dbscan_cluster_based_on_position_and_type()
         elif feature == 'size':
-            self.dbscan_cluster_based_on_size_and_type()
+            DBSCAN_dataset, clusters = self.dbscan_cluster_based_on_size_and_type()
+        return DBSCAN_dataset, clusters
 
     def dbscan_cluster_based_on_color_and_type(self):
         X_train = self.egfe_load_data.load_train_data()
