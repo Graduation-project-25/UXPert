@@ -2,9 +2,6 @@ import os
 import sys
 import pandas as pd
 
-
-
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Clustering_Component.EGFE_clustering import EGFEClustering
@@ -16,7 +13,7 @@ from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNorma
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 
 pd.set_option('display.max_columns', None)
-pd.set_option('display.width', 1000) 
+pd.set_option('display.width', 2000) 
 
 
 dataset_folder = './data/raw/EGFE'
@@ -36,10 +33,7 @@ def main():
     egfe_visualization = EGFE_Visualization()
     splitter = JSONDataSplitter(output_folder)
     egfe_ui_processing = EGFE_UiProcessing()
-    egfe_ui_normalizing = EGFE_UiNormalizing()
     egfe_clustering = EGFEClustering(train_folder,output_folder)
-
-
 
 
     # save json in extracted features folder
@@ -49,9 +43,6 @@ def main():
     #splitting to test and train
     # splitter.save_split_files(train_folder, test_folder)
 
-
-    normalized_data, normalized_screen_size = egfe_ui_normalizing.get_all_normalized_json_files(train_folder)
-    # print(normalize_elements)
 
     # Aggregate by 'type'
     # df = egfe_ui_processing.convert_json_to_dataframe(train_folder)
@@ -64,10 +55,12 @@ def main():
     
 
     # DBSCAN Clustering
-    X_train,DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster(normalized_data)
-    # egfe_clustering.handle_outliers(X_train)
-    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
-    # egfe_clustering.analyze_clusters(DBSCAN_dataset)
+    X_train , DBSCAN_dataset,clusters= egfe_clustering.dbscan_cluster()
+    # print("X_train\n", X_train)
+    # print("Clusters\n",clusters)
+    egfe_clustering.handle_outliers(X_train)
+    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+    egfe_clustering.analyze_clusters(DBSCAN_dataset)
     # egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
     # egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
     # egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
@@ -75,7 +68,7 @@ def main():
     # egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
 
 
-    # Visualize ui elements
+    ## Visualize ui elements
     # egfe_visualization.visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
 
     # # print("#######################################################################################")
