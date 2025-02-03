@@ -44,14 +44,20 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
             raise ValueError("Screen size does not contain 'screen_width' and 'screen_height' keys.")
 
     def get_normalized_data(self, data):
-        # Separate screen size and elements
-        screen_size = data['screen_size']
+        if 'screen_width' not in data or 'screen_height' not in data:
+            raise KeyError("The dataset does not contain 'screen_width' or 'screen_height'. Check JSON structure.")
+
+        screen_size = {"screen_width": data['screen_width'], "screen_height": data['screen_height']}
         elements = data['elements']
+
         # Normalize the elements first
         normalized_elements = self.normalize_ui_elements(elements)
+        
         # Normalize the screen size and add it to the DataFrame
         normalized_screen_size = self.normalize_screen_size(screen_size)
-        return normalized_elements,normalized_screen_size
+
+        return normalized_elements, normalized_screen_size
+
 
 
 
