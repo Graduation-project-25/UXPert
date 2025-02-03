@@ -54,19 +54,21 @@ def main():
     # print("Normalized elements")
     # print(normalized_elements)
 
-    # data = {
-    #     "screen_width": 1440,
-    #     "screen_height": 2560,
-    #     "elements": [
-    #         {
-    #             "position": { "x": 100, "y": 200 },
-    #             "width": 300,
-    #             "height": 400,
-    #             "color": [255, 0, 0, 1],
-    #             "type": "button"
-    #         }
-    #     ]
-    # }
+    data = {
+        "screen_size": {
+            "screen_width": 1920,
+            "screen_height": 1080
+        },
+        "elements": [
+            {
+                "position": { "x": 100, "y": 200 },
+                "width": 300,
+                "height": 400,
+                "color": [255, 0, 0, 1],
+                "type": "button"
+            }
+        ]
+    }
 
     # normalizer = EGFE_UiNormalizing()
     # normalized_elements, normalized_screen = normalizer.get_normalized_data(data)

@@ -1,4 +1,3 @@
-// script.js
 const backendUrl = "http://localhost:3000"; // Localhost for development
 
 document.getElementById('startDetection').onclick = () => {
