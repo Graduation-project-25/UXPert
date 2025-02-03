@@ -16,31 +16,34 @@ figma.ui.onmessage = async (msg) => {
             return;
         }
 
- const serializedNodes = filteredNodes.map(node => {
-    let color = { r: 0, g: 0, b: 0 }; // Default color
+        const serializedNodes = filteredNodes.map(node => {
+            let color = { r: 0, g: 0, b: 0 }; // Default color
 
-    if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
-        const firstFill = node.fills[0];
-        if (firstFill.type === "SOLID" && firstFill.color) {
-            color = firstFill.color;
-        }
-    }
+            if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
+                const firstFill = node.fills[0];
+                if (firstFill.type === "SOLID" && firstFill.color) {
+                    color = firstFill.color;
+                }
+            }
 
-    return {
-        name: node.name,
-        type: node.type,
-        width: 'width' in node ? node.width : null,
-        height: 'height' in node ? node.height : null,
-        "position.x": 'x' in node ? node.x : null, // Flattened position.x
-        "position.y": 'y' in node ? node.y : null, // Flattened position.y
-        rotation: 'rotation' in node ? node.rotation : null,
-        color_r: color.r,  
-        color_g: color.g,  
-        color_b: color.b,  
-        insideFrame: node.type === "FRAME" ? false : true,
-        frameName: node.type === "FRAME" ? node.name : node.parent?.name,
-    };
-});
+            const size = ('width' in node && 'height' in node) ? node.width * node.height : null;
+
+            return {
+                name: node.name,
+                type: node.type,
+                width: 'width' in node ? node.width : null,
+                height: 'height' in node ? node.height : null,
+                "position.x": 'x' in node ? node.x : null, // Flattened position.x
+                "position.y": 'y' in node ? node.y : null, // Flattened position.y
+                rotation: 'rotation' in node ? node.rotation : null,
+                color_r: color.r,  
+                color_g: color.g,  
+                color_b: color.b,  
+                insideFrame: node.type === "FRAME" ? false : true,
+                frameName: node.type === "FRAME" ? node.name : node.parent?.name,
+                size: size // New size attribute
+            };
+        });
 
         const user_name = figma.currentUser ? figma.currentUser.name : "Unknown User";
         const design_name = figma.root.name ?? "Untitled Design";

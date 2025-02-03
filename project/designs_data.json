@@ -1,1 +1,96 @@
-[]
+[
+    {
+        "user_id": "unknown_user",
+        "user_name": "Asmaa",
+        "design_name": "simple test design",
+        "elements": [
+            {
+                "name": "iPhone 16 - 1",
+                "type": "FRAME",
+                "width": 393,
+                "height": 852,
+                "position.x": -83,
+                "position.y": -501,
+                "rotation": 0,
+                "color_r": 1,
+                "color_g": 1,
+                "color_b": 1,
+                "insideFrame": false,
+                "frameName": "iPhone 16 - 1",
+                "size": 334836
+            },
+            {
+                "name": "Text",
+                "type": "TEXT",
+                "width": 93,
+                "height": 92,
+                "position.x": 144,
+                "position.y": 54,
+                "rotation": 0,
+                "color_r": 0,
+                "color_g": 0,
+                "color_b": 0,
+                "insideFrame": true,
+                "frameName": "iPhone 16 - 1",
+                "size": 8556
+            },
+            {
+                "name": "Text",
+                "type": "TEXT",
+                "width": 93,
+                "height": 92,
+                "position.x": 155,
+                "position.y": 60,
+                "rotation": 0,
+                "color_r": 0.7216145992279053,
+                "color_g": 0.5051302313804626,
+                "color_b": 0.5051302313804626,
+                "insideFrame": true,
+                "frameName": "iPhone 16 - 1",
+                "size": 8556
+            },
+            {
+                "name": "Rectangle 1",
+                "type": "RECTANGLE",
+                "width": 275,
+                "height": 107,
+                "position.x": 48,
+                "position.y": 319,
+                "rotation": 0,
+                "color_r": 0.11521240323781967,
+                "color_g": 0.01626533828675747,
+                "color_b": 0.6099478602409363,
+                "insideFrame": true,
+                "frameName": "iPhone 16 - 1",
+                "size": 29425
+            },
+            {
+                "name": "Ellipse 1",
+                "type": "ELLIPSE",
+                "width": 149,
+                "height": 144,
+                "position.x": 155,
+                "position.y": 146,
+                "rotation": 0,
+                "color_r": 0.5282812714576721,
+                "color_g": 0.3433828353881836,
+                "color_b": 0.3433828353881836,
+                "insideFrame": true,
+                "frameName": "iPhone 16 - 1",
+                "size": 21456
+            }
+        ],
+        "created_at": "2025-02-03T13:31:07.646558",
+        "consistency": {
+            "ColorConsistency": 87.5,
+            "AlignmentConsistency": 0.0,
+            "SizeProportionality": 0,
+            "TotalConsistency": 35.0,
+            "Feedback": {
+                "ColorConsistency": "Colors are inconsistent for some similar-sized elements.",
+                "AlignmentConsistency": "Alignment needs improvement.",
+                "SizeProportionality": "Size proportionality is off, consider adjusting element sizes."
+            }
+        }
+    }
+]
