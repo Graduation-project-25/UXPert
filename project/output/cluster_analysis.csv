@@ -1,5 +1,0 @@
-Cluster,NumElements,AvgWidth,AvgHeight,AvgDensity,AlignmentConsistency,TotalConsistency
--1,25,0.31259786476868323,0.2382300884955752,44.36943196764027,0.8772898593867817,"[{'ColorConsistency': 94.44, 'AlignmentConsistency': 87.73, 'SizeProportionality': 78.78, 'TotalConsistency': 87.73}]"
-0,80,0.04483985765124555,0.17345132743362832,2140.6225680933853,0.9267152926911456,"[{'ColorConsistency': 100.0, 'AlignmentConsistency': 92.67, 'SizeProportionality': 99.51, 'TotalConsistency': 97.66}]"
-1,6,0.23962040332147092,0.2743362831858407,21.684009459705287,0.9325320670854443,"[{'ColorConsistency': 100.0, 'AlignmentConsistency': 93.25, 'SizeProportionality': 98.57, 'TotalConsistency': 97.55}]"
-2,13,0.2373391732822338,0.10142954390742001,48.539568345323744,0.9139967221620302,"[{'ColorConsistency': 100.0, 'AlignmentConsistency': 91.4, 'SizeProportionality': 97.96, 'TotalConsistency': 96.81}]"

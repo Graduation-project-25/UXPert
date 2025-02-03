@@ -6,13 +6,12 @@ class EGFEClusteringEvaluation(ClusteringEvaluationInterface):
 
     def evaluate_clustering(self,DBSCAN_dataset):
         # Evaluate clustering quality
-        valid_data = DBSCAN_dataset[DBSCAN_dataset['Cluster'] != -1]
-        valid_labels = valid_data['Cluster']
+        valid_labels = DBSCAN_dataset['Cluster']
 
         if len(valid_labels.unique()) > 1: 
         # Ensure there are enough clusters for evaluation 
-            sil_score = silhouette_score(valid_data, valid_labels)
-            db_score = davies_bouldin_score(valid_data, valid_labels)
+            sil_score = silhouette_score(DBSCAN_dataset, valid_labels)
+            db_score = davies_bouldin_score(DBSCAN_dataset, valid_labels)
             print(f"Silhouette Score: {sil_score}")
             print(f"Davies-Bouldin Index: {db_score}")
         else:
