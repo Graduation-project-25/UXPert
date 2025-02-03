@@ -57,6 +57,12 @@ def process_elements():
     consistency_evaluator = Consistency()
     consistency_results = consistency_evaluator.evaluate_rule(elements_df)
 
+    # Check the structure of consistency_results
+    print(f"Consistency Results: {consistency_results}")
+
+    # Generate user-friendly consistency feedback
+    consistency_feedback = generate_consistency_feedback(consistency_results)
+
     # Define the file path for the design
     design_file_path = os.path.join(designs_dir, f"{design_name}.json")
 
@@ -82,8 +88,34 @@ def process_elements():
     return jsonify({
         "message": "Design saved and evaluated successfully!",
         "status": 200,
-        "consistency": consistency_results  # Include the consistency evaluation in the response
+        "consistency": consistency_results,  # Include the consistency evaluation in the response
+        "consistency_feedback": consistency_feedback  # Include the user-friendly consistency feedback
     }), 200
+
+def generate_consistency_feedback(consistency_results):
+    """
+    Generate user-friendly feedback based on the consistency evaluation results.
+    Modify this function according to your evaluation logic.
+    """
+    feedback = []
+
+    # Check if consistency_results is a list of dictionaries or strings
+    if isinstance(consistency_results, list):
+        for result in consistency_results:
+            # If it's a dictionary, handle it accordingly
+            if isinstance(result, dict):
+                if result.get("status") == "pass":
+                    feedback.append(f"✔ {result['rule']} passed!")
+                else:
+                    feedback.append(f"✘ {result['rule']} failed. Reason: {result['issue']}")
+            else:
+                # If it's a string (e.g., "pass" or "fail"), handle that
+                feedback.append(f"Result: {result}")
+    else:
+        feedback.append(f"Unknown consistency result format: {consistency_results}")
+
+    # Combine all feedback into a single string
+    return "\n".join(feedback)
 
 @app.route('/', methods=['GET'])
 def home():
