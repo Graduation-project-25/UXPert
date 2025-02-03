@@ -9,6 +9,6 @@ class UiNormalizerInterface(ABC):
     def normalize_screen_size(self,screen_size):
         pass
 
-    @abstractmethod
-    def get_all_normalized_json_files(self,output_folder):
-        pass
+    # @abstractmethod
+    # def get_all_normalized_json_files(self,output_folder):
+    #     pass
