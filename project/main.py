@@ -11,6 +11,7 @@ from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_Featu
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNormalizing
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
+from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 2000) 
@@ -34,10 +35,11 @@ def main():
     splitter = JSONDataSplitter(output_folder)
     egfe_ui_processing = EGFE_UiProcessing()
     egfe_clustering = EGFEClustering(train_folder,output_folder)
+    minimalist = Minimalist()
 
 
     # save json in extracted features folder
-    egfe_ui_processing.process_ui_elements(json_folder, output_folder)
+    # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
 
 
     #splitting to test and train
@@ -55,9 +57,7 @@ def main():
     
 
     # DBSCAN Clustering
-    X_train , DBSCAN_dataset,clusters= egfe_clustering.dbscan_cluster()
-    # print("X_train\n", X_train)
-    # print("Clusters\n",clusters)
+    X_train, DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster(normalized_data)
     egfe_clustering.handle_outliers(X_train)
     egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
     egfe_clustering.analyze_clusters(DBSCAN_dataset)
@@ -66,12 +66,17 @@ def main():
     # egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
     # egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
     # egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
+    # egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
+    # egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
+    # egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
+    # egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
+    # egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
 
 
     ## Visualize ui elements
     # egfe_visualization.visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
 
-    # # print("#######################################################################################")
+    print("#######################################################################################")
 
     # # Test data clustering
     # print("Clustering test data...")
@@ -86,6 +91,12 @@ def main():
     # # Evaluate test results
     # egfe_clustering_testing.evaluate_test_clusters(new_x_test, DBSCAN_dataset)
 
+    # print(type(DBSCAN_dataset))
+    # print(DBSCAN_dataset.head() if isinstance(DBSCAN_dataset, pd.DataFrame) else DBSCAN_dataset)
+
+    element_count, status = minimalist.count_ui_elements(DBSCAN_dataset)
+    print("Number of elements = ", element_count)
+    print("Status of the elements = ", status)
 
   
 

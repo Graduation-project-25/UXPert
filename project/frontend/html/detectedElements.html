@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Figma Plugin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 20px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #processing-screen {
+        display: none;
+      }
+      #completed-screen {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="initial-screen">
+      <h1>Start Detection</h1>
+      <button id="start">Start</button>
+    </div>
+    <div id="processing-screen">
+      <h1>Processing...</h1>
+      <p>Please wait while the design is being evaluated.</p>
+    </div>
+    <div id="completed-screen">
+      <h1>Processing Complete!</h1>
+      <p>Your design has been successfully processed and saved.</p>
+      <button id="close">Close</button>
+    </div>
+
+    <script>
+      const startButton = document.getElementById('start');
+      const closeButton = document.getElementById('close');
+      const initialScreen = document.getElementById('initial-screen');
+      const processingScreen = document.getElementById('processing-screen');
+      const completedScreen = document.getElementById('completed-screen');
+
+      startButton.onclick = () => {
+        // Switch to processing screen
+        initialScreen.style.display = 'none';
+        processingScreen.style.display = 'block';
+        
+        // Start detection and send data
+        parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+      };
+
+      closeButton.onclick = () => {
+        figma.closePlugin();
+      };
+
+      // Listening to the response from Figma plugin
+      figma.ui.onmessage = (msg) => {
+        if (msg.type === 'start-detection-complete') {
+          // Switch to completed screen after detection is done
+          processingScreen.style.display = 'none';
+          completedScreen.style.display = 'block';
+        }
+      };
+    </script>
+  </body>
+</html>

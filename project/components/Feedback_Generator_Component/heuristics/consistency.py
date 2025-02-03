@@ -2,8 +2,80 @@ import numpy as np
 import pandas as pd
 from components.Feedback_Generator_Component.heuristics.heuristic import HeuristicInterface
 
-# Step 1: Define the Consistency class to evaluate the heuristic
 class Consistency(HeuristicInterface):
+    
+    def prepare_data_for_evaluation(self, extracted_features):
+        """
+        Converts the extracted features (width, height, color, position) into a pandas DataFrame.
+        Handles missing values by filling them with defaults (0 or NaN).
+        """
+        # Fill missing values with NaN or default values
+        data = {
+            'width': extracted_features.get('width', [0] * len(extracted_features.get('width', []))),
+            'height': extracted_features.get('height', [0] * len(extracted_features.get('height', []))),
+            'color_r': extracted_features.get('color_r', [0] * len(extracted_features.get('color_r', []))),
+            'color_g': extracted_features.get('color_g', [0] * len(extracted_features.get('color_g', []))),
+            'color_b': extracted_features.get('color_b', [0] * len(extracted_features.get('color_b', []))),
+            'position.x': extracted_features.get('position_x', [0] * len(extracted_features.get('position_x', []))),
+            'position.y': extracted_features.get('position_y', [0] * len(extracted_features.get('position_y', [])))
+        }
+        
+        return pd.DataFrame(data)
+
+    def check_color_consistency(self, cluster_data):
+        """
+        Check for color consistency between similar-sized elements.
+        Returns a score based on the degree of consistency.
+        """
+        # Group elements by size (width and height)
+        cluster_data['size'] = cluster_data['width'] * cluster_data['height']
+        similar_size_groups = cluster_data.groupby('size')
+        
+        color_consistency_score = 0
+        num_groups = len(similar_size_groups)
+        
+        for _, group in similar_size_groups:
+            unique_colors = group[['color_r', 'color_g', 'color_b']].drop_duplicates()
+            if len(unique_colors) == 1:
+                color_consistency_score += 1  # Consistent color for all elements in this size group
+            else:
+                color_consistency_score += 0.5  # Partially consistent or inconsistent colors
+        
+        return color_consistency_score / num_groups if num_groups > 0 else 0
+
+    def calculate_alignment_consistency(self, cluster_data):
+        """
+        Measures how well elements are aligned either horizontally or vertically.
+        You can adjust weights for horizontal and vertical alignment.
+        """
+        x_positions = cluster_data['position.x'].values
+        y_positions = cluster_data['position.y'].values
+
+        # Calculate the variance in x and y positions
+        horizontal_alignment = np.var(x_positions)
+        vertical_alignment = np.var(y_positions)
+
+        # Adjust horizontal and vertical alignment weight
+        horizontal_weight = 0.6  # Adjust this based on importance in your design
+        vertical_weight = 0.4    # Adjust this based on importance in your design
+
+        # Weighted alignment score
+        alignment_score = 1 / (1 + (horizontal_weight * horizontal_alignment + vertical_weight * vertical_alignment))
+
+        return alignment_score
+
+    def check_size_proportionality(self, cluster_data):
+        """
+        Evaluates the proportionality of element sizes within the cluster.
+        Adds a threshold to define the acceptable range of size variation.
+        """
+        # Calculate the area of each element (width * height)
+        sizes = cluster_data['width'] * cluster_data['height']
+        size_std_dev = np.std(sizes)  # Standard deviation to measure variation
+
+        # Define a threshold for acceptable size variation
+        size_threshold = 50  # Example threshold; tweak it according to your needs
+        return max(0, 1 - size_std_dev / size_threshold)  # Normalize based on the threshold
 
     def evaluate_rule(self, cluster_data):
         """
@@ -16,6 +88,12 @@ class Consistency(HeuristicInterface):
         if not isinstance(cluster_data, pd.DataFrame):
             raise TypeError("cluster_data must be a pandas DataFrame")
         
+        # Check for the necessary columns
+        required_columns = ['width', 'height', 'color_r', 'color_g', 'color_b', 'position.x', 'position.y']
+        missing_columns = [col for col in required_columns if col not in cluster_data.columns]
+        if missing_columns:
+            raise ValueError(f"Missing columns: {', '.join(missing_columns)}")
+
         # Calculate the individual scores
         color_consistency_score = self.check_color_consistency(cluster_data)
         alignment_consistency_score = self.calculate_alignment_consistency(cluster_data)
@@ -28,83 +106,20 @@ class Consistency(HeuristicInterface):
             0.3 * size_proportionality_score
         )
 
-        return {
+        # Detailed feedback
+        feedback = {
             "ColorConsistency": round(color_consistency_score * 100, 2),
             "AlignmentConsistency": round(alignment_consistency_score * 100, 2),
             "SizeProportionality": round(size_proportionality_score * 100, 2),
-            "TotalConsistency": round(total_consistency_score * 100, 2)
+            "TotalConsistency": round(total_consistency_score * 100, 2),
+            "Feedback": {
+                "ColorConsistency": "Colors are consistent across similar-sized elements."
+                if color_consistency_score > 0.9 else "Colors are inconsistent for some similar-sized elements.",
+                "AlignmentConsistency": "Elements are well-aligned horizontally and vertically."
+                if alignment_consistency_score > 0.9 else "Alignment needs improvement.",
+                "SizeProportionality": "The size variation is within acceptable limits."
+                if size_proportionality_score > 0.8 else "Size proportionality is off, consider adjusting element sizes."
+            }
         }
 
-    def check_color_consistency(self, cluster_data):
-        """
-        Checks if elements with the same size in a cluster have the same color.
-        """
-        # Group the data based on width and height
-        size_groups = cluster_data.groupby(['width', 'height'])
-        total_groups = len(size_groups)
-        
-        # Count how many groups have consistent colors
-        consistent_groups = sum(
-            1 for _, group in size_groups 
-            if group[['color_r', 'color_g', 'color_b']].drop_duplicates().shape[0] == 1
-        )
-
-        # Return the consistency ratio
-        return consistent_groups / total_groups if total_groups > 0 else 1.0
-
-    def check_size_proportionality(self, cluster_data):
-        """
-        Evaluates the proportionality of element sizes within the cluster.
-        """
-        # Calculate the area of each element (width * height)
-        sizes = cluster_data['width'] * cluster_data['height']
-        size_std_dev = np.std(sizes)  # Standard deviation to measure variation
-        return 1 / (1 + size_std_dev)  # Return inverse of the variation
-
-    def calculate_alignment_consistency(self, cluster_data):
-        """
-        Measures how well elements are aligned either horizontally or vertically.
-        """
-        x_positions = cluster_data['position.x'].values
-        y_positions = cluster_data['position.y'].values
-
-        # Calculate the variance in x and y positions
-        horizontal_alignment = np.var(x_positions)
-        vertical_alignment = np.var(y_positions)
-
-        # Return a score based on alignment
-        return 1 / (1 + horizontal_alignment + vertical_alignment)
-
-# Step 2: Function to convert extracted feature data into a DataFrame (for evaluation)
-def prepare_data_for_evaluation(extracted_features):
-    """
-    Converts the extracted features (width, height, color, position) into a pandas DataFrame.
-    """
-    data = {
-        'width': extracted_features['width'],
-        'height': extracted_features['height'],
-        'color_r': extracted_features['color_r'],
-        'color_g': extracted_features['color_g'],
-        'color_b': extracted_features['color_b'],
-        'position.x': extracted_features['position_x'],
-        'position.y': extracted_features['position_y']
-    }
-    return pd.DataFrame(data)
-
-# Step 3: Example usage of the Consistency class with your extracted features
-def evaluate_ui_elements(extracted_features):
-    """
-    Evaluates the UI elements using the Consistency heuristic.
-    """
-    # Prepare the data
-    cluster_data = prepare_data_for_evaluation(extracted_features)
-    
-    # Initialize the Consistency heuristic evaluator
-    consistency_evaluator = Consistency()
-
-    # Evaluate the consistency of the cluster
-    consistency_scores = consistency_evaluator.evaluate_rule(cluster_data)
-
-    return consistency_scores
-
-
+        return feedback
