@@ -55,8 +55,10 @@ def main():
     # print(normalized_elements)
 
     data = {
-        "screen_width": 1440,
-        "screen_height": 2560,
+        "screen_size": {
+            "screen_width": 1920,
+            "screen_height": 1080
+        },
         "elements": [
             {
                 "position": { "x": 100, "y": 200 },
