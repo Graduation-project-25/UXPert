@@ -7,7 +7,7 @@ class ClusteringInterface(ABC):
         pass
 
     @abstractmethod
-    def handle_outliers(self, X_train):
+    def handle_outliers(self, X_train, cluster_csv, outliers_csv):
         pass
 
     @abstractmethod

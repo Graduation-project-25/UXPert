@@ -21,35 +21,13 @@ class EGFEClustering(ClusteringInterface):
         self.egfe_load_data = EGFE_LoadData(train_folder)
     
 
-    def dbscan_cluster(self):
-        X_train = self.egfe_load_data.load_train_data()
-        print(X_train)
-        print(X_train.columns)
-
-        X_train=X_train[['width', 'height', 'position.x', 'position.y'] + 
-                    [col for col in X_train.columns if col.startswith('color_')] + 
-                    [col for col in X_train.columns if col.startswith('type_')]]
-
-    # Clean data if necessary
-        X_train = self.egfe_ui_processing.clean_data(X_train)
-        print('X_train After cleaning:\n', X_train)
-
-    # Fit the DBSCAN model
-        clustering = DBSCAN(eps=0.5, min_samples=5).fit(X_train)
-
-    # Prepare the dataset with clusters
-        DBSCAN_dataset = X_train.copy()
-        DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
-        print('DBSCAN_dataset:\n', DBSCAN_dataset)
-
-        cluster_json_path = os.path.join(self.output_folder, "X-train clusters.json")      
-        self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
-
-        points_in_each_cluster = DBSCAN_dataset.Cluster.value_counts().to_frame()
-        print(points_in_each_cluster)
-        clusters = np.unique(clustering.labels_)
-    
-        return DBSCAN_dataset, clusters
+    def dbscan_cluster(self, feature):
+        if feature == 'color':
+            self.dbscan_cluster_based_on_color_and_type()
+        elif feature == 'position':
+            self.dbscan_cluster_based_on_position_and_type()
+        elif feature == 'size':
+            self.dbscan_cluster_based_on_size_and_type()
 
     def dbscan_cluster_based_on_color_and_type(self):
         X_train = self.egfe_load_data.load_train_data()
@@ -75,29 +53,59 @@ class EGFEClustering(ClusteringInterface):
         print('Number of instances in each cluster\n',DBSCAN_dataset[['Cluster']].value_counts())  # View the number of instances in each cluster
         clusters = np.unique(clustering.labels_)
         return DBSCAN_dataset, clusters 
-
-    def dbscan_cluster_based_on_size_and_position(self):
+    
+    def dbscan_cluster_based_on_size_and_type(self):
         X_train = self.egfe_load_data.load_train_data()
-        print(X_train)
-        print(X_train.columns)
 
+        size_features = ['width', 'height']
+        type_features =  [col for col in X_train.columns if col.startswith('type_')]
+        X_train_selected = X_train[size_features + type_features]
 
-        X_train = X_train[['width', 'height', 'position.x', 'position.y']]
+        #Remove null values
+        if X_train_selected.isnull().any().any():
+            X_train_selected = X_train_selected.fillna(0)
+            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
 
-        # Fit the DBSCAN model
-        clustering = DBSCAN(eps=0.3, min_samples=1).fit(X_train)
+        # # Fit the DBSCAN model
+        clustering = DBSCAN(eps=0.1, min_samples=15).fit(X_train_selected)
 
         # Prepare the dataset with clusters
-        DBSCAN_dataset = X_train.copy()
+        DBSCAN_dataset = X_train_selected.copy()
         DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
         #save cluster in json
-        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on size and position.json")      
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on size and type.json")      
         self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
         print('Number of instances in each cluster\n',DBSCAN_dataset[['Cluster']].value_counts())  # View the number of instances in each cluster
         clusters = np.unique(clustering.labels_)
         return DBSCAN_dataset, clusters 
-    
 
+    def dbscan_cluster_based_on_position_and_type(self):
+        X_train = self.egfe_load_data.load_train_data()
+
+        size_features = ['position.x', 'position.y']
+        type_features =  [col for col in X_train.columns if col.startswith('type_')]
+        X_train_selected = X_train[size_features + type_features]
+
+        
+
+        #Remove null values
+        if X_train_selected.isnull().any().any():
+            X_train_selected = X_train_selected.fillna(0)
+            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+
+
+        # # Fit the DBSCAN model
+        clustering = DBSCAN(eps=0.1, min_samples=2).fit(X_train_selected)
+
+        # Prepare the dataset with clusters
+        DBSCAN_dataset = X_train_selected.copy()
+        DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
+        #save cluster in json
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on position and type.json")      
+        self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
+        print('Number of instances in each cluster\n',DBSCAN_dataset[['Cluster']].value_counts())  # View the number of instances in each cluster
+        clusters = np.unique(clustering.labels_)
+        return DBSCAN_dataset, clusters 
 
     def dbscan_cluster_based_on_screen_size(self):
         X_train = self.egfe_load_data.load_train_data()
@@ -117,27 +125,22 @@ class EGFEClustering(ClusteringInterface):
         self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
         print('Number of instances in each cluster\n',DBSCAN_dataset[['Cluster']].value_counts())  # View the number of instances in each cluster
         clusters = np.unique(clustering.labels_)
-        return DBSCAN_dataset, clusters 
-
-
-    def handle_outliers(self, X_train):
-        # Identify Outliers
-        outliers = X_train[X_train['Cluster'] == -1]
-        export_to_csv(X_train, "cluster_assignments.csv")
-        export_to_csv(outliers, "outliers.csv")    
-        
-    def handle_color_and_type_outliers(self, X_train):
-        # Identify Outliers
-        outliers = X_train[X_train['Cluster'] == -1]
-        export_to_csv(X_train, "color_and_type_cluster_assignments.csv")
-        export_to_csv(outliers, "color_and_type_outliers.csv")
-
-
+        return DBSCAN_dataset, clusters     
+    
     def save_cluster_as_json(self, clusters, cluster_json_path, group_by):
         clusters_dict = clusters.groupby(group_by).apply(lambda df: df.to_dict(orient='records'), include_groups=False).to_dict()
         with open(cluster_json_path, 'w', encoding='utf-8') as json_file:
             json.dump(clusters_dict, json_file, indent=4, ensure_ascii=False)
     
+    def handle_outliers(self, X_train, cluster_csv, outliers_csv):
+        # Identify Outliers
+        outliers = X_train[X_train['Cluster'] == -1]
+        export_to_csv(X_train, cluster_csv)
+        export_to_csv(outliers, outliers_csv)
+
+
+
+#######################################################################################################
     def analyze_clusters(self, df):
         consistency_instance = HeuristicFactory.check_rule("consistency")
         cluster_groups = df.groupby('Cluster')

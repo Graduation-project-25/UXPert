@@ -43,7 +43,7 @@ def main():
     # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
 
 
-    #splitting to test and train
+    # splitting to test and train
     # splitter.save_split_files(train_folder, test_folder)
 
     # Normalization
@@ -55,24 +55,17 @@ def main():
     # egfe_visualization.scatter_plot_ui_elements(normalized_data)
     
 
+    #############################################################################
     # DBSCAN Clustering
-    # DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster()
-
-    #Test DBSCAN colors and type clustering
-    # DBSCAN_colors_and_type_dataset, color_and_type_clusters = egfe_clustering.dbscan_cluster_based_on_color_and_type()
-    # egfe_clustering.handle_color_and_type_outliers(DBSCAN_colors_and_type_dataset)
-    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_colors_and_type_dataset)
-
-
-    #Test DBSCAN size and posititon clustering
-    DBSCAN_size_and_position_dataset, size_and_position_clusters = egfe_clustering.dbscan_cluster_based_on_size_and_position()
-    # egfe_clustering.handle_color_and_type_outliers(DBSCAN_size_and_position_dataset)
-    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_size_and_position_dataset)
+    DBSCAN_colors_and_type_dataset, color_and_type_clusters = egfe_clustering.dbscan_cluster_based_on_color_and_type()
+    egfe_clustering.handle_outliers(DBSCAN_colors_and_type_dataset,"color_and_type_cluster_assignments.csv","color_and_type_outliers.csv")
+    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_colors_and_type_dataset)
 
 
 
-    # egfe_clustering.handle_outliers(DBSCAN_dataset)
-    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+
+
+    #################################################################################
     # egfe_clustering.analyze_clusters(DBSCAN_dataset)
     # egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
     # egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
