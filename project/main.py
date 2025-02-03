@@ -93,25 +93,25 @@ def main():
 
 
     #Test DBSCAN size and posititon clustering
-    DBSCAN_size_and_position_dataset, size_and_position_clusters = egfe_clustering.dbscan_cluster_based_on_size_and_position()
-    egfe_clustering.handle_color_and_type_outliers(DBSCAN_size_and_position_dataset)
-    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_size_and_position_dataset)
+    # DBSCAN_size_and_position_dataset, size_and_position_clusters = egfe_clustering.dbscan_cluster_based_on_size_and_position()
+    # egfe_clustering.handle_color_and_type_outliers(DBSCAN_size_and_position_dataset)
+    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_size_and_position_dataset)
 
 
 
-    egfe_clustering.handle_outliers(DBSCAN_dataset)
-    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
-    egfe_clustering.analyze_clusters(DBSCAN_dataset)
-    egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
-    egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
-    egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
-    egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
-    egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
-    egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
-    egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
-    egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
-    egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
-    egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
+    # egfe_clustering.handle_outliers(DBSCAN_dataset)
+    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+    # egfe_clustering.analyze_clusters(DBSCAN_dataset)
+    # egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
+    # egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
+    # egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
+    # egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
+    # egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
+    # egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
+    # egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
+    # egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
+    # egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
+    # egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
 
 
     ## Visualize ui elements
