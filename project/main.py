@@ -29,6 +29,7 @@ def main():
 
     ############################# EGFE Dataset #############################################
     egfe_ui_processing = EGFE_UiProcessing()
+    egfe_ui_normalizing = EGFE_UiNormalizing()
     splitter = JSONDataSplitter(output_folder)
     egfe_clustering_evaluation = EGFEClusteringEvaluation()
     egfe_clustering = EGFEClustering(train_folder,output_folder)
@@ -45,15 +46,46 @@ def main():
     #splitting to test and train
     # splitter.save_split_files(train_folder, test_folder)
 
+    # Normalization
+    train_data = egfe_ui_processing.convert_json_to_dataframe(train_folder)
+    # normalized_elements, normalized_screen_size = egfe_ui_normalizing.get_normalized_data(train_data)
+    # print("Normalized screen size")
+    # print(normalized_screen_size)
+    # print("Normalized elements")
+    # print(normalized_elements)
+
+    data = {
+        "screen_width": 1440,
+        "screen_height": 2560,
+        "elements": [
+            {
+                "position": { "x": 100, "y": 200 },
+                "width": 300,
+                "height": 400,
+                "color": [255, 0, 0, 1],
+                "type": "button"
+            }
+        ]
+    }
+
+    normalizer = EGFE_UiNormalizing()
+    normalized_elements, normalized_screen = normalizer.get_normalized_data(data)
+    print("Normalized screen size")
+    print(normalized_screen)
+    print("Normalized elements")
+    print(normalized_elements)
+
+
 
     # Scatter plot of UI elements
     # egfe_visualization.scatter_plot_ui_elements(normalized_data)
     
 
     # DBSCAN Clustering
-    DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster()
-    # DBSCAN_colors_dataset, color_clusters = egfe_clustering.dbscan_cluster_based_on_color()
-
+    # DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster()
+    DBSCAN_colors_dataset, color_clusters = egfe_clustering.dbscan_cluster_based_on_color_and_type()
+    egfe_clustering.handle_color_and_type_outliers(DBSCAN_colors_dataset)
+    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_colors_dataset)
 
 
 
