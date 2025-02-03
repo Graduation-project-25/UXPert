@@ -1,11 +1,20 @@
+import pandas as pd 
+
+
 from components.Feedback_Generator_Component.heuristics.heuristic import HeuristicInterface
 
 class Minimalist(HeuristicInterface):
     def evaluate_rule(self,cluster_data):
         print("Minimalist Rule")
 
-    def count_ui_elements(elements, threshold_min=3, threshold_max=10):
-        count = len(elements)
+    def count_ui_elements(self, elements, threshold_min=3, threshold_max=10):
+        # Ensure elements is a list or a DataFrame and extract rows count
+        if isinstance(elements, pd.DataFrame):
+            count = elements.shape[0]  # Get number of rows
+        elif isinstance(elements, list):
+            count = len(elements)
+        else:
+            raise TypeError(f"Unsupported type {type(elements)} for count_ui_elements")
         
         if count < threshold_min:
             status = 'Too Few - Screen might be too empty'
