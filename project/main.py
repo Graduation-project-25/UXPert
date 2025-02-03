@@ -43,7 +43,7 @@ def main():
 
 
     # save json in extracted features folder
-    egfe_ui_processing.process_ui_elements(json_folder, output_folder)
+    # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
 
 
     #splitting to test and train
@@ -65,11 +65,11 @@ def main():
 
     # DBSCAN Clustering
     X_train,DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster(normalized_data)
-    # egfe_clustering.handle_outliers(X_train)
-    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
-    # egfe_clustering.analyze_clusters(DBSCAN_dataset)
-    # egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
-    # egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
+    egfe_clustering.handle_outliers(X_train)
+    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+    egfe_clustering.analyze_clusters(DBSCAN_dataset)
+    egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
+    egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
     # egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
     # egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
     # egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
