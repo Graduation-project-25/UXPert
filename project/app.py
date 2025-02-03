@@ -36,15 +36,6 @@ def process_elements():
     if not user_id or not elements:
         return jsonify({"error": "Missing user_id or elements"}), 400
 
-    # Create a design document
-    design_document = {
-        "user_id": user_id,
-        "user_name": user_name,
-        "design_name": design_name,
-        "elements": elements, 
-        "created_at": datetime.utcnow().isoformat(),
-    }
-
     # Log the received elements
     print(f"Received design from {user_name} ({user_id}): {design_name}")
     for index, element in enumerate(elements):
@@ -57,30 +48,12 @@ def process_elements():
     consistency_evaluator = Consistency()
     consistency_results = consistency_evaluator.evaluate_rule(elements_df)
 
-    # Define the file path for the design
-    design_file_path = os.path.join(designs_dir, f"{design_name}.json")
+    # Print the consistency results in the terminal
+    print(f"Consistency evaluation results: {consistency_results}")
 
-    # Check if a design file already exists with the same name
-    if os.path.exists(design_file_path):
-        # If exists, read and overwrite the file with the new design data
-        with open(design_file_path, 'r') as file:
-            design_data = json.load(file)
-
-        # Replace the design's consistency result with the new one
-        design_document["consistency"] = consistency_results
-        design_data["consistency"] = consistency_results  # Update consistency in the design
-
-        # Write the updated design data back to the same file
-        with open(design_file_path, 'w') as file:
-            json.dump(design_data, file, indent=4)
-    else:
-        # If file does not exist, create a new file with the design name
-        design_document["consistency"] = consistency_results
-        with open(design_file_path, 'w') as file:
-            json.dump(design_document, file, indent=4)
-
+    # Return the response without saving the design
     return jsonify({
-        "message": "Design saved and evaluated successfully!",
+        "message": "Design processed successfully (no file saved)!",
         "status": 200,
         "consistency": consistency_results  # Include the consistency evaluation in the response
     }), 200
