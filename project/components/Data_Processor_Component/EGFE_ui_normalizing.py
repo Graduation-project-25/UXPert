@@ -25,23 +25,34 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
 
 
         if "type" in df.columns:
-            df = pd.get_dummies(df, columns=['type'], prefix='type')  # One-hot encode the 'type' column
-            df = df.astype({col: 'int' for col in df.columns if col.startswith('type_')})  # Convert Boolean columns to 0 and 1 
+            df = pd.get_dummies(df, columns=['type'], prefix='type')  # One-hot encode 'type' column
+            df = df.astype({col: 'int' for col in df.columns if col.startswith('type_')})  # Convert to 0 and 1 
 
         return df 
 
     def normalize_screen_size(self, screen_size):
-        # Ensure screen_size contains 'width' and 'height'
-        if 'screen_width' in screen_size and 'screen_height' in screen_size:
-            # Create a DataFrame for screen size
-            screen_df = pd.DataFrame([screen_size])
+        # Manual Normalization
+        # max_width = 1920  # Standard max screen width
+        # max_height = 3840  # Standard max screen height
 
-            # Normalize the screen size (width, height)
-            screen_df[['screen_width', 'screen_height']] = self.scale.fit_transform(screen_df[['screen_width', 'screen_height']])
+        # normalized_width = screen_size['screen_width'] / max_width
+        # normalized_height = screen_size['screen_height'] / max_height
 
-            return screen_df[['screen_width', 'screen_height']]
-        else:
-            raise ValueError("Screen size does not contain 'screen_width' and 'screen_height' keys.")
+        # return {"screen_width": normalized_width, "screen_height": normalized_height}
+        
+        # Another way: MinMaxScaler 
+        sample_sizes = pd.DataFrame([
+            {"screen_width": 800, "screen_height": 1280},
+            {"screen_width": 1440, "screen_height": 2560},
+            {"screen_width": 1920, "screen_height": 3840}
+        ])
+        
+        # Fit on multiple values
+        self.scale.fit(sample_sizes)  
+        screen_df = pd.DataFrame([screen_size])
+        screen_df[['screen_width', 'screen_height']] = self.scale.transform(screen_df[['screen_width', 'screen_height']])
+        
+        return screen_df[['screen_width', 'screen_height']].to_dict(orient='records')[0]
 
     def get_normalized_data(self, data):
         if 'screen_width' not in data or 'screen_height' not in data:
@@ -53,11 +64,7 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
         # Normalize the elements first
         normalized_elements = self.normalize_ui_elements(elements)
         
-        # Normalize the screen size and add it to the DataFrame
+        # Normalize the screen size and return
         normalized_screen_size = self.normalize_screen_size(screen_size)
 
         return normalized_elements, normalized_screen_size
-
-
-
-
