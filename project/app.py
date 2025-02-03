@@ -4,10 +4,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from datetime import datetime
 import os
-
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
-
-# Import the Consistency class
 
 config = {}
 with open('.config', 'r') as f:
@@ -19,13 +16,10 @@ with open('.config', 'r') as f:
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
-# Define the JSON file path
-json_file_path = 'designs_data.json'
-
-# Ensure the JSON file exists
-if not os.path.exists(json_file_path):
-    with open(json_file_path, 'w') as file:
-        json.dump([], file)  # Initialize with an empty list
+# Define the directory to store the design data
+designs_dir = 'designs_data'
+if not os.path.exists(designs_dir):
+    os.makedirs(designs_dir)  # Create the directory if it doesn't exist
 
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
@@ -63,17 +57,27 @@ def process_elements():
     consistency_evaluator = Consistency()
     consistency_results = consistency_evaluator.evaluate_rule(elements_df)
 
-    # Read the current contents of the JSON file
-    with open(json_file_path, 'r') as file:
-        designs_data = json.load(file)
+    # Define the file path for the design
+    design_file_path = os.path.join(designs_dir, f"{design_name}.json")
 
-    # Append the new design data along with consistency results
-    design_document["consistency"] = consistency_results
-    designs_data.append(design_document)  # Append the new design document
+    # Check if a design file already exists with the same name
+    if os.path.exists(design_file_path):
+        # If exists, read and overwrite the file with the new design data
+        with open(design_file_path, 'r') as file:
+            design_data = json.load(file)
 
-    # Write the updated data back to the JSON file
-    with open(json_file_path, 'w') as file:
-        json.dump(designs_data, file, indent=4)
+        # Replace the design's consistency result with the new one
+        design_document["consistency"] = consistency_results
+        design_data["consistency"] = consistency_results  # Update consistency in the design
+
+        # Write the updated design data back to the same file
+        with open(design_file_path, 'w') as file:
+            json.dump(design_data, file, indent=4)
+    else:
+        # If file does not exist, create a new file with the design name
+        design_document["consistency"] = consistency_results
+        with open(design_file_path, 'w') as file:
+            json.dump(design_document, file, indent=4)
 
     return jsonify({
         "message": "Design saved and evaluated successfully!",
