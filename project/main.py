@@ -28,13 +28,13 @@ os.makedirs(output_folder, exist_ok=True)
 def main():
 
     ############################# EGFE Dataset #############################################
+    egfe_ui_processing = EGFE_UiProcessing()
+    splitter = JSONDataSplitter(output_folder)
     egfe_clustering_evaluation = EGFEClusteringEvaluation()
-    # egfe_clustering_testing = EGFEClusteringTesting()
+    egfe_clustering = EGFEClustering(train_folder,output_folder)
     egfe_ui_extraction = EGFE_FeatureExtraction()
     egfe_visualization = EGFE_Visualization()
-    splitter = JSONDataSplitter(output_folder)
-    egfe_ui_processing = EGFE_UiProcessing()
-    egfe_clustering = EGFEClustering(train_folder,output_folder)
+    # egfe_clustering_testing = EGFEClusteringTesting()
     minimalist = Minimalist()
 
 
@@ -102,7 +102,7 @@ def main():
 
 
 
-    #Test Minimalist
+    # Test Minimalist
     # element_count, status = minimalist.count_ui_elements(DBSCAN_dataset)
     # print("Number of elements = ", element_count)
     # print("Status of the elements = ", status)
