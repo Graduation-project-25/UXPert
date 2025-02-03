@@ -37,7 +37,7 @@ def main():
 
 
     # save json in extracted features folder
-    # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
+    egfe_ui_processing.process_ui_elements(json_folder, output_folder)
 
 
     #splitting to test and train

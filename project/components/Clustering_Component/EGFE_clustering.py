@@ -64,6 +64,7 @@ class EGFEClustering(ClusteringInterface):
 
         if not all_data:
             raise ValueError("No JSON files found in the training folder.")
+        
         return pd.concat(all_data, ignore_index=True)
     
 
@@ -83,19 +84,15 @@ class EGFEClustering(ClusteringInterface):
 
 
         X_train = self.egfe_ui_processing.clean_data(X_train)
-
         print('New X_train\n', X_train)
-
 
         # Fit the DBSCAN model
         clustering = DBSCAN(eps=0.5, min_samples=5).fit(X_train)
-
-        # Assign cluster labels to each design
         X_train['Cluster'] = clustering.labels_
 
-        # Prepare the the dataset with clusters 
+        # Prepare dataset with clusters
         DBSCAN_dataset = X_train.copy()
-        DBSCAN_dataset.loc[:,'Cluster'] = clustering.labels_  # adding cluster column
+        DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
 
         cluster_json_path = os.path.join(self.output_folder, "X-train clusters.json")      
         # self.save_cluster_as_json(X_train,cluster_json_path,'Cluster')
@@ -112,8 +109,6 @@ class EGFEClustering(ClusteringInterface):
     def handle_outliers(self,X_train):
         # Identify Outliers
         outliers = X_train[X_train['Cluster'] == -1]
-
-        # Save the cluster assignments and outliers
         export_to_csv(X_train, "cluster_assignments.csv")
         export_to_csv(outliers, "outliers.csv")
 
@@ -121,27 +116,29 @@ class EGFEClustering(ClusteringInterface):
     def save_cluster_as_json(self,clusters,cluster_json_path, group_by):
         clusters_dict = clusters.groupby(group_by).apply(lambda df: df.to_dict(orient='records'), include_groups=False).to_dict()
         with open(cluster_json_path, 'w', encoding='utf-8') as json_file:
-            json.dump(clusters_dict, json_file, indent=4, ensure_ascii=False) 
-
-    def analyze_clusters(self,df):
-        consistency = Consistency()
+            json.dump(clusters_dict, json_file, indent=4, ensure_ascii=False)
+    
+    def analyze_clusters(self, df):
         consistency_instance = HeuristicFactory.check_rule("consistency")
-
-        # Group by cluster
         cluster_groups = df.groupby('Cluster')
-
         cluster_analysis = []
+        
         for cluster_id, group in cluster_groups:    
-            # Calculate metrics for the cluster
             num_elements = len(group)
             avg_width = group['width'].mean()
             avg_height = group['height'].mean()
-            avg_density = num_elements / ((group['position.x'].max() - group['position.x'].min()) *
-                                        (group['position.y'].max() - group['position.y'].min()))
-            alignment_consistency = consistency.calculate_alignment_consistency(group)
-            consistency_scores = consistency_instance.evaluate_rule(group)
-            print("Factory pattern Testing, Consistency" , consistency_scores)
+            
+            # Prevent division by zero in density calculation
+            bbox_width = group['position.x'].max() - group['position.x'].min()
+            bbox_height = group['position.y'].max() - group['position.y'].min()
+            area = bbox_width * bbox_height if bbox_width > 0 and bbox_height > 0 else 1
+            avg_density = num_elements / area  # Now safe from division by zero
 
+            # Compute alignment consistency and heuristic consistency score
+            alignment_consistency = consistency_instance.calculate_alignment_consistency(group)
+            consistency_scores = consistency_instance.evaluate_rule(group)
+            print("Factory pattern Testing, Consistency:", consistency_scores)
+            
             # Store analysis
             cluster_analysis.append({
                 "Cluster": cluster_id,
@@ -150,17 +147,7 @@ class EGFEClustering(ClusteringInterface):
                 "AvgHeight": avg_height,
                 "AvgDensity": avg_density,
                 "AlignmentConsistency": alignment_consistency,
-                "TotalConsistency" : [consistency_scores],
+                "TotalConsistency": consistency_scores,
             })
-
-            # df = df.merge(analysis_df[['Cluster', 'TotalConsistency']], on='Cluster', how='left')
-    
-            
-        # Convert to Dataframe for better visualization
-        # analysis_df = pd.DataFrame(cluster_analysis)
-
-        # print("Cluster Analysis:\n", analysis_df)
-
-        # export_to_csv(analysis_df, "cluster_analysis.csv")
-
-        # return analysis_df
+        
+        return cluster_analysis
