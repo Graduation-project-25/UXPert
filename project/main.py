@@ -57,9 +57,10 @@ def main():
     
 
     # DBSCAN Clustering
-    DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster()
-    # DBSCAN_colors_dataset, color_clusters = egfe_clustering.dbscan_cluster_based_on_color()
-
+    # DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster()
+    DBSCAN_colors_dataset, color_clusters = egfe_clustering.dbscan_cluster_based_on_color_and_type()
+    egfe_clustering.handle_color_and_type_outliers(DBSCAN_colors_dataset)
+    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_colors_dataset)
 
 
 

@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import DBSCAN
 from sklearn.datasets import make_blobs
+from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
 from components.Clustering_Component.clustering import ClusteringInterface
@@ -50,48 +51,52 @@ class EGFEClustering(ClusteringInterface):
     
         return DBSCAN_dataset, clusters
 
-    def dbscan_cluster_based_on_color(self):
+    def dbscan_cluster_based_on_color_and_type(self):
         X_train = self.egfe_load_data.load_train_data()
-        print(X_train)
-        print(X_train.columns)
 
-        X_train = X_train[[col for col in X_train.columns if col.startswith('color_')]]
+        color_features = [col for col in X_train.columns if col.startswith('color_')]
+        type_features =  [col for col in X_train.columns if col.startswith('type_')]
+        X_train_selected = X_train[color_features + type_features]  
+
+        #Remove null values
+        if X_train_selected.isnull().any().any():
+            X_train_selected = X_train_selected.fillna(0)
+            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+
+        # Apply DBSCAN
+        clustering = DBSCAN(eps=0.2, min_samples=5).fit(X_train_selected)
+
+        # Prepare the dataset with clusters
+        DBSCAN_dataset = X_train_selected.copy()
+        DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
+        #save cluster in json
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors.json")      
+        self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
+        print('Number of instances in each cluster\n',DBSCAN_dataset[['Cluster']].value_counts())  # View the number of instances in each cluster
+        clusters = np.unique(clustering.labels_)
+        return DBSCAN_dataset, clusters 
 
 
-    # Clean data if necessary
-        # X_train = self.egfe_ui_processing.clean_data(X_train)
-        # print('X_train After cleaning:\n', X_train)
+    def get_dataset_with_cluseters(self, X_train, clustering, file_name):
+        DBSCAN_dataset = X_train.copy()
+        DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
+        cluster_json_path = os.path.join(self.output_folder, file_name)      
+        self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
+        clusters = np.unique(clustering.labels_)
+        return DBSCAN_dataset, clusters
 
-    # Fit the DBSCAN model
-        dbscan = DBSCAN(eps=0.1, min_samples=5)
-        clusters = dbscan.fit_predict(X_train)
-
-        plt.scatter(X_train[:, X_train], X_train[:, 1], c=clusters, cmap='viridis', marker='o')
-        plt.title("DBSCAN Clustering of Concentric Circles")
-        plt.xlabel("color")
-        plt.ylabel("Feature 1")
-        plt.show()
-
-
-    # Prepare the dataset with clusters
-        # DBSCAN_dataset = X_train.copy()
-        # DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
-        # print('DBSCAN_dataset:\n', DBSCAN_dataset)
-
-        # cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors.json")      
-        # self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
-
-        # points_in_each_cluster = DBSCAN_dataset.Cluster.value_counts().to_frame()
-        # print(points_in_each_cluster)
-        # clusters = np.unique(clustering.labels_)
-    
-        # return DBSCAN_dataset, clusters
 
     def handle_outliers(self, X_train):
         # Identify Outliers
         outliers = X_train[X_train['Cluster'] == -1]
         export_to_csv(X_train, "cluster_assignments.csv")
-        export_to_csv(outliers, "outliers.csv")
+        export_to_csv(outliers, "outliers.csv")    
+        
+    def handle_color_and_type_outliers(self, X_train):
+        # Identify Outliers
+        outliers = X_train[X_train['Cluster'] == -1]
+        export_to_csv(X_train, "color_and_type_cluster_assignments.csv")
+        export_to_csv(outliers, "color_and_type_outliers.csv")
 
 
     def save_cluster_as_json(self, clusters, cluster_json_path, group_by):
