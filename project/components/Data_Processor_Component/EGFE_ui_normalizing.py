@@ -26,8 +26,7 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
 
         if "type" in df.columns:
             df = pd.get_dummies(df, columns=['type'], prefix='type')  # One-hot encode the 'type' column
-            df = df.astype({col: 'int' for col in df.columns if col.startswith('type_')})  # Convert Boolean columns to 0 and 1
-            
+            df = df.astype({col: 'int' for col in df.columns if col.startswith('type_')})  # Convert Boolean columns to 0 and 1 
 
         return df 
 
@@ -53,5 +52,6 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
         # Normalize the screen size and add it to the DataFrame
         normalized_screen_size = self.normalize_screen_size(screen_size)
         return normalized_elements,normalized_screen_size
+
 
 

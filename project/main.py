@@ -58,11 +58,16 @@ def main():
 
     # DBSCAN Clustering
     DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster()
-    egfe_clustering.handle_outliers(DBSCAN_dataset)
-    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
-    egfe_clustering.analyze_clusters(DBSCAN_dataset)
-    egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
-    egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
+    # DBSCAN_colors_dataset, color_clusters = egfe_clustering.dbscan_cluster_based_on_color()
+
+
+
+
+    # egfe_clustering.handle_outliers(DBSCAN_dataset)
+    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+    # egfe_clustering.analyze_clusters(DBSCAN_dataset)
+    # egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
+    # egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
     # egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
     # egfe_visualization.visualize_color_consistency(DBSCAN_dataset)
     # egfe_visualization.visualize_size_proportionality(DBSCAN_dataset)
@@ -74,7 +79,7 @@ def main():
 
 
     ## Visualize ui elements
-    egfe_visualization.visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
+    # egfe_visualization.visualize_ui_elements(image_folder, json_folder, output_folder, limit=50)
 
     # print("#######################################################################################")
 

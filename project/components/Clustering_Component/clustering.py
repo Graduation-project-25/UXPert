@@ -1,12 +1,9 @@
 from abc import ABC, abstractmethod
 
 class ClusteringInterface(ABC):
-    
+
     @abstractmethod
     def dbscan_cluster(self):
-        pass
-    @abstractmethod
-    def load_train_data(self):
         pass
 
     @abstractmethod

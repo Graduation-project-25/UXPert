@@ -12,16 +12,6 @@ from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_Featu
 class EGFE_UiProcessing(UiProcessorInterface):
     def __init__(self):
         self.egfe_ui_extraction = EGFE_FeatureExtraction()
-
-
-    def clean_data(self, df):
-        missing_values = df.isnull().sum().sum()
-        if missing_values > 0:
-            df.fillna(0, inplace=True)  # Replace NaN with 0 (or use another strategy)
-        else:
-            print("No missing values found.")
-        return df
-
     
     def save_ui_elements(self, elements, image_name, output_path):
         """Saves the extracted UI elements along with screen size to a JSON file."""
@@ -33,6 +23,16 @@ class EGFE_UiProcessing(UiProcessorInterface):
 
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(data_to_save, f, ensure_ascii=False, indent=4)
+
+    
+    def clean_data(self, df):
+        missing_values = df.isnull().sum().sum()
+        if missing_values > 0:
+            df.fillna(0, inplace=True)  # Replace NaN with 0 (or use another strategy)
+        else:
+            print("No missing values found.")
+        return df
+
 
     def estimate_screen_size(self, image_name):
         image_path = f"data/raw/EGFE/images/{image_name}.png"
