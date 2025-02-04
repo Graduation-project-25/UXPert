@@ -1,78 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Figma Plugin</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Consistency Feedback</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            color: #333;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f4f4f9;
+        color: #333;
+        margin: 0;
+      }
 
-        #feedbackContainer {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f4f4f4;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            max-height: 300px;
-            overflow-y: auto;
-        }
+      .feedback-container {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+      }
 
-        .feedback-item {
-            margin: 10px 0;
-            padding: 10px;
-            background-color: #e9f7ef;
-            border-radius: 5px;
-        }
+      .feedback-item {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
 
-        .feedback-title {
-            font-weight: bold;
-        }
+      .feedback-title {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+      }
 
-        .feedback-description {
-            color: #555;
-        }
+      .feedback-description {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #555;
+      }
+
+      .button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+        cursor: pointer;
+        margin-top: 20px;
+        width: 100%;
+      }
+
+      .button:hover {
+        background-color: #0056b3;
+      }
     </style>
-</head>
-<body>
-    <h1>Consistency Feedback</h1>
-    <div id="feedbackContainer">
-        <!-- Feedback will be inserted here -->
+  </head>
+  <body>
+    <h2>Consistency Evaluation Feedback</h2>
+    <div class="feedback-container" id="feedback-container">
+      <!-- Feedback will be dynamically added here -->
     </div>
+    <button class="button" id="close-btn">Close</button>
 
     <script>
-        // Listen to messages from Figma plugin
-        onmessage = (event) => {
-            const msg = event.data.pluginMessage;
-            if (msg.type === 'feedback') {
-                const feedback = msg.feedback;
+      // Listen for the feedback from the plugin
+      onmessage = (event) => {
+        if (event.data.type === 'feedback') {
+          const feedback = event.data.feedback;
+          const feedbackContainer = document.getElementById('feedback-container');
+          feedbackContainer.innerHTML = ''; // Clear any existing feedback
 
-                const feedbackContainer = document.getElementById('feedbackContainer');
-                feedbackContainer.innerHTML = ''; // Clear previous feedback
+          // Add each feedback item to the container
+          Object.keys(feedback).forEach((key) => {
+            const feedbackItem = document.createElement('div');
+            feedbackItem.classList.add('feedback-item');
+            feedbackItem.innerHTML = `
+              <div class="feedback-title">${key}</div>
+              <div class="feedback-description">${feedback[key]}</div>
+            `;
+            feedbackContainer.appendChild(feedbackItem);
+          });
+        }
+      };
 
-                // Loop through the feedback and display it
-                for (const [key, value] of Object.entries(feedback)) {
-                    const feedbackItem = document.createElement('div');
-                    feedbackItem.className = 'feedback-item';
-                    
-                    const feedbackTitle = document.createElement('div');
-                    feedbackTitle.className = 'feedback-title';
-                    feedbackTitle.textContent = key;
-
-                    const feedbackDescription = document.createElement('div');
-                    feedbackDescription.className = 'feedback-description';
-                    feedbackDescription.textContent = value;
-
-                    feedbackItem.appendChild(feedbackTitle);
-                    feedbackItem.appendChild(feedbackDescription);
-
-                    feedbackContainer.appendChild(feedbackItem);
-                }
-            }
-        };
+      // Close button functionality
+      document.getElementById('close-btn').onclick = () => {
+        parent.postMessage({ pluginMessage: { type: 'close' } }, '*');
+      };
     </script>
-</body>
+  </body>
 </html>

@@ -77,6 +77,7 @@ figma.ui.onmessage = async (msg) => {
             if (!processResponse.ok) {
                 throw new Error(`HTTP error! Status: ${processResponse.status}`);
             }
+            figma.notify(`${filteredNodes.length} Features saved successfully!`);
 
             // Type the response result properly
             const result = await processResponse.json() as ConsistencyResult;
@@ -96,7 +97,6 @@ figma.ui.onmessage = async (msg) => {
                 figma.notify(`Feedback:\n${feedbackMessages}`);
             }
 
-            figma.notify(`${filteredNodes.length} Features saved successfully!`);
 
         } catch (error) {
             console.error("Error during fetch:", error);
