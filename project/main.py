@@ -13,6 +13,8 @@ from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitt
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
 from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
+from components.Feedback_Generator_Component.heuristics.consistency import Consistency
+
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 2000)
