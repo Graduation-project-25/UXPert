@@ -26,7 +26,7 @@ class EGFE_LoadData(LoadDataInterface):
                             continue
 
                         df = self.egfe_ui_normalizing.normalize_ui_elements(data["elements"])
-                        df['normalized_screen_width'],df["normalized_screen_height"] = self.egfe_ui_normalizing.normalize_screen_size(data["screen_size"])
+                        df['screen_width'],df["screen_height"] = self.egfe_ui_normalizing.normalize_screen_size(data["screen_size"])
                         df["file_name"] = file_name  # Track the file source
 
                         all_data.append(df)

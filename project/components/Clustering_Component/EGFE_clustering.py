@@ -30,6 +30,8 @@ class EGFEClustering(ClusteringInterface):
             DBSCAN_dataset, clusters = self.dbscan_cluster_based_on_position_and_type()
         elif feature == 'size':
             DBSCAN_dataset, clusters = self.dbscan_cluster_based_on_size_and_type()
+        elif feature == 'screen_size':
+            DBSCAN_dataset, clusters = self.dbscan_cluster_based_on_screen_size()
         return DBSCAN_dataset, clusters
 
     def dbscan_cluster_based_on_color_and_type(self):
@@ -84,8 +86,6 @@ class EGFEClustering(ClusteringInterface):
         clustering = DBSCAN(eps=optimal_eps, min_samples=8).fit(X_train_selected)
 
 
-
-
         # Prepare the dataset with clusters
         DBSCAN_dataset = X_train_selected.copy()
         DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
@@ -131,23 +131,65 @@ class EGFEClustering(ClusteringInterface):
 
     def dbscan_cluster_based_on_screen_size(self):
         X_train = self.egfe_load_data.load_train_data()
-        X_train = X_train[['width', 'height', 'position.x', 'position.y']]
-        print(X_train)
-        print(X_train.columns)
+        X_train_selected = X_train[['screen_width', 'screen_height']]  
+        print(X_train_selected)
+        print(X_train_selected.columns)
 
-
-        # Fit the DBSCAN model
-        clustering = DBSCAN(eps=0.3, min_samples=1).fit(X_train)
+        # Apply DBSCAN
+        clustering = DBSCAN(eps=0.2, min_samples=10).fit(X_train_selected)
 
         # Prepare the dataset with clusters
-        DBSCAN_dataset = X_train.copy()
+        DBSCAN_dataset = X_train_selected.copy()
         DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
         #save cluster in json
-        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on size and position.json")      
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on screen size.json")      
         self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
         print('Number of instances in each cluster\n',DBSCAN_dataset[['Cluster']].value_counts())  # View the number of instances in each cluster
         clusters = np.unique(clustering.labels_)
-        return DBSCAN_dataset, clusters     
+
+        # pca = PCA(n_components=2)
+        # pca_result = pca.fit_transform(DBSCAN_dataset.drop('Cluster', axis=1))  # Remove 'Cluster' column for PCA
+
+        # # Visualizing the PCA results
+        # plt.figure(figsize=(8, 6))
+        # plt.scatter(pca_result[:, 0], pca_result[:, 1], c=DBSCAN_dataset['Cluster'], cmap='viridis', alpha=0.7)
+        # plt.colorbar(label='Cluster Label')
+        # plt.title('PCA Visualization of DBSCAN Clusters')
+        # plt.xlabel('PCA Component 1')
+        # plt.ylabel('PCA Component 2')
+        # plt.show()
+
+        # # Now applying t-SNE for a more detailed separation visualization
+        # tsne = TSNE(n_components=2, perplexity=30, n_iter=300)
+        # tsne_result = tsne.fit_transform(DBSCAN_dataset.drop('Cluster', axis=1))
+
+        # # Visualizing the t-SNE results
+        # plt.figure(figsize=(8, 6))
+        # plt.scatter(tsne_result[:, 0], tsne_result[:, 1], c=DBSCAN_dataset['Cluster'], cmap='viridis', alpha=0.7)
+        # plt.colorbar(label='Cluster Label')
+        # plt.title('t-SNE Visualization of DBSCAN Clusters')
+        # plt.xlabel('t-SNE Component 1')
+        # plt.ylabel('t-SNE Component 2')
+        # plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return DBSCAN_dataset, clusters 
     
     def save_cluster_as_json(self, clusters, cluster_json_path, group_by):
         clusters_dict = clusters.groupby(group_by).apply(lambda df: df.to_dict(orient='records'), include_groups=False).to_dict()
@@ -159,7 +201,6 @@ class EGFEClustering(ClusteringInterface):
         outliers = X_train[X_train['Cluster'] == -1]
         export_to_csv(X_train, cluster_csv)
         export_to_csv(outliers, outliers_csv)
-
 
 
 #######################################################################################################
