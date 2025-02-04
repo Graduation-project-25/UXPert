@@ -13,6 +13,17 @@ class Minimalist(HeuristicInterface):
         self.max_elements_threshold = max_elements_threshold
         self.min_elements_threshold = min_elements_threshold
 
+    def calculate_white_space_ratio(self, design_json, screen_width, screen_height):
+        screen_area = screen_width * screen_height
+        total_element_area = 0
+
+        for element in design_json["elements"]:
+            width, height = element["width"], element["height"]
+            total_element_area += width * height  # Sum up all element areas
+
+        wsr = 1 - (total_element_area / screen_area)  # Compute white space ratio
+        return wsr
+
     def count_ui_elements(self, elements, threshold_min=3, threshold_max=10):
         # Ensure elements is a list or a DataFrame and extract rows count
         if isinstance(elements, pd.DataFrame):
@@ -66,18 +77,6 @@ class Minimalist(HeuristicInterface):
 
         return feedback
     
-    def calculate_white_space_ratio(self, design_json, screen_width, screen_height):
-        screen_area = screen_width * screen_height
-        total_element_area = 0
-
-        for element in design_json["elements"]:
-            width, height = element["width"], element["height"]
-            total_element_area += width * height  # Sum up all element areas
-
-        wsr = 1 - (total_element_area / screen_area)  # Compute white space ratio
-        return wsr
-
-
     def infer_screen_type(self, screen_data):
         width = screen_data["screen_size"]["screen_width"]
         height = screen_data["screen_size"]["screen_height"]
