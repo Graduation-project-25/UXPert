@@ -4,8 +4,10 @@ from components.Feedback_Generator_Component.heuristics.heuristic_factory import
 from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 
 
+
 class EGFE_HeuristicEvaluation():    
     def __init__(self, cluster_json_file):
+        self.clustering = EGFE_Clustering()
         self.cluster_json_file = cluster_json_file
         with open(cluster_json_file, 'r') as f:
             self.clusters = json.load(f)
@@ -28,8 +30,8 @@ class EGFE_HeuristicEvaluation():
         #     json.dump(self.clusters, f, indent=4)
 
     def evaluate_minimalist_on_clusters(self):
-        DBSCAN_dataset, clusters = self.dbscan_cluster_based_on_screen_size_and_type()
-
+        DBSCAN_dataset, clusters = self.clustering.dbscan_cluster('screen_size_and_type')
+        
         # Initialize Minimalist rule
         minimalist_rule = Minimalist()  
         cluster_feedback = {}
@@ -62,4 +64,17 @@ class EGFE_HeuristicEvaluation():
             cluster_feedback[cluster] = feedback
 
         return cluster_feedback
+
+    def evaluate_minimalist(self):
+        minimalist_rule = Minimalist()
+        results = {}
+
+        for cluster_id, cluster_data in self.clusters.items():
+            try:
+                feedback = minimalist_rule.evaluate_rule(cluster_data)
+                results[cluster_id] = feedback
+            except Exception as e:
+                results[cluster_id] = f"Error evaluating cluster {cluster_id}: {str(e)}"
+
+        return results
 

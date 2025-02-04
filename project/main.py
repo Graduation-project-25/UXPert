@@ -1,6 +1,7 @@
 import os
 import sys
 import pandas as pd
+from pathlib import Path
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
@@ -14,6 +15,7 @@ from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_Featu
 from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
+from components.Clustering_Component.EGFE_heuristic_evaluation import EGFE_HeuristicEvaluation
 
 
 pd.set_option('display.max_columns', None)
@@ -54,8 +56,8 @@ def main():
     # egfe_visualization.scatter_plot_ui_elements(normalized_elements)
     
     # Step 5: Clustering (DBSCAN Based on Screen Size)
-    clustered_data, data_to_evaluate, clusters = egfe_clustering.dbscan_cluster('screen_size')
-    egfe_clustering_evaluation.evaluate_clustering(data_to_evaluate)
+    # clustered_data, data_to_evaluate, clusters = egfe_clustering.dbscan_cluster('screen_size')
+    # egfe_clustering_evaluation.evaluate_clustering(data_to_evaluate)
     
     # Step 6: Visualizing Clustering Results
     # egfe_visualization.clustering_visualization_by_size(clustered_data, clusters)
@@ -76,6 +78,18 @@ def main():
     # element_count, status = minimalist.count_ui_elements(clustered_data)
     # print("Number of elements =", element_count)
     # print("Status of the elements =", status)
+
+    base_path = Path(__file__).resolve().parent  # Get current script directory
+    file_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
+
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    evaluator = EGFE_HeuristicEvaluation(str(file_path))
+    evaluation_results = evaluator.evaluate_minimalist_on_clusters()
+    print(evaluation_results)
+
+
     
 if __name__ == "__main__":
     main()
