@@ -69,7 +69,7 @@ class EGFE_UiProcessing(UiProcessorInterface):
                     'width': 'mean',
                     'height': 'mean'
                 }).reset_index()
-
+                print("aggregated elements :")
                 return aggregated
             else:
                 raise ValueError("Missing necessary columns in the DataFrame.")
@@ -97,4 +97,5 @@ class EGFE_UiProcessing(UiProcessorInterface):
 
         # Convert the list of dictionaries into a pandas DataFrame
         df = pd.DataFrame(all_elements)
+        print("data framed elements:")
         return df
