@@ -6,15 +6,16 @@ interface ConsistencyResult {
     };
 }
 
-figma.showUI(__html__);
+// Show the initial UI with the start button
+figma.showUI(__html__, { width: 400, height: 200 });
 
 figma.ui.onmessage = async (msg) => {
     if (msg.type === 'start-detection') {
-        // Load all pages and find visible nodes (Frames or elements inside Frames)
+        // Step 1: Load all pages and find visible nodes (Frames or elements inside Frames)
         await figma.loadAllPagesAsync();
         const allNodes = figma.currentPage.findAll();
         const visibleNodes = allNodes.filter(node => node.visible);
-        const filteredNodes = visibleNodes.filter(node => 
+        const filteredNodes = visibleNodes.filter(node =>
             node.type === "FRAME" || (node.parent && node.parent.type === "FRAME")
         );
 
@@ -60,7 +61,7 @@ figma.ui.onmessage = async (msg) => {
         console.log(`Detected Design Name: ${design_name}`);
 
         try {
-            // Step 1: Send extracted features to backend for storage in the database
+            // Step 2: Send extracted features to backend for processing
             console.log("Sending extracted features to the backend...");
 
             const processResponse = await fetch("http://localhost:3000/process", {
@@ -79,18 +80,23 @@ figma.ui.onmessage = async (msg) => {
 
             // Type the response result properly
             const result = await processResponse.json() as ConsistencyResult;
-// Type assertion here
 
             // Log the consistency results from the response
             console.log("Consistency Evaluation Results: ", result.consistency_results);
 
-            figma.notify(`${filteredNodes.length} Features saved successfully!`);
-
-            // Optionally, display the feedback from the backend to the user
+            // Step 3: Send feedback to the UI
             if (result.consistency_results.Feedback) {
+                figma.ui.postMessage({
+                    type: 'feedback',
+                    feedback: result.consistency_results.Feedback
+                });
+
+                // Optionally, display the feedback from the backend to the user
                 const feedbackMessages = Object.values(result.consistency_results.Feedback).join("\n");
                 figma.notify(`Feedback:\n${feedbackMessages}`);
             }
+
+            figma.notify(`${filteredNodes.length} Features saved successfully!`);
 
         } catch (error) {
             console.error("Error during fetch:", error);

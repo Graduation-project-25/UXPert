@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figma Plugin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            color: #333;
+        }
+
+        #feedbackContainer {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f4f4f4;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .feedback-item {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #e9f7ef;
+            border-radius: 5px;
+        }
+
+        .feedback-title {
+            font-weight: bold;
+        }
+
+        .feedback-description {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Consistency Feedback</h1>
+    <div id="feedbackContainer">
+        <!-- Feedback will be inserted here -->
+    </div>
+
+    <script>
+        // Listen to messages from Figma plugin
+        onmessage = (event) => {
+            const msg = event.data.pluginMessage;
+            if (msg.type === 'feedback') {
+                const feedback = msg.feedback;
+
+                const feedbackContainer = document.getElementById('feedbackContainer');
+                feedbackContainer.innerHTML = ''; // Clear previous feedback
+
+                // Loop through the feedback and display it
+                for (const [key, value] of Object.entries(feedback)) {
+                    const feedbackItem = document.createElement('div');
+                    feedbackItem.className = 'feedback-item';
+                    
+                    const feedbackTitle = document.createElement('div');
+                    feedbackTitle.className = 'feedback-title';
+                    feedbackTitle.textContent = key;
+
+                    const feedbackDescription = document.createElement('div');
+                    feedbackDescription.className = 'feedback-description';
+                    feedbackDescription.textContent = value;
+
+                    feedbackItem.appendChild(feedbackTitle);
+                    feedbackItem.appendChild(feedbackDescription);
+
+                    feedbackContainer.appendChild(feedbackItem);
+                }
+            }
+        };
+    </script>
+</body>
+</html>
