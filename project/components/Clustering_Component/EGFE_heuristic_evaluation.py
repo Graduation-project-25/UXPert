@@ -27,3 +27,39 @@ class EGFE_HeuristicEvaluation():
         # with open('evaluated_clusters.json', 'w') as f:
         #     json.dump(self.clusters, f, indent=4)
 
+    def evaluate_minimalist_on_clusters(self):
+        DBSCAN_dataset, clusters = self.dbscan_cluster_based_on_screen_size_and_type()
+
+        # Initialize Minimalist rule
+        minimalist_rule = Minimalist()  
+        cluster_feedback = {}
+
+        for cluster in clusters:
+            # Ignore noise points
+            if cluster == -1:
+                continue  
+
+            # Filter cluster data
+            cluster_data = DBSCAN_dataset[DBSCAN_dataset["Cluster"] == cluster]  
+            
+            # Convert cluster data to a dictionary structure expected by Minimalist
+            design_json = {
+                "screen_size": {
+                    "screen_width": cluster_data["screen_width"].iloc[0],
+                    "screen_height": cluster_data["screen_height"].iloc[0]
+                },
+                "elements": []
+            }
+
+            # Extract UI elements from columns that start with "type_"
+            for _, row in cluster_data.iterrows():
+                for col in cluster_data.columns:
+                    if col.startswith("type_") and row[col] > 0:  # Check presence of element
+                        design_json["elements"].append({"type": col, "width": 100, "height": 100})
+
+            # Apply Minimalist evaluation
+            feedback = minimalist_rule.evaluate_rule(cluster_data)
+            cluster_feedback[cluster] = feedback
+
+        return cluster_feedback
+

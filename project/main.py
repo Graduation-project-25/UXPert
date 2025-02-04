@@ -71,6 +71,9 @@ def main():
     #############################################################################
     # Rule Evaluation
     # egfe_heuristic_evaluation.evaluate_heuristics()
+    minimalist = Minimalist()
+    evaluator = EGFE_HeuristicEvaluation()
+    print(evaluator.evaluate_minimalist_on_clusters())
 
 
 
