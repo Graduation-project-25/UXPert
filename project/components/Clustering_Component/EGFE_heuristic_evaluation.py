@@ -1,12 +1,29 @@
-from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
-from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
+import json
+from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
+from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
+from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 
 
 class EGFE_HeuristicEvaluation():    
-    def __init__(self, designs):
-        self.designs = designs
-    def apply_dbscan(self):
-        print("Evaluate")
-        # DBSCAN logic here (e.g., clustering based on screen size)
-        # self.clusters = dbscan_clustering(self.designs)
+    def __init__(self, cluster_json_file):
+        self.cluster_json_file = cluster_json_file
+        with open(cluster_json_file, 'r') as f:
+            self.clusters = json.load(f)
+
+
+    def evaluate_heuristics(self):
+        minimalist_instance = HeuristicFactory.check_rule("minimalist")
+        minimalist = Minimalist()
+        for cluster in self.clusters:
+            print(cluster)
+            for design_json in cluster['elements']:  
+                screen_width = design_json["screen_width"]
+                screen_height = design_json["screen_height"]
+                result = minimalist.evaluate_minimalist(design_json, screen_width, screen_height)
+                print(result)
+                # design_json["aesthetic_evaluation"] = result  # Add evaluation to the design
+                
+        # Optionally, save the updated clusters back to a new file
+        # with open('evaluated_clusters.json', 'w') as f:
+        #     json.dump(self.clusters, f, indent=4)
 

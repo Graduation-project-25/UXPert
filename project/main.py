@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
@@ -14,7 +15,7 @@ from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNorma
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
-
+from components.Clustering_Component.EGFE_heuristic_evaluation import EGFE_HeuristicEvaluation
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 2000) 
 
@@ -41,6 +42,9 @@ def main():
     egfe_load_data = EGFE_LoadData(train_folder)
     minimalist = Minimalist()
 
+    screen_size_cluster_file = output_folder + '/X-train Clusters based on screen size.json'
+    egfe_heuristic_evaluation = EGFE_HeuristicEvaluation(screen_size_cluster_file)
+
 
     # save json in extracted features folder
     # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
@@ -60,9 +64,14 @@ def main():
 
     #############################################################################
     # DBSCAN Clustering
-    DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('position')
+    # DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('screen_size')
     # egfe_clustering.handle_outliers(DBSCAN_dataset,"screen_size_cluster_assignments.csv","screen_size_outliers.csv")
     # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+
+
+    #############################################################################
+    # Rule Evaluation
+    # egfe_heuristic_evaluation.evaluate_heuristics()
 
 
 

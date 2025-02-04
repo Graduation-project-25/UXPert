@@ -132,16 +132,8 @@ class Minimalist(HeuristicInterface):
         white_space_ratio = 1 - (total_element_area / screen_area)  # Compute white space ratio
         return white_space_ratio
 
-    def evaluate_rule(self, design_json, screen_width, screen_height, cluster_data):
+    def evaluate_rule(self, cluster_data):
         feedback = {}
-
-        # Call the white space ratio check
-        wsr = self.calculate_white_space_ratio(design_json, screen_width, screen_height)
-        if wsr >= 0.4:
-            feedback["wsr_status"] = "Pass - Minimalist Design"
-        else:
-            feedback["wsr_status"] = "Fail - Cluttered Design"
-
         # Call the count UI elements check
         count, count_status = self.count_ui_elements(design_json["elements"])
         feedback["ui_element_count"] = f"Number of UI elements: {count}. Status: {count_status}"
@@ -176,3 +168,10 @@ class Minimalist(HeuristicInterface):
         # Return the merged feedback dictionary
         return feedback
 
+    def evaluate_minimalist(self, design_json, screen_width, screen_height):
+        # Call the white space ratio check
+        white_space_ratio = self.calculate_white_space_ratio(design_json, screen_width, screen_height)
+        if white_space_ratio >= 0.4:
+            return "Pass - Minimalist Design"
+        else:
+            return "Fail - Cluttered Design"
