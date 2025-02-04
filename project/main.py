@@ -57,10 +57,9 @@ def main():
 
     #############################################################################
     # DBSCAN Clustering
-    DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('screen_size')
-
-    egfe_clustering.handle_outliers(DBSCAN_dataset,"screen_size_cluster_assignments.csv","screen_size_outliers.csv")
-    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+    # DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('screen_size')
+    # egfe_clustering.handle_outliers(DBSCAN_dataset,"screen_size_cluster_assignments.csv","screen_size_outliers.csv")
+    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
 
 
 

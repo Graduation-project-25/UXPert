@@ -1,19 +1,13 @@
 import json
 import os
-import seaborn as sns
 import numpy as np
-import pandas as pd
 from sklearn.cluster import DBSCAN
-from sklearn.decomposition import PCA
 from sklearn.neighbors import NearestNeighbors
 from components.Clustering_Component.clustering import ClusteringInterface
 from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
 from utils.csv_exporting import export_to_csv
-from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
-import matplotlib.pyplot as plt
 
 
 class EGFEClustering(ClusteringInterface):    
@@ -146,49 +140,6 @@ class EGFEClustering(ClusteringInterface):
         self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
         print('Number of instances in each cluster\n',DBSCAN_dataset[['Cluster']].value_counts())  # View the number of instances in each cluster
         clusters = np.unique(clustering.labels_)
-
-        # pca = PCA(n_components=2)
-        # pca_result = pca.fit_transform(DBSCAN_dataset.drop('Cluster', axis=1))  # Remove 'Cluster' column for PCA
-
-        # # Visualizing the PCA results
-        # plt.figure(figsize=(8, 6))
-        # plt.scatter(pca_result[:, 0], pca_result[:, 1], c=DBSCAN_dataset['Cluster'], cmap='viridis', alpha=0.7)
-        # plt.colorbar(label='Cluster Label')
-        # plt.title('PCA Visualization of DBSCAN Clusters')
-        # plt.xlabel('PCA Component 1')
-        # plt.ylabel('PCA Component 2')
-        # plt.show()
-
-        # # Now applying t-SNE for a more detailed separation visualization
-        # tsne = TSNE(n_components=2, perplexity=30, n_iter=300)
-        # tsne_result = tsne.fit_transform(DBSCAN_dataset.drop('Cluster', axis=1))
-
-        # # Visualizing the t-SNE results
-        # plt.figure(figsize=(8, 6))
-        # plt.scatter(tsne_result[:, 0], tsne_result[:, 1], c=DBSCAN_dataset['Cluster'], cmap='viridis', alpha=0.7)
-        # plt.colorbar(label='Cluster Label')
-        # plt.title('t-SNE Visualization of DBSCAN Clusters')
-        # plt.xlabel('t-SNE Component 1')
-        # plt.ylabel('t-SNE Component 2')
-        # plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         return DBSCAN_dataset, clusters 
     
     def save_cluster_as_json(self, clusters, cluster_json_path, group_by):
@@ -238,3 +189,6 @@ class EGFEClustering(ClusteringInterface):
             })
         
         return cluster_analysis
+
+
+
