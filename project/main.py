@@ -41,8 +41,8 @@ def main():
     egfe_load_data = EGFE_LoadData(train_folder)
     minimalist = Minimalist()
 
-    screen_size_cluster_file = output_folder + '/X-train Clusters based on screen size.json'
-    egfe_heuristic_evaluation = EGFE_HeuristicEvaluation(screen_size_cluster_file)
+    # screen_size_cluster_file = output_folder + '/X-train Clusters based on screen size.json'
+    # egfe_heuristic_evaluation = EGFE_HeuristicEvaluation(screen_size_cluster_file)
 
 
     # save json in extracted features folder
@@ -63,9 +63,16 @@ def main():
 
     #############################################################################
     # DBSCAN Clustering
-    DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('screen_size_and_type')
+    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     # egfe_clustering.handle_outliers(DBSCAN_dataset,"screen_size_cluster_assignments.csv","screen_size_outliers.csv")
-    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+    # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
+
+
+    # DBSCAN Clustering Based on Screen Size
+    clustered_data, data_to_evaluate, clusters = egfe_clustering.dbscan_cluster('screen_size')
+    # egfe_clustering.handle_outliers(DBSCAN_dataset,"screen_size_cluster_assignments.csv","screen_size_outliers.csv")
+    egfe_clustering_evaluation.evaluate_clustering(data_to_evaluate)
+
 
 
     #############################################################################
