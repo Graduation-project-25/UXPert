@@ -1,18 +1,20 @@
 import json
 import os
-from matplotlib import pyplot as plt
+import seaborn as sns
 import numpy as np
 import pandas as pd
 from sklearn.cluster import DBSCAN
-from sklearn.datasets import make_blobs
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import MinMaxScaler
-from components.Feedback_Generator_Component.heuristics.consistency import Consistency
+from sklearn.neighbors import NearestNeighbors
 from components.Clustering_Component.clustering import ClusteringInterface
 from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
 from utils.csv_exporting import export_to_csv
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+
 
 class EGFEClustering(ClusteringInterface):    
     def __init__(self, train_folder,output_folder):
@@ -68,7 +70,21 @@ class EGFEClustering(ClusteringInterface):
             X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
 
         # # Fit the DBSCAN model
-        clustering = DBSCAN(eps=0.1, min_samples=15).fit(X_train_selected)
+        # clustering = DBSCAN(eps=0.1, min_samples=15).fit(X_train_selected)
+        # To Enhance Accuracy
+        # Fit Nearest Neighbors model
+        nearest_neighbors = NearestNeighbors(n_neighbors=5)
+        nearest_neighbors.fit(X_train_selected)
+        distances, indices = nearest_neighbors.kneighbors(X_train_selected)
+        distances = np.sort(distances[:, -1])        # Sort distances 
+
+        # # Fit the DBSCAN model
+        #0.95 , 8 -> 0.900
+        optimal_eps = distances[int(len(distances) * 0.95)]  
+        clustering = DBSCAN(eps=optimal_eps, min_samples=8).fit(X_train_selected)
+
+
+
 
         # Prepare the dataset with clusters
         DBSCAN_dataset = X_train_selected.copy()
@@ -82,30 +98,35 @@ class EGFEClustering(ClusteringInterface):
 
     def dbscan_cluster_based_on_position_and_type(self):
         X_train = self.egfe_load_data.load_train_data()
-
         size_features = ['position.x', 'position.y']
         type_features =  [col for col in X_train.columns if col.startswith('type_')]
         X_train_selected = X_train[size_features + type_features]
-
-        
-
         #Remove null values
         if X_train_selected.isnull().any().any():
             X_train_selected = X_train_selected.fillna(0)
             X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
 
+        # To Enhance Accuracy
+        # Fit Nearest Neighbors model
+        nearest_neighbors = NearestNeighbors(n_neighbors=5)
+        nearest_neighbors.fit(X_train_selected)
+        distances, indices = nearest_neighbors.kneighbors(X_train_selected)
+        distances = np.sort(distances[:, -1])        # Sort distances 
 
         # # Fit the DBSCAN model
-        clustering = DBSCAN(eps=0.1, min_samples=2).fit(X_train_selected)
+        optimal_eps = distances[int(len(distances) * 0.94)]  # 95th percentile distance
+        clustering = DBSCAN(eps=optimal_eps, min_samples=10).fit(X_train_selected)
 
         # Prepare the dataset with clusters
         DBSCAN_dataset = X_train_selected.copy()
         DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
+
         #save cluster in json
         cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on position and type.json")      
         self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
         print('Number of instances in each cluster\n',DBSCAN_dataset[['Cluster']].value_counts())  # View the number of instances in each cluster
         clusters = np.unique(clustering.labels_)
+
         return DBSCAN_dataset, clusters 
 
     def dbscan_cluster_based_on_screen_size(self):
