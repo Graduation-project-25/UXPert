@@ -173,6 +173,7 @@ class EGFEClustering(ClusteringInterface):
             avg_width = group['width'].mean()
             avg_height = group['height'].mean()
             
+            print(group.columns)
             # Prevent division by zero in density calculation
             bbox_width = group['position.x'].max() - group['position.x'].min()
             bbox_height = group['position.y'].max() - group['position.y'].min()
