@@ -1,9 +1,4 @@
 import pandas as pd 
-import pandas as pd 
-
-
-import pandas as pd  
-
 
 from components.Feedback_Generator_Component.heuristics.heuristic import HeuristicInterface
 
