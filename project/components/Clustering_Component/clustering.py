@@ -11,9 +11,5 @@ class ClusteringInterface(ABC):
         pass
 
     @abstractmethod
-    def analyze_clusters(self, df):
-        pass
-
-    @abstractmethod
     def save_cluster_as_json(self,clusters,cluster_json_path, group_by):
         pass

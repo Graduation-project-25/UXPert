@@ -2,20 +2,19 @@ import os
 import sys
 import pandas as pd
 
-
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 from components.Clustering_Component.EGFE_clustering_evaluation import EGFE_ClusteringEvaluation
 from components.Clustering_Component.EGFE_clustering_testing import EGFE_ClusteringTesting
-from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
-from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
-from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNormalizing
-from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
-from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
-from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
 from components.Clustering_Component.EGFE_heuristic_evaluation import EGFE_HeuristicEvaluation
+from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
+from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNormalizing
+from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
+from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
+from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
+from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
+from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
+
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 2000) 
 
@@ -64,9 +63,9 @@ def main():
 
     #############################################################################
     # DBSCAN Clustering
-    # DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('screen_size')
+    DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('screen_size_and_type')
     # egfe_clustering.handle_outliers(DBSCAN_dataset,"screen_size_cluster_assignments.csv","screen_size_outliers.csv")
-    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
 
 
     #############################################################################
