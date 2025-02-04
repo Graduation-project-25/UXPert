@@ -35,12 +35,12 @@ def main():
     egfe_clustering = EGFEClustering(train_folder,output_folder)
     egfe_ui_extraction = EGFE_FeatureExtraction()
     egfe_visualization = EGFE_Visualization()
-    egfe_clustering_testing = EGFEClusteringTesting()
+    egfe_clustering_testing = EGFEClusteringTesting(train_folder)
     minimalist = Minimalist()
 
 
     # save json in extracted features folder
-    egfe_ui_processing.process_ui_elements(json_folder, output_folder)
+    # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
 
 
     # splitting to test and train
@@ -57,8 +57,8 @@ def main():
 
     #############################################################################
     # DBSCAN Clustering
-    # DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('size')
-    # egfe_clustering.handle_outliers(DBSCAN_dataset,"color_and_type_cluster_assignments.csv","color_and_type_outliers.csv")
+    # DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('screen_size')
+    # egfe_clustering.handle_outliers(DBSCAN_dataset,"screen_size_cluster_assignments.csv","screen_size_outliers.csv")
     # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
 
 

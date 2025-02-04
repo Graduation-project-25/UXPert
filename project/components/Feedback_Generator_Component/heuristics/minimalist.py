@@ -40,7 +40,6 @@ class Minimalist(HeuristicInterface):
             return f"Too few elements ({num_elements}). Consider adding essential components."
         return "Element count is well-balanced."
 
-
     def numberOfElements(self, cluster_data):
         num_elements = len(cluster_data) # Count total elements
 
@@ -66,6 +65,18 @@ class Minimalist(HeuristicInterface):
             feedback["status"] = "The design follows the minimalism principle."
 
         return feedback
+    
+    def calculate_white_space_ratio(self, design_json, screen_width, screen_height):
+        screen_area = screen_width * screen_height
+        total_element_area = 0
+
+        for element in design_json["elements"]:
+            width, height = element["width"], element["height"]
+            total_element_area += width * height  # Sum up all element areas
+
+        wsr = 1 - (total_element_area / screen_area)  # Compute white space ratio
+        return wsr
+
 
     def infer_screen_type(self, screen_data):
         width = screen_data["screen_size"]["screen_width"]
@@ -119,5 +130,10 @@ class Minimalist(HeuristicInterface):
     def whitespace_ratio(self, cluster_data):
         screen_area = 0
 
-    def evaluate_rule(self, cluster_data):
-        print("Minimalist Rule")
+    def evaluate_rule(self,design_json, screen_width, screen_height):
+        wsr = self.calculate_white_space_ratio(design_json, screen_width, screen_height)
+
+        if wsr >= 0.4:
+            return "Pass - Minimalist Design"  
+        else:
+            return "Fail - Cluttered Design"  
