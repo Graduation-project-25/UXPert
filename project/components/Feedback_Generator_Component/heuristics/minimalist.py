@@ -4,8 +4,11 @@ import pandas as pd
 from components.Feedback_Generator_Component.heuristics.heuristic import HeuristicInterface
 
 class Minimalist(HeuristicInterface):
-    def evaluate_rule(self,cluster_data):
-        print("Minimalist Rule")
+
+    def __init__(self, max_elements_threshold=50, min_elements_threshold=5, screen_irrelevant_elements=None):
+        self.max_elements_threshold = max_elements_threshold
+        self.min_elements_threshold = min_elements_threshold
+        self.screen_irrelevant_elements = screen_irrelevant_elements if screen_irrelevant_elements else {}
 
     def count_ui_elements(self, elements, threshold_min=3, threshold_max=10):
         # Ensure elements is a list or a DataFrame and extract rows count
@@ -24,6 +27,16 @@ class Minimalist(HeuristicInterface):
             status = 'Balanced - Design is optimal'
         
         return count, status
+
+    def check_element_count(self, cluster_data):
+        num_elements = len(cluster_data)
+
+        if num_elements > self.max_elements_threshold:
+            return f"Too many elements ({num_elements}). Consider simplifying the design."
+        elif num_elements < self.min_elements_threshold:
+            return f"Too few elements ({num_elements}). Consider adding essential components."
+        return "Element count is well-balanced."
+
 
     def numberOfElements(self, cluster_data):
         num_elements = len(cluster_data) # Count total elements
@@ -54,4 +67,5 @@ class Minimalist(HeuristicInterface):
     def whitespace_ratio(self, cluster_data):
         screen_area = 0
 
-
+    def evaluate_rule(self,cluster_data):
+        print("Minimalist Rule")
