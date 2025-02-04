@@ -35,7 +35,7 @@ def main():
     egfe_clustering = EGFEClustering(train_folder,output_folder)
     egfe_ui_extraction = EGFE_FeatureExtraction()
     egfe_visualization = EGFE_Visualization()
-    # egfe_clustering_testing = EGFEClusteringTesting()
+    egfe_clustering_testing = EGFEClusteringTesting(train_folder)
     minimalist = Minimalist()
 
 
@@ -43,60 +43,30 @@ def main():
     # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
 
 
-    #splitting to test and train
+    # splitting to test and train
     # splitter.save_split_files(train_folder, test_folder)
 
     # Normalization
-    train_data = egfe_ui_processing.convert_json_to_dataframe(train_folder)
+    # train_data = egfe_ui_processing.convert_json_to_dataframe(train_folder)
     # normalized_elements, normalized_screen_size = egfe_ui_normalizing.get_normalized_data(train_data)
-    # print("Normalized screen size")
-    # print(normalized_screen_size)
-    # print("Normalized elements")
-    # print(normalized_elements)
 
-    data = {
-        "screen_width": 1440,
-        "screen_height": 2560,
-        "elements": [
-            {
-                "position": { "x": 100, "y": 200 },
-                "width": 300,
-                "height": 400,
-                "color": [255, 0, 0, 1],
-                "type": "button"
-            }
-        ]
-    }
-
-    normalizer = EGFE_UiNormalizing()
-    normalized_elements, normalized_screen = normalizer.get_normalized_data(data)
-    print("Normalized screen size")
-    print(normalized_screen)
-    print("Normalized elements")
-    print(normalized_elements)
-
-
-
-    # Aggregate by 'type'
-    # df = egfe_ui_processing.convert_json_to_dataframe(train_folder)
-    # aggregated_elements = egfe_ui_processing.aggregate_ui_elements(df)
-    # print("Aggregated Elements:\n", aggregated_elements)
-    # print("***************************************************************\n")
 
     # Scatter plot of UI elements
     # egfe_visualization.scatter_plot_ui_elements(normalized_data)
     
 
+    #############################################################################
     # DBSCAN Clustering
-    # DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster()
-    DBSCAN_colors_dataset, color_clusters = egfe_clustering.dbscan_cluster_based_on_color_and_type()
-    egfe_clustering.handle_color_and_type_outliers(DBSCAN_colors_dataset)
-    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_colors_dataset)
+    DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('screen_size')
+
+    egfe_clustering.handle_outliers(DBSCAN_dataset,"screen_size_cluster_assignments.csv","screen_size_outliers.csv")
+    egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
 
 
 
-    # egfe_clustering.handle_outliers(DBSCAN_dataset)
-    # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
+
+
+    #################################################################################
     # egfe_clustering.analyze_clusters(DBSCAN_dataset)
     # egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
     # egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)

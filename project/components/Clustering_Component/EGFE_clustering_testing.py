@@ -1,24 +1,17 @@
 import os
-import pandas as pd
 import numpy as np
 from scipy.spatial.distance import cdist
 
 from components.Clustering_Component.clustering_testing import ClusteringTestingInterface
 from components.Clustering_Component.EGFE_clustering import EGFEClustering
 
-# pd.set_option('display.max_columns', None)
-# pd.set_option('display.width', 200) 
-
 
 class EGFEClusteringTesting(ClusteringTestingInterface):
-    def __init__(self):
-        self.egfe_clustering = EGFEClustering()
-        # self.dataset_folder = './data/raw/EGFE'  
-        # self.image_folder  = self.dataset_folder + '/images' 
-        # self.json_folder  = self.dataset_folder + '/jsons' 
-        # output_folder = self.dataset_folder + '/extractedFeatures'
-        # os.makedirs(output_folder, exist_ok=True)
-
+    def __init__(self, train_folder):
+        self.dataset_folder = './data/raw/EGFE'
+        self.output_folder = self.dataset_folder + '/extractedFeatures'
+        self.train_folder = train_folder
+        self.egfe_clustering = EGFEClustering(self.train_folder,self.output_folder)
 
     def assign_test_clusters(self,X_train, X_test, dbscan):
         # Compute the cluster centers from `X_train`

@@ -26,7 +26,7 @@ figma.ui.onmessage = async (msg) => {
                 }
             }
 
-            const size = ('width' in node && 'height' in node) ? node.width * node.height : null;
+            const fontSize = (node.type === "TEXT" && 'fontSize' in node) ? node.fontSize : null;  // Capture font size for text elements
 
             return {
                 name: node.name,
@@ -41,7 +41,7 @@ figma.ui.onmessage = async (msg) => {
                 color_b: color.b,  
                 insideFrame: node.type === "FRAME" ? false : true,
                 frameName: node.type === "FRAME" ? node.name : node.parent?.name,
-                size: size // New size attribute
+                fontSize: fontSize // Font size for text elements
             };
         });
 

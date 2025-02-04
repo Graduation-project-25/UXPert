@@ -31,38 +31,32 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
             df = df.astype({col: 'int' for col in df.columns if col.startswith('type_')})  # Convert Boolean columns to 0 and 1 
         print("normalized data")
         return df 
-
+ 
     def normalize_screen_size(self, screen_size):
-        # Ensure screen_size contains 'width' and 'height'
-        if 'screen_width' in screen_size and 'screen_height' in screen_size:
-            # Create a DataFrame for screen size
-            screen_df = pd.DataFrame([screen_size])
+        # Manual Normalization
+        max_width = 1920  # Standard max screen width
+        max_height = 3840  # Standard max screen height
 
-            # Normalize the screen size (width, height)
-            
-            screen_df[['screen_width', 'screen_height']] = self.scale.fit_transform(screen_df[['screen_width', 'screen_height']])
-            
-            print("normalized screen size")
-            return screen_df[['screen_width', 'screen_height']]
-        else:
-            raise ValueError("Screen size does not contain 'screen_width' and 'screen_height' keys.")
+        normalized_width = screen_size['screen_width'] / max_width
+        normalized_height = screen_size['screen_height'] / max_height
 
+        return normalized_width, normalized_height
+        
     def get_normalized_data(self, data):
-        if 'screen_width' not in data or 'screen_height' not in data:
+        # Access screen_size from the new structure
+        if 'screen_size' not in data or 'screen_width' not in data['screen_size'] or 'screen_height' not in data['screen_size']:
             raise KeyError("The dataset does not contain 'screen_width' or 'screen_height'. Check JSON structure.")
-
-        screen_size = {"screen_width": data['screen_width'], "screen_height": data['screen_height']}
+        
+        # Update to access screen_size values correctly
+        screen_size = {"screen_width": data['screen_size']['screen_width'], "screen_height": data['screen_size']['screen_height']}
         elements = data['elements']
 
         # Normalize the elements first
         normalized_elements = self.normalize_ui_elements(elements)
         
-        # Normalize the screen size and add it to the DataFrame
+        # Normalize the screen size and return
         normalized_screen_size = self.normalize_screen_size(screen_size)
         
         print("normalized elements and screen size : ")
         return normalized_elements, normalized_screen_size
-
-
-
 

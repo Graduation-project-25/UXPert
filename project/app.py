@@ -4,10 +4,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from datetime import datetime
 import os
-
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
-
-# Import the Consistency class
 
 config = {}
 with open('.config', 'r') as f:
@@ -19,13 +16,10 @@ with open('.config', 'r') as f:
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
-# Define the JSON file path
-json_file_path = 'designs_data.json'
-
-# Ensure the JSON file exists
-if not os.path.exists(json_file_path):
-    with open(json_file_path, 'w') as file:
-        json.dump([], file)  # Initialize with an empty list
+# Define the directory to store the design data
+designs_dir = 'designs_data'
+if not os.path.exists(designs_dir):
+    os.makedirs(designs_dir)  # Create the directory if it doesn't exist
 
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
@@ -42,15 +36,6 @@ def process_elements():
     if not user_id or not elements:
         return jsonify({"error": "Missing user_id or elements"}), 400
 
-    # Create a design document
-    design_document = {
-        "user_id": user_id,
-        "user_name": user_name,
-        "design_name": design_name,
-        "elements": elements, 
-        "created_at": datetime.utcnow().isoformat(),
-    }
-
     # Log the received elements
     print(f"Received design from {user_name} ({user_id}): {design_name}")
     for index, element in enumerate(elements):
@@ -63,22 +48,14 @@ def process_elements():
     consistency_evaluator = Consistency()
     consistency_results = consistency_evaluator.evaluate_rule(elements_df)
 
-    # Read the current contents of the JSON file
-    with open(json_file_path, 'r') as file:
-        designs_data = json.load(file)
+    # Print the consistency results in the terminal
+    print(f"Consistency evaluation results: {consistency_results}")
 
-    # Append the new design data along with consistency results
-    design_document["consistency"] = consistency_results
-    designs_data.append(design_document)  # Append the new design document
-
-    # Write the updated data back to the JSON file
-    with open(json_file_path, 'w') as file:
-        json.dump(designs_data, file, indent=4)
-
+    # Return the response without saving the design
     return jsonify({
-        "message": "Design saved and evaluated successfully!",
+        "message": "Design processed successfully (no file saved)!",
         "status": 200,
-        "consistency": consistency_results  # Include the consistency evaluation in the response
+        "consistency": consistency_results 
     }), 200
 
 @app.route('/', methods=['GET'])

@@ -1,15 +1,8 @@
 import json
 import os
-from matplotlib import pyplot as plt
-import numpy as np
 import pandas as pd
-from sklearn.cluster import DBSCAN
-from sklearn.datasets import make_blobs
-from sklearn.preprocessing import MinMaxScaler
-from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNormalizing
 from components.Data_Loader_Component.load_data import LoadDataInterface
-from utils.csv_exporting import export_to_csv
 
 class EGFE_LoadData(LoadDataInterface):    
     def __init__(self, train_folder):
@@ -32,25 +25,10 @@ class EGFE_LoadData(LoadDataInterface):
                             print(f"Warning: 'elements' key missing in {file_name}. Skipping file.")
                             continue
 
-                        # df1 = pd.json_normalize(data["screen_size"])  # Extract UI elements
-                        # print(df1)
-
-
-                        # Extract screen dimensions (if available)
-                        # screen_width = data.get("screen_width", 0)
-                        # screen_height = data.get("screen_height", 0)
-
-                        # Add screen dimensions
-                        # df["screen_width"] = screen_width
-                        # df["screen_height"] = screen_height
-                        # df["file_name"] = file_name  # Track file origin
-
-                        #Normalize screen size
-                        # Y = df[['screen_width', 'screen_height']]
-                        # df[['screen_width', 'screen_height']] = self.scale.fit_transform(Y)
-
                         df = self.egfe_ui_normalizing.normalize_ui_elements(data["elements"])
-   
+                        df['screen_width'],df["screen_height"] = self.egfe_ui_normalizing.normalize_screen_size(data["screen_size"])
+                        df["file_name"] = file_name  # Track the file source
+
                         all_data.append(df)
 
                 except (json.JSONDecodeError, KeyError) as e:
