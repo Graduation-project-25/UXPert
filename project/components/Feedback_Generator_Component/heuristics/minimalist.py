@@ -1,9 +1,4 @@
 import pandas as pd 
-import pandas as pd 
-
-
-import pandas as pd  
-
 
 from components.Feedback_Generator_Component.heuristics.heuristic import HeuristicInterface
 
@@ -12,6 +7,17 @@ class Minimalist(HeuristicInterface):
     def __init__(self, max_elements_threshold=50, min_elements_threshold=5):
         self.max_elements_threshold = max_elements_threshold
         self.min_elements_threshold = min_elements_threshold
+
+    def calculate_white_space_ratio(self, design_json, screen_width, screen_height):
+        screen_area = screen_width * screen_height
+        total_element_area = 0
+
+        for element in design_json["elements"]:
+            width, height = element["width"], element["height"]
+            total_element_area += width * height  # Sum up all element areas
+
+        wsr = 1 - (total_element_area / screen_area)  # Compute white space ratio
+        return wsr
 
     def count_ui_elements(self, elements, threshold_min=3, threshold_max=10):
         # Ensure elements is a list or a DataFrame and extract rows count
@@ -126,9 +132,47 @@ class Minimalist(HeuristicInterface):
         white_space_ratio = 1 - (total_element_area / screen_area)  # Compute white space ratio
         return white_space_ratio
 
-    def evaluate_rule(self,design_json, screen_width, screen_height):
-        white_space_ratio = self.calculate_white_space_ratio(design_json, screen_width, screen_height)
-        if white_space_ratio >= 0.4:
-            return "Pass - Minimalist Design"  
+    def evaluate_rule(self, design_json, screen_width, screen_height, cluster_data):
+        feedback = {}
+
+        # Call the white space ratio check
+        wsr = self.calculate_white_space_ratio(design_json, screen_width, screen_height)
+        if wsr >= 0.4:
+            feedback["wsr_status"] = "Pass - Minimalist Design"
         else:
-            return "Fail - Cluttered Design"  
+            feedback["wsr_status"] = "Fail - Cluttered Design"
+
+        # Call the count UI elements check
+        count, count_status = self.count_ui_elements(design_json["elements"])
+        feedback["ui_element_count"] = f"Number of UI elements: {count}. Status: {count_status}"
+
+        # Call the check element count function
+        # element_count_status = self.check_element_count(cluster_data)
+        # feedback["element_count_status"] = element_count_status
+
+        # Call the number of elements check for redundancy
+        # element_feedback = self.numberOfElements(cluster_data)
+        # if "status" in element_feedback:
+        #     feedback["element_redundancy_status"] = element_feedback["status"]
+        # if "cluster_warning" in element_feedback:
+        #     feedback["cluster_warning"] = element_feedback["cluster_warning"]
+        # if "redundant_elements" in element_feedback:
+        #     feedback["redundant_elements"] = element_feedback["redundant_elements"]
+
+        # Call the screen type inference
+        screen_type = self.infer_screen_type(design_json)
+        feedback["screen_type"] = f"Screen type: {screen_type}"
+
+        # Call the irrelevant elements check
+        irrelevant_elements_feedback = self.identify_irrelevant_elements(cluster_data)
+        if isinstance(irrelevant_elements_feedback, dict):
+            if "rare_elements" in irrelevant_elements_feedback:
+                feedback["rare_elements"] = irrelevant_elements_feedback["rare_elements"]
+            if "frequent_elements" in irrelevant_elements_feedback:
+                feedback["frequent_elements"] = irrelevant_elements_feedback["frequent_elements"]
+        else:
+            feedback["irrelevant_elements"] = irrelevant_elements_feedback
+
+        # Return the merged feedback dictionary
+        return feedback
+
