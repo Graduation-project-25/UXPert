@@ -79,15 +79,16 @@ def main():
     # print("Number of elements =", element_count)
     # print("Status of the elements =", status)
 
-    # base_path = Path(__file__).resolve().parent  # Get current script directory
-    # file_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
+    base_path = Path(__file__).resolve().parent  # Get current script directory
+    file_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
 
-    # if not file_path.exists():
-    #     raise FileNotFoundError(f"File not found: {file_path}")
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
 
-    # evaluator = EGFE_HeuristicEvaluation(str(file_path))
+    evaluator = EGFE_HeuristicEvaluation(str(file_path))
     # evaluation_results = evaluator.evaluate_minimalist_on_clusters()
-    # print(evaluation_results)
+    evaluator.evaluate_minimalist()
+    print(evaluator.evaluate_minimalist())
 
 
     

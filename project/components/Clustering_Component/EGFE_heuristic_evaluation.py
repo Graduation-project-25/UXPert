@@ -45,6 +45,10 @@ class EGFE_HeuristicEvaluation():
 
             # Filter cluster data
             cluster_data = DBSCAN_dataset[DBSCAN_dataset["Cluster"] == cluster]  
+
+            print(cluster_data.columns)
+            if 'elements' not in cluster_data.columns:
+                raise KeyError("'elements' column is missing from cluster_data.")
             
             # Convert cluster data to a dictionary structure expected by Minimalist
             design_json = {
@@ -71,12 +75,19 @@ class EGFE_HeuristicEvaluation():
         minimalist_rule = Minimalist()
         results = {}
 
-        for cluster_id, cluster_data in self.clusters.items():
-            try:
-                feedback = minimalist_rule.evaluate_rule(cluster_data)
-                results[cluster_id] = feedback
-            except Exception as e:
-                results[cluster_id] = f"Error evaluating cluster {cluster_id}: {str(e)}"
+        print(type(self.clusters))
+        # print(self.clusters)
 
+        # Check if self.clusters is a dictionary
+        if isinstance(self.clusters, dict):
+            for cluster_id, cluster_data in self.clusters.items():
+                try:
+                    feedback = minimalist_rule.evaluate_rule(cluster_data)
+                    results[cluster_id] = feedback
+                except Exception as e:
+                    results[cluster_id] = f"Error evaluating cluster {cluster_id}: {str(e)}"
+        else:
+            results["error"] = "self.clusters is neither a list nor a dictionary"
+        
         return results
 
