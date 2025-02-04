@@ -10,7 +10,7 @@ from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
 from utils.csv_exporting import export_to_csv
 
 
-class EGFEClustering(ClusteringInterface):    
+class EGFE_Clustering(ClusteringInterface):    
     def __init__(self, train_folder,output_folder):
         self.output_folder = output_folder
         self.egfe_ui_processing = EGFE_UiProcessing()

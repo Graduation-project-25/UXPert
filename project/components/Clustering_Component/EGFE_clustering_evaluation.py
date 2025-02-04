@@ -2,7 +2,7 @@ from sklearn.metrics import davies_bouldin_score, silhouette_score
 
 from components.Clustering_Component.clustering_evaluation import ClusteringEvaluationInterface
 
-class EGFEClusteringEvaluation(ClusteringEvaluationInterface):
+class EGFE_ClusteringEvaluation(ClusteringEvaluationInterface):
 
     def evaluate_clustering(self,DBSCAN_dataset):
         # Evaluate clustering quality
