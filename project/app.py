@@ -55,7 +55,7 @@ def process_elements():
     return jsonify({
         "message": "Design processed successfully (no file saved)!",
         "status": 200,
-        "consistency": consistency_results  # Include the consistency evaluation in the response
+        "consistency": consistency_results 
     }), 200
 
 @app.route('/', methods=['GET'])

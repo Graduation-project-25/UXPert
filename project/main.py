@@ -66,7 +66,7 @@ def main():
 
 
     #################################################################################
-    # egfe_clustering.analyze_clusters(DBSCAN_dataset)
+    egfe_clustering.analyze_clusters(DBSCAN_dataset)
     # egfe_visualization.clustering_visualization_by_size(DBSCAN_dataset,clusters)
     # egfe_visualization.clustering_visualization_by_position(DBSCAN_dataset,clusters)
     # egfe_visualization.visualize_alignment_consistency(DBSCAN_dataset)
