@@ -2,16 +2,18 @@ import os
 import sys
 import pandas as pd
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
-from components.Clustering_Component.EGFE_clustering import EGFEClustering
-from components.Clustering_Component.EGFE_clustering_evaluation import EGFEClusteringEvaluation
-from components.Clustering_Component.EGFE_clustering_testing import EGFEClusteringTesting
+from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
+from components.Clustering_Component.EGFE_clustering_evaluation import EGFE_ClusteringEvaluation
+from components.Clustering_Component.EGFE_clustering_testing import EGFE_ClusteringTesting
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNormalizing
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
+from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 2000) 
@@ -31,11 +33,12 @@ def main():
     egfe_ui_processing = EGFE_UiProcessing()
     egfe_ui_normalizing = EGFE_UiNormalizing()
     splitter = JSONDataSplitter(output_folder)
-    egfe_clustering_evaluation = EGFEClusteringEvaluation()
-    egfe_clustering = EGFEClustering(train_folder,output_folder)
+    egfe_clustering_evaluation = EGFE_ClusteringEvaluation()
+    egfe_clustering = EGFE_Clustering(train_folder,output_folder)
     egfe_ui_extraction = EGFE_FeatureExtraction()
     egfe_visualization = EGFE_Visualization()
-    egfe_clustering_testing = EGFEClusteringTesting(train_folder)
+    egfe_clustering_testing = EGFE_ClusteringTesting(train_folder)
+    egfe_load_data = EGFE_LoadData(train_folder)
     minimalist = Minimalist()
 
 
@@ -57,7 +60,7 @@ def main():
 
     #############################################################################
     # DBSCAN Clustering
-    # DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('screen_size')
+    DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('position')
     # egfe_clustering.handle_outliers(DBSCAN_dataset,"screen_size_cluster_assignments.csv","screen_size_outliers.csv")
     # egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
 

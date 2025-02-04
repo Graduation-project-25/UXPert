@@ -3,15 +3,15 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 from components.Clustering_Component.clustering_testing import ClusteringTestingInterface
-from components.Clustering_Component.EGFE_clustering import EGFEClustering
+from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 
 
-class EGFEClusteringTesting(ClusteringTestingInterface):
+class EGFE_ClusteringTesting(ClusteringTestingInterface):
     def __init__(self, train_folder):
         self.dataset_folder = './data/raw/EGFE'
         self.output_folder = self.dataset_folder + '/extractedFeatures'
         self.train_folder = train_folder
-        self.egfe_clustering = EGFEClustering(self.train_folder,self.output_folder)
+        self.egfe_clustering = EGFE_Clustering(self.train_folder,self.output_folder)
 
     def assign_test_clusters(self,X_train, X_test, dbscan):
         # Compute the cluster centers from `X_train`

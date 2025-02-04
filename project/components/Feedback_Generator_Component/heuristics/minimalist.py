@@ -66,18 +66,6 @@ class Minimalist(HeuristicInterface):
 
         return feedback
     
-    def calculate_white_space_ratio(self, design_json, screen_width, screen_height):
-        screen_area = screen_width * screen_height
-        total_element_area = 0
-
-        for element in design_json["elements"]:
-            width, height = element["width"], element["height"]
-            total_element_area += width * height  # Sum up all element areas
-
-        wsr = 1 - (total_element_area / screen_area)  # Compute white space ratio
-        return wsr
-
-
     def infer_screen_type(self, screen_data):
         width = screen_data["screen_size"]["screen_width"]
         height = screen_data["screen_size"]["screen_height"]
@@ -127,13 +115,20 @@ class Minimalist(HeuristicInterface):
 
         return feedback
 
-    def whitespace_ratio(self, cluster_data):
-        screen_area = 0
+    def calculate_white_space_ratio(self, design_json, screen_width, screen_height):
+        screen_area = screen_width * screen_height
+        total_element_area = 0
+
+        for element in design_json["elements"]:
+            width, height = element["width"], element["height"]
+            total_element_area += width * height  # Sum up all element areas
+
+        white_space_ratio = 1 - (total_element_area / screen_area)  # Compute white space ratio
+        return white_space_ratio
 
     def evaluate_rule(self,design_json, screen_width, screen_height):
-        wsr = self.calculate_white_space_ratio(design_json, screen_width, screen_height)
-
-        if wsr >= 0.4:
+        white_space_ratio = self.calculate_white_space_ratio(design_json, screen_width, screen_height)
+        if white_space_ratio >= 0.4:
             return "Pass - Minimalist Design"  
         else:
             return "Fail - Cluttered Design"  
