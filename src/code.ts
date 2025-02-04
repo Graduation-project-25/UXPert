@@ -1,3 +1,11 @@
+// Define the expected structure of the response
+interface ConsistencyResult {
+    status: number;
+    consistency_results: {
+        Feedback: Record<string, string>;
+    };
+}
+
 figma.showUI(__html__);
 
 figma.ui.onmessage = async (msg) => {
@@ -57,7 +65,7 @@ figma.ui.onmessage = async (msg) => {
 
             const processResponse = await fetch("http://localhost:3000/process", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     user_name,
                     design_name,
@@ -69,8 +77,20 @@ figma.ui.onmessage = async (msg) => {
                 throw new Error(`HTTP error! Status: ${processResponse.status}`);
             }
 
-            console.log(` ${filteredNodes.length} Features saved successfully!`);
-            figma.notify(` ${filteredNodes.length} Features saved successfully!`);
+            // Type the response result properly
+            const result = await processResponse.json() as ConsistencyResult;
+// Type assertion here
+
+            // Log the consistency results from the response
+            console.log("Consistency Evaluation Results: ", result.consistency_results);
+
+            figma.notify(`${filteredNodes.length} Features saved successfully!`);
+
+            // Optionally, display the feedback from the backend to the user
+            if (result.consistency_results.Feedback) {
+                const feedbackMessages = Object.values(result.consistency_results.Feedback).join("\n");
+                figma.notify(`Feedback:\n${feedbackMessages}`);
+            }
 
         } catch (error) {
             console.error("Error during fetch:", error);
