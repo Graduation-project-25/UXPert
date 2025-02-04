@@ -1,6 +1,8 @@
 import json
 import pandas as pd
-from sklearn.calibration import LabelEncoder
+# from sklearn.calibration import LabelEncoder
+from sklearn.preprocessing import LabelEncoder
+
 from sklearn.preprocessing import MinMaxScaler
 
 from components.Data_Processor_Component.ui_normalizer import UiNormalizerInterface
@@ -25,9 +27,9 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
 
 
         if "type" in df.columns:
-            df = pd.get_dummies(df, columns=['type'], prefix='type')  # One-hot encode 'type' column
-            df = df.astype({col: 'int' for col in df.columns if col.startswith('type_')})  # Convert to 0 and 1 
-
+            df = pd.get_dummies(df, columns=['type'], prefix='type')  # One-hot encode the 'type' column
+            df = df.astype({col: 'int' for col in df.columns if col.startswith('type_')})  # Convert Boolean columns to 0 and 1 
+        print("normalized data")
         return df 
  
     def normalize_screen_size(self, screen_size):
@@ -54,6 +56,7 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
         
         # Normalize the screen size and return
         normalized_screen_size = self.normalize_screen_size(screen_size)
-
+        
+        print("normalized elements and screen size : ")
         return normalized_elements, normalized_screen_size
 
