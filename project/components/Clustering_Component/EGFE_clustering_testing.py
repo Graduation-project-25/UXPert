@@ -38,8 +38,8 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
 
 
 
-    def assign_test_color_clusters(self, train_folder, X_test):
-        X_train = self.data_loader.load_data(train_folder)
+    def assign_test_color_clusters(self, X_train, X_test_folder):
+        X_test = self.data_loader.load_data(X_test_folder)
         # Compute the cluster centers from `X_train`
         unique_clusters = X_train['Cluster'].unique()
         cluster_centers = {

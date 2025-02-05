@@ -1,10 +1,14 @@
 import os
 import sys
+import json
 import pandas as pd
+from pathlib import Path
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
+from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist
 from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 from components.Clustering_Component.EGFE_clustering_evaluation import EGFE_ClusteringEvaluation
 from components.Clustering_Component.EGFE_clustering_testing import EGFE_ClusteringTesting
@@ -38,7 +42,7 @@ def main():
     egfe_clustering = EGFE_Clustering(train_folder, output_folder)
     egfe_ui_extraction = EGFE_FeatureExtraction()
     egfe_visualization = EGFE_Visualization()
-    # egfe_clustering_testing = EGFE_ClusteringTesting(train_folder)
+    egfe_clustering_testing = EGFE_ClusteringTesting()
     egfe_load_data = EGFE_LoadData()
     minimalist_evaluation = MinimalistEvaluation()
 
@@ -80,7 +84,7 @@ def main():
     # egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
     
     # Step 8: Assign Clusters to Test Data
-    # new_x_test = egfe_clustering_testing.assign_test_color_clusters(test_folder)
+    new_x_test = egfe_clustering_testing.assign_test_color_clusters(clustered_data,test_folder)
     # print(new_x_test)
     # egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_data)
     
@@ -111,8 +115,8 @@ def main():
     # with open(clusters_data_path, "r") as file:
     #     clusters_data = json.load(file)
 
-    # minimalist_checker = Minimalist(clusters_data)
-    # feedback = minimalist_checker.evaluate_rule()
+    # minimalist_checker = Minimalist()
+    # feedback = minimalist_checker.evaluate_rule(clusters_data)
     # for f in feedback:
     #     print(f)
 
@@ -178,11 +182,16 @@ def main():
     #         # Store the report in the dictionary
     #         consistency_reports[feature] = consistency_report
 
-    # # Print the final consistency report for all features
-    # print("Cluster Consistency Reports:")
-    # for feature, report in consistency_reports.items():
-    #     print(f"Feature: {feature}")
-    #     print(report)
+    # Print the final consistency report for all features
+    print("Cluster Consistency Reports:")
+    for feature, report in consistency_reports.items():
+        print(f"Feature: {feature}")
+        print(report)
+
+
+
+
+        
 if __name__ == "__main__":
     main()
 #     print(f"Analyzing consistency for {feature} clusters...")

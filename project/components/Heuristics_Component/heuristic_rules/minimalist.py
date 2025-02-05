@@ -34,34 +34,32 @@ class Minimalist(HeuristicInterface):
         else:
             return white_space_ratio, "Fail - Cluttered Design"
 
-    def check_total_elements(self, cluster_id, elements):
-        num_elements = len(elements)
+    def evaluate_rule(self, clusters_data):
         feedback = []
-        if num_elements > self.max_elements:
-            feedback.append(f"Cluster {cluster_id}: Too many elements ({num_elements}). Consider removing unnecessary elements.")
-        elif num_elements < self.min_elements:
-            feedback.append(f"Cluster {cluster_id}: Too few elements ({num_elements}). Consider adding more essential elements.")
-        return feedback
 
-    def check_irrelevant_elements(self, cluster_id, elements):
-        irrelevant_elements = [el for el in elements if self.is_irrelevant(el)]
-        feedback = []
-        if irrelevant_elements:
-            feedback.append(f"Cluster {cluster_id}: Contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
-        return feedback
-
-    def evaluate_rule(self):
-        feedback = []
-        
-        for cluster_id, elements in self.clusters_data.items():
-            # Check total number of elements
-            feedback.extend(self.check_total_elements(elements, cluster_id))
+        # Use clusters_data passed as argument, not self.clusters_data
+        for cluster_id, elements in clusters_data.items():
+            num_elements = len(elements)
             
+            # Evaluate based on the number of elements
+            rule_feedback = self.evaluate_elements_count(num_elements, cluster_id)
+            if rule_feedback:
+                feedback.append(rule_feedback)
+
             # Check for irrelevant elements
-            feedback.extend(self.check_irrelevant_elements(elements, cluster_id))
+            irrelevant_elements = [el for el in elements if self.is_irrelevant(el)]
+            if irrelevant_elements:
+                feedback.append(f"Cluster {cluster_id}: Contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
         
         return feedback if feedback else ["Design adheres to the minimalist rule."]
         
+    def evaluate_elements_count(self, num_elements, cluster_id):
+        if num_elements > self.max_elements:
+            return f"Cluster {cluster_id}: Too many elements ({num_elements}). Consider removing unnecessary elements."
+        elif num_elements < self.min_elements:
+            return f"Cluster {cluster_id}: Too few elements ({num_elements}). Consider adding more essential elements."
+        return None
+
     def is_irrelevant(self, element):
         # In this case, an element may be considered irrelevant if it has no text and is not a primary shape.
         return (
