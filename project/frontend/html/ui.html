@@ -32,7 +32,7 @@
     }
 
     .feedback-card {
-      display: flex;
+      display: none;
       align-items: flex-start;
       background: white;
       border-radius: 8px;
@@ -71,6 +71,12 @@
       background-color: #e0e0e0;
       margin: 10px 0;
     }
+
+    #nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -87,10 +93,17 @@
   <div id="feedback-screen">
     <h1>Feedback</h1>
     <div id="feedback-container"></div>
+    <div id="nav-buttons">
+      <button id="prev" disabled>Previous</button>
+      <button id="next" disabled>Next</button>
+    </div>
     <button id="close">Close</button>
   </div>
 
   <script>
+    let currentFeedbackIndex = 0;
+    let feedbackCards = [];
+
     document.getElementById('start').onclick = () => {
       document.getElementById('initial-screen').style.display = 'none';
       document.getElementById('processing-screen').style.display = 'block';
@@ -101,6 +114,18 @@
       parent.postMessage({ pluginMessage: { type: 'close' } }, '*');
     };
 
+    document.getElementById('prev').onclick = () => {
+      if (currentFeedbackIndex > 0) {
+        showFeedbackCard(currentFeedbackIndex - 1);
+      }
+    };
+
+    document.getElementById('next').onclick = () => {
+      if (currentFeedbackIndex < feedbackCards.length - 1) {
+        showFeedbackCard(currentFeedbackIndex + 1);
+      }
+    };
+
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
       if (msg && msg.type === 'collective-feedback') {
@@ -108,7 +133,7 @@
         document.getElementById('feedback-screen').style.display = 'block';
         document.getElementById('feedback-container').innerHTML = '';
 
-        msg.feedback.forEach(item => {
+        feedbackCards = msg.feedback.map(item => {
           const card = document.createElement('div');
           card.className = 'feedback-card';
 
@@ -118,7 +143,7 @@
 
           let feedbackList = '<ul>';
           for (const [issue, solution] of Object.entries(item.feedback)) {
-              feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
+            feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
           }
           feedbackList += '</ul>';
 
@@ -129,9 +154,31 @@
           card.appendChild(image);
           card.appendChild(content);
           document.getElementById('feedback-container').appendChild(card);
+
+          return card;
         });
+
+        showFeedbackCard(0); // Show the first card by default
       }
     };
+
+    function showFeedbackCard(index) {
+      feedbackCards.forEach((card, i) => {
+        card.style.display = i === index ? 'flex' : 'none';
+      });
+      currentFeedbackIndex = index;
+      document.getElementById('prev').disabled = currentFeedbackIndex === 0;
+      document.getElementById('next').disabled = currentFeedbackIndex === feedbackCards.length - 1;
+    }
+
+    // Enable arrow key navigation
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') {
+        document.getElementById('prev').click();
+      } else if (event.key === 'ArrowRight') {
+        document.getElementById('next').click();
+      }
+    });
   </script>
 </body>
 </html>
