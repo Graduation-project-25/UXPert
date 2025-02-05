@@ -32,44 +32,44 @@
     }
 
     .feedback-card {
+      display: flex;
+      align-items: flex-start;
       background: white;
       border-radius: 8px;
       box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
       margin: 15px;
       padding: 15px;
       text-align: left;
-      display: flex;
-      align-items: center;
     }
 
-    .feedback-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: #3498db;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 20px;
-      font-weight: bold;
+    .screenshot {
+      max-width: 150px;
+      border-radius: 5px;
       margin-right: 15px;
+      transition: transform 0.2s;
+    }
+
+    .screenshot:hover {
+      transform: scale(1.2);
     }
 
     .feedback-content {
       flex: 1;
+      text-align: left;
+    }
+
+    .feedback-content ul {
+      padding-left: 20px;
+    }
+
+    .feedback-content li {
+      margin-bottom: 5px;
     }
 
     .divider {
       height: 1px;
       background-color: #e0e0e0;
       margin: 10px 0;
-    }
-
-    .screenshot {
-      max-width: 100px;
-      border-radius: 5px;
-      margin-right: 10px;
     }
   </style>
 </head>
@@ -116,13 +116,15 @@
           image.src = item.screenshot;
           image.className = 'screenshot';
 
+          let feedbackList = '<ul>';
+          for (const [issue, solution] of Object.entries(item.feedback)) {
+              feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
+          }
+          feedbackList += '</ul>';
+
           const content = document.createElement('div');
           content.className = 'feedback-content';
-          content.innerHTML = `
-            <h2>${item.frameName}</h2>
-            <div class='divider'></div>
-            <p>${JSON.stringify(item.feedback, null, 2)}</p>
-          `;
+          content.innerHTML = `<h2>${item.frameName}</h2><div class='divider'></div>${feedbackList}`;
 
           card.appendChild(image);
           card.appendChild(content);
