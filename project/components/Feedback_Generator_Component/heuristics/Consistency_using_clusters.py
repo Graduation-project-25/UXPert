@@ -7,6 +7,7 @@ from components.Feedback_Generator_Component.heuristics.heuristic import Heurist
 class ClusteringConsistency(HeuristicInterface):
     def __init__(self, dbscan_dataset):
         self.dbscan_dataset = dbscan_dataset  
+        self.df = dbscan_dataset 
 
     # def calculate_alignment_consistency(self):
     #     """Measure alignment consistency within each cluster."""
@@ -73,61 +74,43 @@ class ClusteringConsistency(HeuristicInterface):
             cluster_scores[cluster] = color_std.to_dict()
         
         return cluster_scores
-    # def generate_consistency_report(self):
-    #     report = {}
-
-    #     # Check if each feature exists in the dataset before applying rules
-    #     if 'color' in self.dbscan_dataset.columns:
-    #         report['color_consistency'] = self.check_color_consistency()
-    #     if 'position' in self.dbscan_dataset.columns:
-    #         report['position_consistency'] = self.check_position_consistency()
-    #     if 'size' in self.dbscan_dataset.columns:
-    #         report['size_consistency'] = self.check_size_consistency()
-    #     if 'screen_size' in self.dbscan_dataset.columns:
-    #         report['screen_size_consistency'] = self.check_screen_size_consistency()
-
-    #     return report
-    # def generate_consistency_report(self):
-    #     """Generate a full report of cluster consistency."""
-    #     return {
-    #         "Alignment Consistency": self.calculate_alignment_consistency(),
-    #         "Size Consistency": self.calculate_size_consistency(),
-    #         "Spacing Consistency": self.calculate_spacing_consistency(),
-    #         "Color Consistency": self.calculate_color_consistency(),
-    #     }
+    
     def generate_consistency_report(self):
         report = {}
 
         # Color Consistency
-        if 'color' in self.dbscan_dataset.columns:
+        color_columns = [col for col in self.dbscan_dataset.columns if col.startswith('color_')]
+        if color_columns:
             color_consistency = self.calculate_color_consistency()
             report['color_consistency'] = self.analyze_consistency(color_consistency, feature="Color")
 
         # Position Consistency
-        if 'position' in self.dbscan_dataset.columns:
+        position_columns = [col for col in self.dbscan_dataset.columns if col.startswith('position.')]
+        if position_columns:
             alignment_consistency = self.calculate_alignment_consistency()
             report['position_consistency'] = self.analyze_consistency(alignment_consistency, feature="Position")
 
         # Size Consistency
-        if 'size' in self.dbscan_dataset.columns:
+        size_columns = ['width', 'height']
+        if all(col in self.dbscan_dataset.columns for col in size_columns):
             size_consistency = self.calculate_size_consistency()
             report['size_consistency'] = self.analyze_consistency(size_consistency, feature="Size")
 
-        # Screen Size Consistency
-        # if 'screen_size' in self.dbscan_dataset.columns:
-        #     screen_size_consistency = self.check_screen_size_consistency()
-        #     report['screen_size_consistency'] = self.analyze_consistency(screen_size_consistency, feature="Screen Size")
+        # Spacing Consistency
+        if 'position.x' in self.dbscan_dataset.columns and 'position.y' in self.dbscan_dataset.columns:
+            spacing_consistency = self.calculate_spacing_consistency()
+            report['spacing_consistency'] = self.analyze_consistency(spacing_consistency, feature="Spacing")
 
         return report
+
+
 
     def analyze_consistency(self, consistency_data, feature):
         """Analyze the consistency data and return a meaningful feedback message."""
         feedback = {}
         
-        # Example of a threshold logic for each feature
         if feature == "Color":
             for cluster, color_std in consistency_data.items():
-                # Check if color consistency is acceptable
                 if color_std['color_r'] < 0.1 and color_std['color_g'] < 0.1 and color_std['color_b'] < 0.1:
                     feedback[cluster] = "Good color consistency"
                 elif color_std['color_r'] < 0.5 and color_std['color_g'] < 0.5 and color_std['color_b'] < 0.5:
@@ -137,7 +120,6 @@ class ClusteringConsistency(HeuristicInterface):
 
         elif feature == "Position":
             for cluster, alignment in consistency_data.items():
-                # Check position consistency
                 if alignment['horizontal'] < 0.1 and alignment['vertical'] < 0.1:
                     feedback[cluster] = "Good position consistency"
                 elif alignment['horizontal'] < 0.5 and alignment['vertical'] < 0.5:
@@ -147,13 +129,23 @@ class ClusteringConsistency(HeuristicInterface):
 
         elif feature == "Size":
             for cluster, size_std in consistency_data.items():
-                # Check size consistency
                 if size_std['width'] < 0.1 and size_std['height'] < 0.1:
                     feedback[cluster] = "Good size consistency"
                 elif size_std['width'] < 0.5 and size_std['height'] < 0.5:
                     feedback[cluster] = "Average size consistency"
                 else:
                     feedback[cluster] = "Poor size consistency"
+                    
+        elif feature == "Spacing":
+            for cluster, spacing_std in consistency_data.items():
+                if spacing_std['spacing_std'] < 0.1:
+                    feedback[cluster] = "Good spacing consistency"
+                elif spacing_std['spacing_std'] < 0.5:
+                    feedback[cluster] = "Average spacing consistency"
+                else:
+                    feedback[cluster] = "Poor spacing consistency"
+
+        return feedback
 
         # elif feature == "Screen Size":
         #     for cluster, screen_size_std in consistency_data.items():
