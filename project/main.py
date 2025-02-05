@@ -2,7 +2,9 @@ import os
 import sys
 import pandas as pd
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 from components.Clustering_Component.EGFE_clustering_evaluation import EGFE_ClusteringEvaluation
 from components.Clustering_Component.EGFE_clustering_testing import EGFE_ClusteringTesting
@@ -46,32 +48,31 @@ def main():
 
 
     # save json in extracted features folder
-    # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
+    egfe_ui_processing.process_ui_elements(json_folder, output_folder)
 
 
     # splitting to test and train
-    # splitter.save_split_files(train_folder, test_folder)
+    splitter.save_split_files(train_folder, test_folder)
 
     # Normalization
-    # train_data = egfe_ui_processing.convert_json_to_dataframe(train_folder)
-    # normalized_elements, normalized_screen_size = egfe_ui_normalizing.get_normalized_data(train_data)
+    train_data = egfe_ui_processing.convert_json_to_dataframe(train_folder)
+    normalized_elements, normalized_screen_size = egfe_ui_normalizing.get_normalized_data(train_data)
 
 
     # Scatter plot of UI elements
-    # egfe_visualization.scatter_plot_ui_elements(normalized_data)
+    egfe_visualization.scatter_plot_ui_elements(normalized_elements)
     
 
     #############################################################################
     # DBSCAN Clustering
     DBSCAN_dataset, clusters = egfe_clustering.dbscan_cluster('screen_size_and_type')
-    # egfe_clustering.handle_outliers(DBSCAN_dataset,"screen_size_cluster_assignments.csv","screen_size_outliers.csv")
+    egfe_clustering.handle_outliers(DBSCAN_dataset,"screen_size_cluster_assignments.csv","screen_size_outliers.csv")
     egfe_clustering_evaluation.evaluate_clustering(DBSCAN_dataset)
 
 
     #############################################################################
     # Rule Evaluation
-    # egfe_heuristic_evaluation.evaluate_heuristics()
-
+    egfe_heuristic_evaluation.evaluate_heuristics()
 
 
 
@@ -136,6 +137,22 @@ def main():
 
     # visualize_rico_ui_elements(image_folder, json_folder, output_folder, limit=50)
 
+clustering_instance = EGFE_Clustering(train_folder, output_folder)
+
+# Run clustering for different features
+features = ['color', 'position', 'size']
+cluster_results = {}
+
+for feature in features:
+    print(f"Clustering based on {feature}...")
+    DBSCAN_dataset, clusters = clustering_instance.dbscan_cluster(feature)
+    cluster_results[feature] = DBSCAN_dataset  # Store clustering results
     
+# Perform Consistency Analysis
+for feature, df in cluster_results.items():
+    print(df.head())  # Check first few rows
+
+    print(f"Analyzing consistency for {feature} clusters...")
+    clustering_instance.analyze_clusters()
 if __name__ == "__main__":
     main()
