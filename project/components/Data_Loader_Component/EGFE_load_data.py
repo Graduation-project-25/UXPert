@@ -1,6 +1,7 @@
 import json
 import os
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNormalizing
 from components.Data_Loader_Component.load_data import LoadDataInterface
 
@@ -12,6 +13,7 @@ class EGFE_LoadData(LoadDataInterface):
     def load_train_data(self):
         """Load and merge all JSON files from the training folder into a DataFrame."""
         all_data = []
+        # max_num, min_num = self.get_max_min_file_name()
         
         for file_name in os.listdir(self.train_folder):
             if file_name.endswith(".json"):
@@ -25,9 +27,12 @@ class EGFE_LoadData(LoadDataInterface):
                             print(f"Warning: 'elements' key missing in {file_name}. Skipping file.")
                             continue
 
+                        # file_name = os.path.splitext(file_name)[0]
+                        # file_name = int(file_name)
+                        
                         df = self.egfe_ui_normalizing.normalize_ui_elements(data["elements"])
                         df['screen_width'],df["screen_height"] = self.egfe_ui_normalizing.normalize_screen_size(data["screen_size"])
-                        df["file_name"] = file_name  # Track the file source
+                        # df["file_name"]  = (file_name-min_num)/(max_num-min_num)
 
                         all_data.append(df)
 
@@ -39,4 +44,16 @@ class EGFE_LoadData(LoadDataInterface):
         
         return pd.concat(all_data, ignore_index=True)
     
+
+    # def get_max_min_file_name(self):
+    #     file_names = []
+    #     for file_name in os.listdir(self.train_folder):
+    #         if file_name.endswith(".json"):
+    #             file_name = os.path.splitext(file_name)[0]
+    #             file_name = int(file_name)
+    #             file_names.append(file_name)
+    #     return max(file_names), min(file_names)
+        
+
+                
 

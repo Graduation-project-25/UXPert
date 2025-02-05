@@ -1,4 +1,5 @@
 import json
+import os
 import pandas as pd
 # from sklearn.calibration import LabelEncoder
 from sklearn.preprocessing import LabelEncoder
@@ -30,6 +31,13 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
             df = pd.get_dummies(df, columns=['type'], prefix='type')  # One-hot encode the 'type' column
             df = df.astype({col: 'int' for col in df.columns if col.startswith('type_')})  # Convert Boolean columns to 0 and 1 
         return df 
+    
+    def normalize_file_name(self, file_name):
+        file_name = os.path.splitext(file_name)[0]
+        # Convert the extracted string to an integer
+        normalized_number = int(file_name)
+        normalized_number = self.scale.fit_transform([[normalized_number]])[0][0]
+        return normalized_number
  
     def normalize_screen_size(self, screen_size):
         # Manual Normalization
@@ -41,21 +49,3 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
 
         return normalized_width, normalized_height
         
-    def get_normalized_data(self, data):
-        # Access screen_size from the new structure
-        if 'screen_size' not in data or 'screen_width' not in data['screen_size'] or 'screen_height' not in data['screen_size']:
-            raise KeyError("The dataset does not contain 'screen_width' or 'screen_height'. Check JSON structure.")
-        
-        # Update to access screen_size values correctly
-        screen_size = {"screen_width": data['screen_size']['screen_width'], "screen_height": data['screen_size']['screen_height']}
-        elements = data['elements']
-
-        # Normalize the elements first
-        normalized_elements = self.normalize_ui_elements(elements)
-        
-        # Normalize the screen size and return
-        normalized_screen_size = self.normalize_screen_size(screen_size)
-        
-        print("normalized elements and screen size : ")
-        return normalized_elements, normalized_screen_size
-

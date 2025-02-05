@@ -1,78 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>Figma Plugin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        margin: 0;
-        padding: 20px;
-      }
-      button {
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-        border: none;
-        background-color: #007bff;
-        color: white;
-        border-radius: 5px;
-      }
-      button:hover {
-        background-color: #0056b3;
-      }
-      #processing-screen {
-        display: none;
-      }
-      #completed-screen {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="initial-screen">
-      <h1>Start Detection</h1>
-      <button id="start">Start</button>
-    </div>
-    <div id="processing-screen">
-      <h1>Processing...</h1>
-      <p>Please wait while the design is being evaluated.</p>
-    </div>
-    <div id="completed-screen">
-      <h1>Processing Complete!</h1>
-      <p>Your design has been successfully processed and saved.</p>
-      <button id="close">Close</button>
-    </div>
 
-    <script>
-      const startButton = document.getElementById('start');
-      const closeButton = document.getElementById('close');
-      const initialScreen = document.getElementById('initial-screen');
-      const processingScreen = document.getElementById('processing-screen');
-      const completedScreen = document.getElementById('completed-screen');
+<head>
+  <title>Figma Plugin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9; /* Light background color */
+    }
 
-      startButton.onclick = () => {
-        // Switch to processing screen
-        initialScreen.style.display = 'none';
-        processingScreen.style.display = 'block';
-        
-        // Start detection and send data
-        parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
-      };
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      background-color: #007bff; /* Primary color */
+      color: white;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
 
-      closeButton.onclick = () => {
-        figma.closePlugin();
-      };
+    button:hover {
+      background-color: #0056b3; /* Darker shade */
+    }
 
-      // Listening to the response from Figma plugin
-      figma.ui.onmessage = (msg) => {
-        if (msg.type === 'start-detection-complete') {
-          // Switch to completed screen after detection is done
-          processingScreen.style.display = 'none';
-          completedScreen.style.display = 'block';
+    #feedback-screen,
+    #processing-screen {
+      display: none;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin: 20px;
+      padding: 15px;
+      text-align: left;
+    }
+
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      color: #333; /* Darker font color */
+    }
+
+    .spinner {
+      border: 5px solid #f3f3f3; /* Light spinner */
+      border-top: 5px solid #3498db; /* Blue spinner */
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    pre {
+      background-color: #f6f6f6;
+      border-radius: 5px;
+      padding: 10px;
+      overflow-x: auto; /* Prevent overflow */
+    }
+  </style>
+</head>
+
+<body>
+  <div id="initial-screen">
+    <h1>Start Detection</h1>
+    <button id="start">Start</button>
+  </div>
+
+  <div id="processing-screen">
+    <h1>Processing...</h1>
+    <div class="spinner"></div>
+    <p>Please wait while the design is being evaluated.</p>
+  </div>
+
+  <div id="feedback-screen">
+    <h1>Feedback</h1>
+    <div id="feedback-container"></div>
+    <button id="close">Close</button>
+  </div>
+
+  <script>
+    const startButton = document.getElementById('start');
+    const closeButton = document.getElementById('close');
+    const initialScreen = document.getElementById('initial-screen');
+    const processingScreen = document.getElementById('processing-screen');
+    const feedbackScreen = document.getElementById('feedback-screen');
+    const feedbackContainer = document.getElementById('feedback-container');
+
+    startButton.onclick = () => {
+      initialScreen.style.display = 'none';
+      processingScreen.style.display = 'block';
+
+      parent.postMessage({
+        pluginMessage: {
+          type: 'start-detection'
         }
-      };
-    </script>
-  </body>
+      }, '*');
+    };
+
+    closeButton.onclick = () => {
+      figma.closePlugin(); 
+    };
+
+    // Listen for messages from the plugin
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (msg && msg.type === 'collective-feedback') {
+        // Hide processing screen
+        processingScreen.style.display = 'none';
+        feedbackScreen.style.display = 'block';
+
+        // Clear previous feedback
+        feedbackContainer.innerHTML = '';
+
+        // Display feedback for all frames
+        msg.feedback.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `<h2>Frame: ${item.frameName}</h2>
+                            <pre>${JSON.stringify(item.feedback, null, 2)}</pre>`;
+          feedbackContainer.appendChild(card);
+        });
+      } else {
+        console.error("Unknown message:", msg);
+      }
+    };
+  </script>
+</body>
 </html>

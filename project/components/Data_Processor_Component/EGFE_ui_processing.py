@@ -14,9 +14,9 @@ class EGFE_UiProcessing(UiProcessorInterface):
     
     def save_ui_elements(self, elements, image_name, output_path):
         """Saves the extracted UI elements along with screen size to a JSON file."""
-        width, height = self.egfe_size_estimation.estimate_screen_size(image_name)
+        estimated_screen_width, estimated_screen_height = self.egfe_size_estimation.estimate_screen_size(image_name, elements) 
         data_to_save = {
-            "screen_size": {"screen_width": width, "screen_height": height},
+            "screen_size": {"screen_width": estimated_screen_width , "screen_height": estimated_screen_height },
             "elements": elements
         }
 
