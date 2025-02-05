@@ -7,34 +7,23 @@ interface ConsistencyResult {
 }
 
 // Show the initial UI with the start button
-figma.showUI(__html__, { width: 400, height: 200 });
+figma.showUI(__html__, { width: 700, height: 500 });
 
 figma.ui.onmessage = async (msg) => {
     if (msg.type === 'start-detection') {
-        // Step 1: Get selected frame(s)
-        const selectedNodes = figma.currentPage.selection;
+        // Step 1: Get all frames on the current page
+        const frames = figma.currentPage.children.filter(node => node.type === "FRAME") as FrameNode[];
 
-        // If no frame is selected, notify the user and close the plugin
-        if (selectedNodes.length === 0) {
-            figma.notify('Please select a frame to run the plugin on.');
-            figma.closePlugin();
-            return;
+        // If no valid frames are found, notify the user
+        if (frames.length === 0) {
+            figma.notify('No frames found on the current page.');
+            return; // Don't close the plugin.
         }
 
-        // Filter to only include nodes of type "FRAME"
-        const selectedFrames = selectedNodes.filter(node => node.type === "FRAME");
-
-        // If no valid frames are selected, notify the user and close the plugin
-        if (selectedFrames.length === 0) {
-            figma.notify('Please select a valid frame to run the plugin on.');
-            figma.closePlugin();
-            return;
-        }
-
-        // Step 2: Extract features from selected frames and their children
-        for (const frame of selectedFrames) {
+        // Step 2: Extract features from frames and their children
+        for (const frame of frames) {
             // Find all visible children of the selected frame (elements inside the frame)
-            const childNodes = frame.findAll(node => node.visible);
+            const childNodes = frame.children.filter(node => node.visible);
 
             // Extract features for each child node within the selected frame
             const serializedNodes = childNodes.map(node => {
@@ -89,7 +78,7 @@ figma.ui.onmessage = async (msg) => {
                     throw new Error(`HTTP error! Status: ${processResponse.status}`);
                 }
 
-                figma.notify(`${serializedNodes.length} Features saved successfully!`);
+                figma.notify(`${serializedNodes.length} Features saved successfully from ${frame.name}!`);
 
                 // Type the response result properly
                 const result = await processResponse.json() as ConsistencyResult;
@@ -97,10 +86,10 @@ figma.ui.onmessage = async (msg) => {
                 console.log("Consistency Evaluation Results: ", result.consistency_results);
 
                 if (result.consistency_results.Feedback) {
-                    console.log("📤 Attempting to send feedback to UI...");
+                    console.log("📤 Sending feedback to UI...");
                     console.log("Feedback Data:", result.consistency_results.Feedback);
 
-                    // Send feedback to UI for each screen
+                    // Send feedback to UI for each frame
                     figma.ui.postMessage({
                         type: 'feedback',
                         feedback: {
@@ -109,20 +98,17 @@ figma.ui.onmessage = async (msg) => {
                         }
                     });
 
-                    console.log("✅ Message sent to UI");
-
-                    const feedbackMessages = Object.values(result.consistency_results.Feedback).join("\n");
-                    figma.notify(`Feedback for ${frame.name}:\n${feedbackMessages}`);
+                    console.log("✅ Feedback message sent to UI");
                 } else {
                     console.log("No feedback available.");
                 }
 
             } catch (error) {
                 console.error("Error during fetch:", error);
-                figma.notify("Failed to send elements to backend.");
+                figma.notify(`Failed to send elements from ${frame.name} to backend.`);
             }
         }
 
-        figma.closePlugin();
+        // Keep the plugin open to show feedback
     }
 };
