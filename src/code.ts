@@ -32,11 +32,12 @@ figma.ui.onmessage = async (msg) => {
         }
 
         // Step 2: Extract features from selected frames and their children
-        const serializedNodes = selectedFrames.flatMap(frame => {
+        for (const frame of selectedFrames) {
             // Find all visible children of the selected frame (elements inside the frame)
             const childNodes = frame.findAll(node => node.visible);
 
-            return childNodes.map(node => {
+            // Extract features for each child node within the selected frame
+            const serializedNodes = childNodes.map(node => {
                 let color = { r: 0, g: 0, b: 0 }; // Default color
 
                 if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
@@ -64,58 +65,62 @@ figma.ui.onmessage = async (msg) => {
                     fontSize: fontSize
                 };
             });
-        });
 
-        const user_name = figma.currentUser ? figma.currentUser.name : "Unknown User";
-        const design_name = figma.root.name ?? "Untitled Design";
+            const user_name = figma.currentUser ? figma.currentUser.name : "Unknown User";
+            const design_name = figma.root.name ?? "Untitled Design";
 
-        console.log(`Detected User: ${user_name}`);
-        console.log(`Detected Design Name: ${design_name}`);
+            console.log(`Detected User: ${user_name}`);
+            console.log(`Detected Design Name: ${design_name}`);
 
-        try {
-            console.log("Sending extracted features to the backend...");
+            try {
+                console.log("Sending extracted features to the backend...");
 
-            const processResponse = await fetch("http://localhost:3000/process", {
-                method: "POST",
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_name,
-                    design_name,
-                    elements: serializedNodes
-                }),
-            });
-
-            if (!processResponse.ok) {
-                throw new Error(`HTTP error! Status: ${processResponse.status}`);
-            }
-
-            figma.notify(`${serializedNodes.length} Features saved successfully!`);
-
-            // Type the response result properly
-            const result = await processResponse.json() as ConsistencyResult;
-
-            console.log("Consistency Evaluation Results: ", result.consistency_results);
-
-            if (result.consistency_results.Feedback) {
-                console.log("📤 Attempting to send feedback to UI...");
-                console.log("Feedback Data:", result.consistency_results.Feedback);
-
-                figma.ui.postMessage({
-                    type: 'feedback',
-                    feedback: result.consistency_results.Feedback
+                const processResponse = await fetch("http://localhost:3000/process", {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_name,
+                        design_name,
+                        elements: serializedNodes
+                    }),
                 });
 
-                console.log("✅ Message sent to UI");
+                if (!processResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${processResponse.status}`);
+                }
 
-                const feedbackMessages = Object.values(result.consistency_results.Feedback).join("\n");
-                figma.notify(`Feedback:\n${feedbackMessages}`);
-            } else {
-                console.log("No feedback available.");
+                figma.notify(`${serializedNodes.length} Features saved successfully!`);
+
+                // Type the response result properly
+                const result = await processResponse.json() as ConsistencyResult;
+
+                console.log("Consistency Evaluation Results: ", result.consistency_results);
+
+                if (result.consistency_results.Feedback) {
+                    console.log("📤 Attempting to send feedback to UI...");
+                    console.log("Feedback Data:", result.consistency_results.Feedback);
+
+                    // Send feedback to UI for each screen
+                    figma.ui.postMessage({
+                        type: 'feedback',
+                        feedback: {
+                            frameName: frame.name,
+                            feedback: result.consistency_results.Feedback
+                        }
+                    });
+
+                    console.log("✅ Message sent to UI");
+
+                    const feedbackMessages = Object.values(result.consistency_results.Feedback).join("\n");
+                    figma.notify(`Feedback for ${frame.name}:\n${feedbackMessages}`);
+                } else {
+                    console.log("No feedback available.");
+                }
+
+            } catch (error) {
+                console.error("Error during fetch:", error);
+                figma.notify("Failed to send elements to backend.");
             }
-
-        } catch (error) {
-            console.error("Error during fetch:", error);
-            figma.notify("Failed to send elements to backend.");
         }
 
         figma.closePlugin();
