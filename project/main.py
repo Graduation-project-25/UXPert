@@ -4,7 +4,7 @@ import json
 import pandas as pd
 from pathlib import Path
 
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 from components.Clustering_Component.EGFE_clustering_evaluation import EGFE_ClusteringEvaluation
 from components.Clustering_Component.EGFE_clustering_testing import EGFE_ClusteringTesting
@@ -17,6 +17,7 @@ from components.Feedback_Generator_Component.heuristics.mini import Minimalist
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
 from components.Clustering_Component.EGFE_heuristic_evaluation import EGFE_HeuristicEvaluation
+from components.Feedback_Generator_Component.heuristics.Consistency_using_clusters import ClusteringConsistency
 
 
 pd.set_option('display.max_columns', None)
@@ -51,20 +52,20 @@ def main():
 
 
     # Step 1: Save json in extracted features folder
-    # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
+    egfe_ui_processing.process_ui_elements(json_folder, output_folder)
     
     # Step 2: Split Data into Train and Test
-    # splitter.save_split_files(train_folder, test_folder)
+    splitter.save_split_files(train_folder, test_folder)
     
     # Step 3: Load Normalized train data
-    # train_data = egfe_load_data.load_train_data()
+    train_data = egfe_load_data.load_train_data()
     
     # Step 4: Visualize UI Elements (Scatter Plot)
-    # egfe_visualization.scatter_plot_ui_elements(train_data)
+    egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
-    # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(data_to_evaluate)
 
 
@@ -122,24 +123,54 @@ def main():
     
 
 
-    clustering_instance = EGFE_Clustering(train_folder, output_folder)
+    # clustering_instance = EGFE_Clustering(train_folder, output_folder)
 
-    # Run clustering for different features
-    features = ['color', 'position', 'size']
-    cluster_results = {}
+    # # Run clustering for different features
+    # features = ['color', 'position', 'size']
+    # cluster_results = {}
 
-    for feature in features:
-        print(f"Clustering based on {feature}...")
-        DBSCAN_dataset, clusters = clustering_instance.dbscan_cluster(feature)
-        cluster_results[feature] = DBSCAN_dataset  # Store clustering results
+    # for feature in features:
+    #     print(f"Clustering based on {feature}...")
+    #     DBSCAN_dataset, clusters = clustering_instance.dbscan_cluster(feature)
+    #     cluster_results[feature] = DBSCAN_dataset  # Store clustering results
         
-    # Perform Consistency Analysis
-    for feature, df in cluster_results.items():
-        print(df.head())  # Check first few rows
+    # # Perform Consistency Analysis
+    # for feature, df in cluster_results.items():
+    #     print(df.head())  # Check first few rows
 
-        print(f"Analyzing consistency for {feature} clusters...")
-        clustering_instance.analyze_clusters()
-        
+    #     print(f"Analyzing consistency for {feature} clusters...")
+    #     clustering_instance.analyze_clusters()
+        # for feature in features:
+    #     print(f"Clustering based on {feature}...")
+    #     DBSCAN_dataset, clusters = clustering_instance.dbscan_cluster(feature)
+    #     cluster_results[feature] = DBSCAN_dataset  # Store clustering results
+    data = {
+    'Cluster': ['Cluster_1', 'Cluster_1', 'Cluster_2', 'Cluster_2', 'Cluster_3', 'Cluster_3'],
+    'position.x': [1.1, 1.2, 5.0, 5.1, 10.5, 10.6],
+    'position.y': [2.1, 2.2, 6.0, 6.1, 11.5, 11.6],
+    'width': [100, 100, 200, 210, 300, 310],
+    'height': [150, 150, 250, 260, 350, 340],
+    'color_r': [0.1, 0.1, 0.5, 0.5, 0.9, 0.8],
+    'color_g': [0.2, 0.2, 0.4, 0.3, 0.8, 0.9],
+    'color_b': [0.3, 0.3, 0.3, 0.4, 0.7, 0.7]
+}
+    df = pd.DataFrame(data)
+
+    # Step 2: Create an instance of ClusteringConsistency
+    clustering_consistency = ClusteringConsistency(dbscan_dataset=df)
+
+    # Step 3: Generate the consistency report
+    report = clustering_consistency.generate_consistency_report()
+
+    # Step 4: Print the report
+    print("Clustering Consistency Report:")
+    for feature, consistency in report.items():
+        print(f"\n{feature}:")
+        for cluster, feedback in consistency.items():
+            print(f"  {cluster}: {feedback}")
+
+    # If you want to visualize alignment consistency
+    clustering_consistency.plot_alignment_consistency()
     if __name__ == "__main__":
         main()
 
