@@ -26,11 +26,7 @@
       background-color: #0056b3;
     }
 
-    #feedback-screen {
-      display: none;
-    }
-
-    #processing-screen {
+    #feedback-screen, #processing-screen {
       display: none;
     }
   </style>
@@ -41,10 +37,12 @@
     <h1>Start Detection</h1>
     <button id="start">Start</button>
   </div>
+
   <div id="processing-screen">
     <h1>Processing...</h1>
     <p>Please wait while the design is being evaluated.</p>
   </div>
+
   <div id="feedback-screen">
     <h1>Feedback</h1>
     <pre id="feedback-text"></pre>
@@ -60,36 +58,29 @@
     const feedbackText = document.getElementById('feedback-text');
 
     startButton.onclick = () => {
-      // Switch to processing screen
       initialScreen.style.display = 'none';
       processingScreen.style.display = 'block';
 
-      // Start detection and send data to the plugin
-      parent.postMessage({
-        pluginMessage: {
-          type: 'start-detection'
-        }
-      }, '*');
+      parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
     };
 
     closeButton.onclick = () => {
-      figma.closePlugin();
+      parent.postMessage({ pluginMessage: { type: 'close-plugin' } }, '*');
     };
 
-    // Listen for messages from the plugin
-    // <!-- onmessage = (msg) => {
-    //  console.log("📩 Received message in UI:", msg.data); 
+    window.onmessage = (event) => {
+      console.log("📩 Received message in UI:", event.data);
+      
+      const msg = event.data.pluginMessage;
+      if (msg && msg.type === 'feedback') {
+        console.log("✅ Processing feedback message:", msg.feedback);
 
+        processingScreen.style.display = 'none';
+        feedbackScreen.style.display = 'block';
 
-    //  if (msg && msg.type === 'feedback') {
-    //        console.log("✅ Processing feedback message:", msg.feedback);
-
-    //  processingScreen.style.display = 'none';
-    //  feedbackScreen.style.display = 'block';
-
-    //  feedbackText.textContent = msg.feedback;
-    // }
-    // }; -->
+        feedbackText.textContent = JSON.stringify(msg.feedback, null, 2);
+      }
+    };
   </script>
 </body>
 
