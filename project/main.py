@@ -28,6 +28,7 @@ def main():
     json_folder = dataset_folder + '/jsons'
     output_folder = dataset_folder + '/extractedFeatures'
     train_folder = output_folder + '/train'
+    evaluation_folder = output_folder + '/evaluation'
     test_folder = output_folder + '/test'
     os.makedirs(output_folder, exist_ok=True)
 
@@ -44,7 +45,7 @@ def main():
     # screen_size_cluster_file = output_folder + '/X-train Clusters based on screen size.json'
     egfe_heuristic_evaluation = EGFE_HeuristicEvaluation()
 
-    egfe_heuristic_evaluation.evaluate_minimalist_on_designs(train_folder)
+    egfe_heuristic_evaluation.evaluate_minimalist_on_designs(train_folder, evaluation_folder)
 
 
 

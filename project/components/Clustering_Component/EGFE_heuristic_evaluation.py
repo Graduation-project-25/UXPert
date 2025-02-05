@@ -15,9 +15,8 @@ class EGFE_HeuristicEvaluation():
         # with open(cluster_json_file, 'r') as f:
         #     self.clusters = json.load(f)
 
-
-    def evaluate_minimalist_on_designs(self, train_folder):
-        minimalist = Minimalist()
+    def evaluate_minimalist_on_designs(self, train_folder, output_folder):
+        # minimalist = Minimalist()
         minimalist_instance = HeuristicFactory.check_rule("minimalist")
 
         for file_name in os.listdir(train_folder):
@@ -26,43 +25,22 @@ class EGFE_HeuristicEvaluation():
                 with open(file_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     print(file_name)
-                result = minimalist.evaluate_minimalist(data,data['screen_size']['screen_width'],data['screen_size']['screen_width'])
-                print(result)
+                white_space_ratio, feedback = minimalist_instance.evaluate_minimalist(data,data['screen_size']['screen_width'],data['screen_size']['screen_height'])
+                print(feedback)
+                # Store elements with their evaluation
+                result_data = {
+                    "design_id": file_name,
+                    "screen_size": data["screen_size"],
+                    "white_space_ratio": white_space_ratio,
+                    "evaluation": feedback,
+                    "elements": data["elements"]  # Keeping all elements in the result file
+                }
+
+                # Save result in a new JSON file
+                # self.save_white_space_ratio_evaluation_result(file_name, result_data, output_folder)
 
             except (json.JSONDecodeError, KeyError) as e:
                 print(f"Error processing {file_name}: {e}. Skipping file.")
-        # for element in data['elements']:
-
-        # print(data)
-
-
-        # print(self.clusters)
-        # minimalist = Minimalist()
-        # for cluster_id, elements in self.clusters.items():
-        #     print(elements)
-        #     if not elements:  # If the cluster is empty, assume full white space
-        #         evaluation = "Pass - Minimalist Design"
-        #     else:
-        #         screen_width = elements[0]["screen_width"]
-        #         screen_height = elements[0]["screen_height"]
-        #         evaluation = minimalist.evaluate_minimalist(elements, screen_width, screen_height)
-        #     # Store evaluation in each element
-        #     for element in elements:
-        #         element["aesthetic_evaluation"] = evaluation
-            # Save results to JSON
-            # with open('evaluated_clusters.json', 'w') as f:
-                # json.dump(self.clusters, f, indent=4)
-
-
-
-
-
-
-
-        # Optionally, save the updated clusters back to a new file
-        # with open('evaluated_clusters.json', 'w') as f:
-        #     json.dump(self.clusters, f, indent=4)
-
     def evaluate_minimalist_on_clusters(self):
         DBSCAN_dataset, clusters = self.clustering.dbscan_cluster('screen_size_and_type')
         
@@ -123,3 +101,13 @@ class EGFE_HeuristicEvaluation():
         
         return results
 
+
+    def save_white_space_ratio_evaluation_result(self, file_name, result_data, output_folder):
+        """ Saves the evaluation result for each design in a new JSON file """
+
+        output_path = os.path.join(output_folder, f"evaluated_{file_name}")
+        
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(result_data, f, indent=4)
+
+        print(f"Evaluation results saved to {output_path}")
