@@ -2,6 +2,7 @@ import os
 import sys
 import pandas as pd
 
+from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
 from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 
@@ -157,33 +158,36 @@ def main():
     # Step 2: Create an instance of ClusteringConsistency
     clustering_instance = EGFE_Clustering(train_folder, output_folder)
 
-        # List of features to loop through (you can modify this list)
-    features_to_check = ['color', 'position', 'size']
+    # List of features to loop through
+    features_to_check = ['color', 'position', 'size', 'spacing']  # Added 'spacing' here
 
-        # Create an empty dictionary to store the reports
+    # Create an empty dictionary to store the reports
     consistency_reports = {}
 
-        # Loop through the features and generate consistency reports
+    # Loop through the features and generate consistency reports
     for feature in features_to_check:
-            # Get the clustered data and clusters based on the feature
-            clustered_data, clusters = clustering_instance.dbscan_cluster(feature)
+        # Get the clustered data and clusters based on the feature
+        clustered_data, clusters = clustering_instance.dbscan_cluster(feature)
+        print(clustered_data.columns)
+        
+        # Check if the clustered data is not empty and generate consistency report
+        if clustered_data is not None and not clustered_data.empty:
+            consistency_instance = ClusteringConsistency(clustered_data)
+            consistency_report = consistency_instance.generate_consistency_report()
             
-            # Check if the clustered data is not empty and generate consistency report
-    if clustered_data is not None and not clustered_data.empty:
-                consistency_instance = ClusteringConsistency(clustered_data)
-                consistency_report = consistency_instance.generate_consistency_report()
-                
-                # Store the report in the dictionary
-                consistency_reports[feature] = consistency_report
+            # Store the report in the dictionary
+            consistency_reports[feature] = consistency_report
 
-        # Print the final consistency report for all features
+    # Print the final consistency report for all features
     print("Cluster Consistency Reports:")
     for feature, report in consistency_reports.items():
-            print(f"Feature: {feature}")
-            print(report)
-
-
+        print(f"Feature: {feature}")
+        print(report)
 if __name__ == "__main__":
     main()
+#     print(f"Analyzing consistency for {feature} clusters...")
+#     clustering_instance.analyze_clusters()
+
+
 
 
