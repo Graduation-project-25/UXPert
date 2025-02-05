@@ -13,7 +13,7 @@ from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNorma
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
-from components.Feedback_Generator_Component.heuristics.mini import Minimalist
+from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
 from components.Clustering_Component.EGFE_heuristic_evaluation import EGFE_HeuristicEvaluation
@@ -108,7 +108,7 @@ def main():
     # clusters_data = "project/data/raw/EGFE/extractedFeatures/X- train clusters.json"
 
     # clusters_data_path = "project/data/raw/EGFE/extractedFeatures/X-train clusters.json"
-    # base_path = Path(_file_).resolve().parent  # Get current script directory
+    # base_path = Path(__file__).resolve().parent  # Get current script directory
     # clusters_data_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
 
     # with open(clusters_data_path, "r") as file:
@@ -119,6 +119,8 @@ def main():
     # for f in feedback:
     #     print(f)
 
+
+    
 
     
 
@@ -138,40 +140,27 @@ def main():
     # for feature, df in cluster_results.items():
     #     print(df.head())  # Check first few rows
 
-    #     print(f"Analyzing consistency for {feature} clusters...")
-    #     clustering_instance.analyze_clusters()
-        # for feature in features:
-    #     print(f"Clustering based on {feature}...")
-    #     DBSCAN_dataset, clusters = clustering_instance.dbscan_cluster(feature)
-    #     cluster_results[feature] = DBSCAN_dataset  # Store clustering results
-    data = {
-    'Cluster': ['Cluster_1', 'Cluster_1', 'Cluster_2', 'Cluster_2', 'Cluster_3', 'Cluster_3'],
-    'position.x': [1.1, 1.2, 5.0, 5.1, 10.5, 10.6],
-    'position.y': [2.1, 2.2, 6.0, 6.1, 11.5, 11.6],
-    'width': [100, 100, 200, 210, 300, 310],
-    'height': [150, 150, 250, 260, 350, 340],
-    'color_r': [0.1, 0.1, 0.5, 0.5, 0.9, 0.8],
-    'color_g': [0.2, 0.2, 0.4, 0.3, 0.8, 0.9],
-    'color_b': [0.3, 0.3, 0.3, 0.4, 0.7, 0.7]
-}
-    df = pd.DataFrame(data)
+    print(f"Analyzing consistency for {feature} clusters...")
+    clustering_instance.analyze_clusters()
+        
 
-    # Step 2: Create an instance of ClusteringConsistency
-    clustering_consistency = ClusteringConsistency(dbscan_dataset=df)
 
-    # Step 3: Generate the consistency report
-    report = clustering_consistency.generate_consistency_report()
 
-    # Step 4: Print the report
-    print("Clustering Consistency Report:")
-    for feature, consistency in report.items():
-        print(f"\n{feature}:")
-        for cluster, feedback in consistency.items():
-            print(f"  {cluster}: {feedback}")
 
-    # If you want to visualize alignment consistency
-    clustering_consistency.plot_alignment_consistency()
-    if __name__ == "__main__":
-        main()
+
+if __name__ == "__main__":
+    main()
+#     print(f"Analyzing consistency for {feature} clusters...")
+#     clustering_instance.analyze_clusters()
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    main()
 
 
