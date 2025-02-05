@@ -22,23 +22,18 @@ class EGFE_Clustering(ClusteringInterface):
     def dbscan_cluster(self, feature):
         clustered_data = None
         clusters = None
-
         try:
-            # Your DBSCAN clustering logic here
-            # Make sure to assign values to clustered_data and clusters
-            # Example:
             if feature == "color":
-                clustered_data, clusters = self.dbscan_cluster_based_on_color_and_type()  # Placeholder for actual DBSCAN logic for color
+                clustered_data, clusters = self.dbscan_cluster_based_on_color_and_type()  
             elif feature == "position":
-                clustered_data, clusters = self.dbscan_cluster_based_on_position_and_type()  # Placeholder for position clustering
+                clustered_data, clusters = self.dbscan_cluster_based_on_position_and_type()
             elif feature == "size":
-                clustered_data, clusters = self.dbscan_cluster_based_on_size_and_type()  # Placeholder for size clustering
+                clustered_data, clusters = self.dbscan_cluster_based_on_size_and_type() 
             # elif feature == 'screen_size':
     #         # clustered_data, clusters = self.dbscan_cluster_based_on_screen_size()
-    #         # clustered_data, data_to_evaluate, clusters = self.dbscan_cluster_based_on_screen_size()
     #         # return clustered_data, data_to_evaluate, clusters
-    #     elif feature == 'screen_size_and_type':
-    #         clustered_data, clusters = self.dbscan_cluster_based_on_screen_size_and_type()# Placeholder for spacing clustering
+            elif feature == 'screen_size_and_type':
+                clustered_data, clusters = self.dbscan_cluster_based_on_screen_size_and_type()
 
             # If clustering fails, raise an error
             if clustered_data is None or clusters is None:
@@ -50,22 +45,6 @@ class EGFE_Clustering(ClusteringInterface):
             clusters = []
 
         return clustered_data, clusters
-
-
-    # def dbscan_cluster(self, feature):
-    #     if feature == 'color':
-    #         clustered_data, clusters = self.dbscan_cluster_based_on_color_and_type()
-    #     elif feature == 'position':
-    #         clustered_data, clusters = self.dbscan_cluster_based_on_position_and_type()
-    #     elif feature == 'size':
-    #         clustered_data, clusters = self.dbscan_cluster_based_on_size_and_type()
-    #     # elif feature == 'screen_size':
-    #         # clustered_data, clusters = self.dbscan_cluster_based_on_screen_size()
-    #         # clustered_data, data_to_evaluate, clusters = self.dbscan_cluster_based_on_screen_size()
-    #         # return clustered_data, data_to_evaluate, clusters
-    #     elif feature == 'screen_size_and_type':
-    #         clustered_data, clusters = self.dbscan_cluster_based_on_screen_size_and_type()
-    #     return clustered_data, clusters
 
     def dbscan_cluster_based_on_color_and_type(self):
         X_train = self.egfe_load_data.load_data(self.train_folder)

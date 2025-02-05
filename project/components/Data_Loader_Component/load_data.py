@@ -3,5 +3,5 @@ from abc import ABC, abstractmethod
 class LoadDataInterface(ABC):
     
     @abstractmethod
-    def load_train_data(self, data_folder):
+    def load_data(self, data_folder):
         pass
