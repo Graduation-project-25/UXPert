@@ -1,23 +1,21 @@
 import json
 import os
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNormalizing
 from components.Data_Loader_Component.load_data import LoadDataInterface
 
 class EGFE_LoadData(LoadDataInterface):    
-    def __init__(self, data_folder):
-        self.data_folder = data_folder
+    def __init__(self):
         self.egfe_ui_normalizing = EGFE_UiNormalizing()
 
-    def load_data(self):
+    def load_data(self, data_folder):
         """Load and merge all JSON files from the data folder into a DataFrame."""
         all_data = []
         # max_num, min_num = self.get_max_min_file_name()
         
-        for file_name in os.listdir(self.data_folder):
+        for file_name in os.listdir(data_folder):
             if file_name.endswith(".json"):
-                file_path = os.path.join(self.data_folder, file_name)
+                file_path = os.path.join(data_folder, file_name)
 
                 try:
                     with open(file_path, 'r', encoding='utf-8') as f:
@@ -47,7 +45,7 @@ class EGFE_LoadData(LoadDataInterface):
 
     # def get_max_min_file_name(self):
     #     file_names = []
-    #     for file_name in os.listdir(self.data_folder):
+    #     for file_name in os.listdir(data_folder):
     #         if file_name.endswith(".json"):
     #             file_name = os.path.splitext(file_name)[0]
     #             file_name = int(file_name)

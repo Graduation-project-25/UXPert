@@ -25,8 +25,9 @@ def main():
     json_folder = dataset_folder + '/jsons'
     output_folder = dataset_folder + '/extractedFeatures'
     train_folder = output_folder + '/train'
-    evaluation_folder = output_folder + '/evaluation'
     test_folder = output_folder + '/test'
+    evaluation_folder = output_folder + '/evaluation'
+
     os.makedirs(output_folder, exist_ok=True)
 
     # Initialize components
@@ -60,7 +61,7 @@ def main():
     
     # Step 5: DBSCAN Clustering Based on selected feature
     # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
-    #clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
+    # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(data_to_evaluate)
 
 

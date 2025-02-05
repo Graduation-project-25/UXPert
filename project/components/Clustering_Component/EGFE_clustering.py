@@ -9,12 +9,13 @@ from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
 from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 from utils.csv_exporting import export_to_csv
 
-
+ 
 class EGFE_Clustering(ClusteringInterface):    
     def __init__(self, train_folder,output_folder):
         self.output_folder = output_folder
+        self.train_folder = train_folder
         self.egfe_ui_processing = EGFE_UiProcessing()
-        self.egfe_load_data = EGFE_LoadData(train_folder)
+        self.egfe_load_data = EGFE_LoadData()
     
 
     def dbscan_cluster(self, feature):
@@ -32,7 +33,7 @@ class EGFE_Clustering(ClusteringInterface):
         return clustered_data, clusters
 
     def dbscan_cluster_based_on_color_and_type(self):
-        X_train = self.egfe_load_data.load_train_data()
+        X_train = self.egfe_load_data.load_data(self.train_folder)
 
         color_features = [col for col in X_train.columns if col.startswith('color_')]
         type_features =  [col for col in X_train.columns if col.startswith('type_')]
@@ -57,7 +58,7 @@ class EGFE_Clustering(ClusteringInterface):
         return clustered_data, clusters 
     
     def dbscan_cluster_based_on_size_and_type(self):
-        X_train = self.egfe_load_data.load_train_data()
+        X_train = self.egfe_load_data.load_data(self.train_folder)
 
         size_features = ['width', 'height']
         type_features =  [col for col in X_train.columns if col.startswith('type_')]
@@ -94,7 +95,7 @@ class EGFE_Clustering(ClusteringInterface):
         return clustered_data, clusters 
 
     def dbscan_cluster_based_on_position_and_type(self):
-        X_train = self.egfe_load_data.load_train_data()
+        X_train = self.egfe_load_data.load_data(self.train_folder)
         size_features = ['position.x', 'position.y']
         type_features =  [col for col in X_train.columns if col.startswith('type_')]
         X_train_selected = X_train[size_features + type_features]
@@ -127,8 +128,8 @@ class EGFE_Clustering(ClusteringInterface):
         return clustered_data, clusters 
 
     # def dbscan_cluster_based_on_screen_size(self):
-    #     X_train = self.egfe_load_data.load_train_data()
-    #     print ('X_train: \n', X_train)
+        # X_train = self.egfe_load_data.load_data(self.train_folder)
+        # print ('X_train: \n', X_train)
     #     X_train_selected = X_train[['screen_width', 'screen_height', 'file_name']] 
 
 
@@ -164,7 +165,7 @@ class EGFE_Clustering(ClusteringInterface):
     #     # return clustered_data, X_train_selected, clusters 
     
     def dbscan_cluster_based_on_screen_size_and_type(self):
-        X_train = self.egfe_load_data.load_train_data()
+        X_train = self.egfe_load_data.load_data(self.train_folder)
         screen_size = ['screen_width', 'screen_height']
         type_features =  [col for col in X_train.columns if col.startswith('type_')]
         X_train_selected = X_train[screen_size + type_features]
