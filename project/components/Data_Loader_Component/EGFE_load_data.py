@@ -6,18 +6,18 @@ from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNorma
 from components.Data_Loader_Component.load_data import LoadDataInterface
 
 class EGFE_LoadData(LoadDataInterface):    
-    def __init__(self, train_folder):
-        self.train_folder = train_folder
+    def __init__(self, data_folder):
+        self.data_folder = data_folder
         self.egfe_ui_normalizing = EGFE_UiNormalizing()
 
-    def load_train_data(self):
-        """Load and merge all JSON files from the training folder into a DataFrame."""
+    def load_data(self):
+        """Load and merge all JSON files from the data folder into a DataFrame."""
         all_data = []
         # max_num, min_num = self.get_max_min_file_name()
         
-        for file_name in os.listdir(self.train_folder):
+        for file_name in os.listdir(self.data_folder):
             if file_name.endswith(".json"):
-                file_path = os.path.join(self.train_folder, file_name)
+                file_path = os.path.join(self.data_folder, file_name)
 
                 try:
                     with open(file_path, 'r', encoding='utf-8') as f:
@@ -40,14 +40,14 @@ class EGFE_LoadData(LoadDataInterface):
                     print(f"Error processing {file_name}: {e}. Skipping file.")
 
         if not all_data:
-            raise ValueError("No JSON files found in the training folder.")
+            raise ValueError("No JSON files found in the data folder.")
         
         return pd.concat(all_data, ignore_index=True)
     
 
     # def get_max_min_file_name(self):
     #     file_names = []
-    #     for file_name in os.listdir(self.train_folder):
+    #     for file_name in os.listdir(self.data_folder):
     #         if file_name.endswith(".json"):
     #             file_name = os.path.splitext(file_name)[0]
     #             file_name = int(file_name)
