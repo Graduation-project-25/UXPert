@@ -86,7 +86,6 @@ figma.ui.onmessage = async (msg) => {
 
             if (result.consistency_results.Feedback) {
                 console.log("📤 Sending message to UI:", result.consistency_results.Feedback);
-                
                 figma.ui.postMessage({
                     type: 'feedback',
                     feedback: result.consistency_results.Feedback
@@ -94,6 +93,8 @@ figma.ui.onmessage = async (msg) => {
 
                 const feedbackMessages = Object.values(result.consistency_results.Feedback).join("\n");
                 figma.notify(`Feedback:\n${feedbackMessages}`);
+            }else {
+                console.log("No feedback available.");
             }
 
         } catch (error) {

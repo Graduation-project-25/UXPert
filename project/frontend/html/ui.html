@@ -26,7 +26,8 @@
       background-color: #0056b3;
     }
 
-    #feedback-screen, #processing-screen {
+    #feedback-screen,
+    #processing-screen {
       display: none;
     }
   </style>
@@ -61,24 +62,43 @@
       initialScreen.style.display = 'none';
       processingScreen.style.display = 'block';
 
-      parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+      parent.postMessage({
+        pluginMessage: {
+          type: 'start-detection'
+        }
+      }, '*');
     };
 
     closeButton.onclick = () => {
-      parent.postMessage({ pluginMessage: { type: 'close-plugin' } }, '*');
+      parent.postMessage({
+        pluginMessage: {
+          type: 'close-plugin'
+        }
+      }, '*');
     };
 
+
+
+    // window.addEventListener("message", function(event) {
+    // // The data object will contain your pluginMessage
+    //const msg = event.data.pluginMessage;
+    //if (msg && msg.type === 'feedback') {
+    // console.log("Received feedback:", msg.feedback);
+
+    // Process the feedback
+    //processingScreen.style.display = 'none';
+    //feedbackScreen.style.display = 'block';
+    //feedbackText.textContent = JSON.stringify(msg.feedback, null, 2);
+    //}
+    //});
+    // Listen for messages from the plugin
     window.onmessage = (event) => {
-      console.log("📩 Received message in UI:", event.data);
-      
+      console.log('Message received:', event.data.pluginMessage); // For debugging
       const msg = event.data.pluginMessage;
       if (msg && msg.type === 'feedback') {
-        console.log("✅ Processing feedback message:", msg.feedback);
-
-        processingScreen.style.display = 'none';
-        feedbackScreen.style.display = 'block';
-
-        feedbackText.textContent = JSON.stringify(msg.feedback, null, 2);
+        // Process the feedback and display it
+        console.log("Feedback:", msg.feedback);
+        document.getElementById('feedback-text').textContent = msg.feedback;
       }
     };
   </script>
