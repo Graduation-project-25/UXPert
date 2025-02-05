@@ -25,6 +25,12 @@ figma.ui.onmessage = async (msg) => {
 
         // Step 2: Extract features from frames and their children
         for (const frame of frames) {
+            // Check if the frame is visible
+            if (!frame.visible) {
+                console.log(`Frame ${frame.name} is hidden. Skipping its children.`);
+                continue; // Skip processing if the frame is hidden
+            }
+
             // Find all visible children of the selected frame (elements inside the frame)
             const childNodes = frame.children.filter(node => node.visible);
 
