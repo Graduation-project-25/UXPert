@@ -7,6 +7,7 @@ from components.Clustering_Component.clustering import ClusteringInterface
 from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
+from components.Feedback_Generator_Component.heuristics.Consistency_using_clusters import ClusteringConsistency
 from utils.csv_exporting import export_to_csv
 
 
@@ -233,5 +234,24 @@ class EGFE_Clustering(ClusteringInterface):
     #             "TotalConsistency": consistency_scores,
     #         })
         
-    #     return cluster_analysis
+    # #     return cluster_analysis
 
+
+
+
+
+    def analyze_clusters(self):
+        report = {}
+
+        # Define which features need consistency checking
+        features_to_check = ['color', 'position', 'size', 'screen_size']
+
+        for feature in features_to_check:
+            dbscan_dataset, clusters = self.dbscan_cluster(feature)
+
+            if dbscan_dataset is not None and not dbscan_dataset.empty:
+                consistency_instance = ClusteringConsistency(dbscan_dataset)
+                report[feature] = consistency_instance.generate_consistency_report()
+
+        print("Cluster Consistency Report:", report)
+        return report

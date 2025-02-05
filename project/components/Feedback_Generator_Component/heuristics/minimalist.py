@@ -4,9 +4,16 @@ from components.Feedback_Generator_Component.heuristics.heuristic import Heurist
 
 class Minimalist(HeuristicInterface):
 
-    def __init__(self, max_elements_threshold=50, min_elements_threshold=5):
-        self.max_elements_threshold = max_elements_threshold
-        self.min_elements_threshold = min_elements_threshold
+    def __init__(self, clusters_data, max_elements=10, min_elements=3):
+        """
+        Initialize the Minimalist heuristic.
+        :param clusters_data: Dictionary containing cluster information.
+        :param max_elements: Maximum recommended number of elements per screen.
+        :param min_elements: Minimum recommended number of elements per screen.
+        """
+        self.clusters_data = clusters_data
+        self.max_elements = max_elements
+        self.min_elements = min_elements
 
     def count_ui_elements(self, elements, threshold_min=3, threshold_max=10):
         # Ensure elements is a list or a DataFrame and extract rows count
@@ -139,38 +146,35 @@ class Minimalist(HeuristicInterface):
             return white_space_ratio, "Fail - Cluttered Design"
 
 
-    def evaluate_rule(self, cluster_data):
-        feedback = {}
-        # Call the count UI elements check
-        count, count_status = self.count_ui_elements(cluster_data["elements"])
-        feedback["ui_element_count"] = f"Number of UI elements: {count}. Status: {count_status}"
-
-        # Call the check element count function
-        # element_count_status = self.check_element_count(cluster_data)
-        # feedback["element_count_status"] = element_count_status
-
-        # Call the number of elements check for redundancy
-        # element_feedback = self.numberOfElements(cluster_data)
-        # if "status" in element_feedback:
-        #     feedback["element_redundancy_status"] = element_feedback["status"]
-        # if "cluster_warning" in element_feedback:
-        #     feedback["cluster_warning"] = element_feedback["cluster_warning"]
-        # if "redundant_elements" in element_feedback:
-        #     feedback["redundant_elements"] = element_feedback["redundant_elements"]
-
-        # Call the screen type inference
-        screen_type = self.infer_screen_type(cluster_data)
-        feedback["screen_type"] = f"Screen type: {screen_type}"
-
-        # Call the irrelevant elements check
-        irrelevant_elements_feedback = self.identify_irrelevant_elements(cluster_data)
-        if isinstance(irrelevant_elements_feedback, dict):
-            if "rare_elements" in irrelevant_elements_feedback:
-                feedback["rare_elements"] = irrelevant_elements_feedback["rare_elements"]
-            if "frequent_elements" in irrelevant_elements_feedback:
-                feedback["frequent_elements"] = irrelevant_elements_feedback["frequent_elements"]
-        else:
-            feedback["irrelevant_elements"] = irrelevant_elements_feedback
-
-        # Return the merged feedback dictionary
-        return feedback
+    def evaluate_rule(self):
+        """
+        Evaluate the design based on the minimalist rule.
+        """
+        feedback = []
+        for cluster_id, elements in self.clusters_data.items():
+            num_elements = len(elements)
+            
+            # Check total number of elements
+            if num_elements > self.max_elements:
+                feedback.append(f"Cluster {cluster_id}: Too many elements ({num_elements}). Consider removing unnecessary elements.")
+            elif num_elements < self.min_elements:
+                feedback.append(f"Cluster {cluster_id}: Too few elements ({num_elements}). Consider adding more essential elements.")
+            
+            # Check for irrelevant elements
+            irrelevant_elements = [el for el in elements if self.is_irrelevant(el)]
+            if irrelevant_elements:
+                feedback.append(f"Cluster {cluster_id}: Contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
+        
+        return feedback if feedback else ["Design adheres to the minimalist rule."]
+    
+    def is_irrelevant(self, element):
+        """
+        Determine if an element is irrelevant.
+        In this case, an element may be considered irrelevant if it has no text and is not a primary shape.
+        """
+        return (
+            element.get("type_text", 0) == 0 and  
+            element.get("type_symbolInstance", 0) == 0 and
+            element.get("type_rectangle", 0) == 0 and 
+            element.get("type_oval", 0) == 0
+        )

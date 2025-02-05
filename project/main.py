@@ -13,10 +13,11 @@ from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNorma
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
-from components.Feedback_Generator_Component.heuristics.mini import Minimalist
+from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
 from components.Clustering_Component.EGFE_heuristic_evaluation import EGFE_HeuristicEvaluation
+from components.Feedback_Generator_Component.heuristics.Consistency_using_clusters import ClusteringConsistency
 
 
 pd.set_option('display.max_columns', None)
@@ -51,20 +52,20 @@ def main():
 
 
     # Step 1: Save json in extracted features folder
-    # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
+    egfe_ui_processing.process_ui_elements(json_folder, output_folder)
     
     # Step 2: Split Data into Train and Test
-    # splitter.save_split_files(train_folder, test_folder)
+    splitter.save_split_files(train_folder, test_folder)
     
     # Step 3: Load Normalized train data
-    # train_data = egfe_load_data.load_train_data()
+    train_data = egfe_load_data.load_train_data()
     
     # Step 4: Visualize UI Elements (Scatter Plot)
-    # egfe_visualization.scatter_plot_ui_elements(train_data)
+    egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
-    # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(data_to_evaluate)
 
 
@@ -93,7 +94,7 @@ def main():
 
     ##############################################################################################
 
-    # base_path = Path(__file__).resolve().parent  # Get current script directory
+    # base_path = Path(_file_).resolve().parent  # Get current script directory
     # file_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
 
     # if not file_path.exists():
@@ -120,6 +121,45 @@ def main():
 
 
     
+
+    
+
+
+    # clustering_instance = EGFE_Clustering(train_folder, output_folder)
+
+    # # Run clustering for different features
+    # features = ['color', 'position', 'size']
+    # cluster_results = {}
+
+    # for feature in features:
+    #     print(f"Clustering based on {feature}...")
+    #     DBSCAN_dataset, clusters = clustering_instance.dbscan_cluster(feature)
+    #     cluster_results[feature] = DBSCAN_dataset  # Store clustering results
+        
+    # # Perform Consistency Analysis
+    # for feature, df in cluster_results.items():
+    #     print(df.head())  # Check first few rows
+
+    # print(f"Analyzing consistency for {feature} clusters...")
+    # clustering_instance.analyze_clusters()
+        
+
+
+
+
+
+if __name__ == "__main__":
+    main()
+#     print(f"Analyzing consistency for {feature} clusters...")
+#     clustering_instance.analyze_clusters()
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
     main()
 

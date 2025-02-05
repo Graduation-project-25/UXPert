@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <title>Figma Plugin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +9,7 @@
       text-align: center;
       margin: 0;
       padding: 20px;
+      background-color: #f9f9f9;
     }
 
     button {
@@ -20,19 +20,65 @@
       background-color: #007bff;
       color: white;
       border-radius: 5px;
+      transition: background-color 0.3s;
     }
 
     button:hover {
       background-color: #0056b3;
     }
 
-    #feedback-screen,
-    #processing-screen {
+    #feedback-screen, #processing-screen {
       display: none;
+    }
+
+    .feedback-card {
+      display: none;
+      align-items: flex-start;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+      margin: 15px;
+      padding: 15px;
+      text-align: left;
+    }
+
+    .screenshot {
+      max-width: 150px;
+      border-radius: 5px;
+      margin-right: 15px;
+      transition: transform 0.2s;
+    }
+
+    .screenshot:hover {
+      transform: scale(1.2);
+    }
+
+    .feedback-content {
+      flex: 1;
+      text-align: left;
+    }
+
+    .feedback-content ul {
+      padding-left: 20px;
+    }
+
+    .feedback-content li {
+      margin-bottom: 5px;
+    }
+
+    .divider {
+      height: 1px;
+      background-color: #e0e0e0;
+      margin: 10px 0;
+    }
+
+    #nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
     }
   </style>
 </head>
-
 <body>
   <div id="initial-screen">
     <h1>Start Detection</h1>
@@ -46,51 +92,93 @@
 
   <div id="feedback-screen">
     <h1>Feedback</h1>
-    <pre id="feedback-text"></pre>
+    <div id="feedback-container"></div>
+    <div id="nav-buttons">
+      <button id="prev" disabled>Previous</button>
+      <button id="next" disabled>Next</button>
+    </div>
     <button id="close">Close</button>
   </div>
 
   <script>
-    const startButton = document.getElementById('start');
-    const closeButton = document.getElementById('close');
-    const initialScreen = document.getElementById('initial-screen');
-    const processingScreen = document.getElementById('processing-screen');
-    const feedbackScreen = document.getElementById('feedback-screen');
-    const feedbackText = document.getElementById('feedback-text');
+    let currentFeedbackIndex = 0;
+    let feedbackCards = [];
 
-    startButton.onclick = () => {
-      initialScreen.style.display = 'none';
-      processingScreen.style.display = 'block';
-
-      parent.postMessage({
-        pluginMessage: {
-          type: 'start-detection'
-        }
-      }, '*');
+    document.getElementById('start').onclick = () => {
+      document.getElementById('initial-screen').style.display = 'none';
+      document.getElementById('processing-screen').style.display = 'block';
+      parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
     };
 
-    closeButton.onclick = () => {
-      figma.closePlugin(); 
+    document.getElementById('close').onclick = () => {
+      parent.postMessage({ pluginMessage: { type: 'close' } }, '*');
     };
 
-    // Listen for messages from the plugin
+    document.getElementById('prev').onclick = () => {
+      if (currentFeedbackIndex > 0) {
+        showFeedbackCard(currentFeedbackIndex - 1);
+      }
+    };
+
+    document.getElementById('next').onclick = () => {
+      if (currentFeedbackIndex < feedbackCards.length - 1) {
+        showFeedbackCard(currentFeedbackIndex + 1);
+      }
+    };
+
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
       if (msg && msg.type === 'collective-feedback') {
-        // Hide processing screen
-        processingScreen.style.display = 'none';
-        feedbackScreen.style.display = 'block';
+        document.getElementById('processing-screen').style.display = 'none';
+        document.getElementById('feedback-screen').style.display = 'block';
+        document.getElementById('feedback-container').innerHTML = '';
 
-        // Display feedback for all frames
-        const feedbackMessages = msg.feedback.map(item => {
-          return `Frame: ${item.frameName}\nFeedback: ${JSON.stringify(item.feedback, null, 2)}`;
-        }).join("\n\n");
+        feedbackCards = msg.feedback.map(item => {
+          const card = document.createElement('div');
+          card.className = 'feedback-card';
 
-        feedbackText.textContent = feedbackMessages;
-      } else {
-        console.error("Unknown message:", msg);
+          const image = document.createElement('img');
+          image.src = item.screenshot;
+          image.className = 'screenshot';
+
+          let feedbackList = '<ul>';
+          for (const [issue, solution] of Object.entries(item.feedback)) {
+            feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
+          }
+          feedbackList += '</ul>';
+
+          const content = document.createElement('div');
+          content.className = 'feedback-content';
+          content.innerHTML = `<h2>${item.frameName}</h2><div class='divider'></div>${feedbackList}`;
+
+          card.appendChild(image);
+          card.appendChild(content);
+          document.getElementById('feedback-container').appendChild(card);
+
+          return card;
+        });
+
+        showFeedbackCard(0); // Show the first card by default
       }
     };
+
+    function showFeedbackCard(index) {
+      feedbackCards.forEach((card, i) => {
+        card.style.display = i === index ? 'flex' : 'none';
+      });
+      currentFeedbackIndex = index;
+      document.getElementById('prev').disabled = currentFeedbackIndex === 0;
+      document.getElementById('next').disabled = currentFeedbackIndex === feedbackCards.length - 1;
+    }
+
+    // Enable arrow key navigation
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') {
+        document.getElementById('prev').click();
+      } else if (event.key === 'ArrowRight') {
+        document.getElementById('next').click();
+      }
+    });
   </script>
 </body>
 </html>
