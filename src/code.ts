@@ -85,20 +85,19 @@ figma.ui.onmessage = async (msg) => {
             console.log("Consistency Evaluation Results: ", result.consistency_results);
 
             if (result.consistency_results.Feedback) {
-              console.log("📤 Attempting to send feedback to UI...");
-              console.log("Feedback Data:", result.consistency_results.Feedback);
+                console.log("📤 Attempting to send feedback to UI...");
+                console.log("Feedback Data:", result.consistency_results.Feedback);
 
-              figma.ui.postMessage({
-                type: 'feedback',
-                feedback: result.consistency_results.Feedback
-              });
+                figma.ui.postMessage({
+                    type: 'feedback',
+                    feedback: result.consistency_results.Feedback
+                });
 
-              console.log("✅ Message sent to UI");
+                console.log("✅ Message sent to UI");
 
-
-               const feedbackMessages = Object.values(result.consistency_results.Feedback).join("\n");
-               figma.notify(`Feedback:\n${feedbackMessages}`);
-            }else {
+                const feedbackMessages = Object.values(result.consistency_results.Feedback).join("\n");
+                figma.notify(`Feedback:\n${feedbackMessages}`);
+            } else {
                 console.log("No feedback available.");
             }
 
