@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from components.Clustering_Component.EGFE_clustering import EGFEClustering
 from components.Clustering_Component.EGFE_clustering_evaluation import EGFEClusteringEvaluation
 from components.Clustering_Component.EGFE_clustering_testing import EGFEClusteringTesting
-from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction  # ✅ Import the correct class
+from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction  # Import the correct class
 
 # Load config
 config = {}
