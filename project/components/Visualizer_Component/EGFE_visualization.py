@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 from components.Visualizer_Component.visualizer import VisualizerInterface
-from project.components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
+from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
 
 class EGFE_Visualization(VisualizerInterface):
     def __init__(self):
