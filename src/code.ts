@@ -92,6 +92,10 @@ figma.ui.onmessage = async (msg) => {
                     feedback: result.consistency_results.Feedback
                 });
 
+                //try
+                // figma.ui.postMessage({ type: 'feedback', feedback: "This is a test feedback" });
+                // console.log("Feedback message sent to UI");
+
                 // Optionally, display the feedback from the backend to the user
                 const feedbackMessages = Object.values(result.consistency_results.Feedback).join("\n");
                 figma.notify(`Feedback:\n${feedbackMessages}`);
