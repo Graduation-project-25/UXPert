@@ -140,8 +140,8 @@ def main():
     # for feature, df in cluster_results.items():
     #     print(df.head())  # Check first few rows
 
-    print(f"Analyzing consistency for {feature} clusters...")
-    clustering_instance.analyze_clusters()
+    # print(f"Analyzing consistency for {feature} clusters...")
+    # clustering_instance.analyze_clusters()
         
 
 
