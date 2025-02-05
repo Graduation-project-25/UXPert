@@ -4,7 +4,7 @@ from scipy.spatial.distance import cdist
 
 from components.Clustering_Component.clustering_testing import ClusteringTestingInterface
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
-from project.components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
+from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
 
 
 class EGFE_ClusteringTesting(ClusteringTestingInterface):
@@ -48,7 +48,9 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
             # if cluster != -1  # Exclude noise
         }
         # Calculate distances from `X_test` samples to cluster centers
-        test_features = X_test[[col for col in X_train.columns if col.startswith('color_')]].values
+        test_features = X_test[['width', 'height', 'position.x', 'position.y']+ 
+                    [col for col in X_train.columns if col.startswith('color_')] + 
+                    [col for col in X_train.columns if col.startswith('type_')] ].values
         cluster_centers_array = np.array(list(cluster_centers.values()))[:,:-1]
         distances = cdist(test_features, cluster_centers_array)
 
@@ -57,7 +59,6 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
         X_test['Assigned_Cluster'] = assigned_clusters
 
         return X_test
-
 
     def evaluate_test_clusters(self,X_test, X_train):
         # Compare cluster consistency or use metrics like silhouette scores
