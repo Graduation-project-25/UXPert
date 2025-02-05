@@ -11,47 +11,59 @@ figma.showUI(__html__, { width: 400, height: 200 });
 
 figma.ui.onmessage = async (msg) => {
     if (msg.type === 'start-detection') {
-        // Step 1: Load all pages and find visible nodes (Frames or elements inside Frames)
-        await figma.loadAllPagesAsync();
-        const allNodes = figma.currentPage.findAll();
-        const visibleNodes = allNodes.filter(node => node.visible);
-        const filteredNodes = visibleNodes.filter(node =>
-            node.type === "FRAME" || (node.parent && node.parent.type === "FRAME")
-        );
+        // Step 1: Get selected frame(s)
+        const selectedNodes = figma.currentPage.selection;
 
-        if (filteredNodes.length === 0) {
-            figma.notify('No valid Frames or elements inside Frames found.');
+        // If no frame is selected, notify the user and close the plugin
+        if (selectedNodes.length === 0) {
+            figma.notify('Please select a frame to run the plugin on.');
             figma.closePlugin();
             return;
         }
 
-        const serializedNodes = filteredNodes.map(node => {
-            let color = { r: 0, g: 0, b: 0 }; // Default color
+        // Filter to only include nodes of type "FRAME"
+        const selectedFrames = selectedNodes.filter(node => node.type === "FRAME");
 
-            if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
-                const firstFill = node.fills[0];
-                if (firstFill.type === "SOLID" && firstFill.color) {
-                    color = firstFill.color;
+        // If no valid frames are selected, notify the user and close the plugin
+        if (selectedFrames.length === 0) {
+            figma.notify('Please select a valid frame to run the plugin on.');
+            figma.closePlugin();
+            return;
+        }
+
+        // Step 2: Extract features from selected frames and their children
+        const serializedNodes = selectedFrames.flatMap(frame => {
+            // Find all visible children of the selected frame (elements inside the frame)
+            const childNodes = frame.findAll(node => node.visible);
+
+            return childNodes.map(node => {
+                let color = { r: 0, g: 0, b: 0 }; // Default color
+
+                if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
+                    const firstFill = node.fills[0];
+                    if (firstFill.type === "SOLID" && firstFill.color) {
+                        color = firstFill.color;
+                    }
                 }
-            }
 
-            const fontSize = (node.type === "TEXT" && 'fontSize' in node) ? node.fontSize : null;
+                const fontSize = (node.type === "TEXT" && 'fontSize' in node) ? node.fontSize : null;
 
-            return {
-                name: node.name,
-                type: node.type,
-                width: 'width' in node ? node.width : null,
-                height: 'height' in node ? node.height : null,
-                "position.x": 'x' in node ? node.x : null,
-                "position.y": 'y' in node ? node.y : null,
-                rotation: 'rotation' in node ? node.rotation : null,
-                color_r: color.r,  
-                color_g: color.g,  
-                color_b: color.b,  
-                insideFrame: node.type === "FRAME" ? false : true,
-                frameName: node.type === "FRAME" ? node.name : node.parent?.name,
-                fontSize: fontSize
-            };
+                return {
+                    name: node.name,
+                    type: node.type,
+                    width: 'width' in node ? node.width : null,
+                    height: 'height' in node ? node.height : null,
+                    "position.x": 'x' in node ? node.x : null,
+                    "position.y": 'y' in node ? node.y : null,
+                    rotation: 'rotation' in node ? node.rotation : null,
+                    color_r: color.r,  
+                    color_g: color.g,  
+                    color_b: color.b,  
+                    insideFrame: true, // All children are inside the selected frame
+                    frameName: frame.name,
+                    fontSize: fontSize
+                };
+            });
         });
 
         const user_name = figma.currentUser ? figma.currentUser.name : "Unknown User";
@@ -77,7 +89,7 @@ figma.ui.onmessage = async (msg) => {
                 throw new Error(`HTTP error! Status: ${processResponse.status}`);
             }
 
-            figma.notify(`${filteredNodes.length} Features saved successfully!`);
+            figma.notify(`${serializedNodes.length} Features saved successfully!`);
 
             // Type the response result properly
             const result = await processResponse.json() as ConsistencyResult;
