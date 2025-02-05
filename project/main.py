@@ -13,7 +13,6 @@ from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNorma
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
-# from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 from components.Feedback_Generator_Component.heuristics.mini import Minimalist
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
@@ -42,30 +41,32 @@ def main():
     egfe_visualization = EGFE_Visualization()
     egfe_clustering_testing = EGFE_ClusteringTesting(train_folder)
     egfe_load_data = EGFE_LoadData(train_folder)
-    # minimalist = Minimalist()
-
-    # Step 1: Process UI Elements
     # screen_size_cluster_file = output_folder + '/X-train Clusters based on screen size.json'
     egfe_heuristic_evaluation = EGFE_HeuristicEvaluation()
 
-    # X_train = egfe_load_data.load_train_data()
 
-    # save json in extracted features folder
+
+
+    # Step 1: Save json in extracted features folder
     # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
     
     # Step 2: Split Data into Train and Test
     # splitter.save_split_files(train_folder, test_folder)
     
-    # Step 3: Normalize Data
-    # train_data = egfe_ui_processing.convert_json_to_dataframe(train_folder)
-    # normalized_elements, normalized_screen_size = egfe_ui_normalizing.get_normalized_data(train_data)
+    # Step 3: Load Normalized train data
+    # train_data = egfe_load_data.load_train_data()
     
     # Step 4: Visualize UI Elements (Scatter Plot)
-    # egfe_visualization.scatter_plot_ui_elements(normalized_elements)
+    # egfe_visualization.scatter_plot_ui_elements(train_data)
     
-    # Step 5: Clustering (DBSCAN Based on Screen Size)
-    # clustered_data, data_to_evaluate, clusters = egfe_clustering.dbscan_cluster('screen_size')
+    # Step 5: DBSCAN Clustering Based on selected feature
+    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(data_to_evaluate)
+
+
+
+    ##############################################################################################################
     
     # Step 6: Visualizing Clustering Results
     # egfe_visualization.clustering_visualization_by_size(clustered_data, clusters)
@@ -87,6 +88,8 @@ def main():
     # print("Number of elements =", element_count)
     # print("Status of the elements =", status)
 
+    ##############################################################################################
+
     # base_path = Path(__file__).resolve().parent  # Get current script directory
     # file_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
 
@@ -106,7 +109,6 @@ def main():
 
     with open(clusters_data_path, "r") as file:
         clusters_data = json.load(file)
-
 
     minimalist_checker = Minimalist(clusters_data)
     feedback = minimalist_checker.evaluate_rule()

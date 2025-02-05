@@ -2,17 +2,18 @@ import json
 import os
 from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
+from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 
 dataset_folder = './data/raw/EGFE'
 output_folder = dataset_folder + '/extractedFeatures'
 train_folder = output_folder + '/train'
 
 class EGFE_HeuristicEvaluation():    
-    def __init__(self, cluster_json_file):
+    def __init__(self):
         self.clustering = EGFE_Clustering(train_folder, output_folder)
-        self.cluster_json_file = cluster_json_file
-        with open(cluster_json_file, 'r') as f:
-            self.clusters = json.load(f)
+        # self.cluster_json_file = cluster_json_file
+        # with open(cluster_json_file, 'r') as f:
+        #     self.clusters = json.load(f)
 
 
     def evaluate_minimalist_on_designs(self, train_folder):
