@@ -44,6 +44,8 @@ def main():
     # screen_size_cluster_file = output_folder + '/X-train Clusters based on screen size.json'
     egfe_heuristic_evaluation = EGFE_HeuristicEvaluation()
 
+    egfe_heuristic_evaluation.evaluate_minimalist_on_designs(train_folder)
+
 
 
 
@@ -104,16 +106,16 @@ def main():
     # clusters_data = "project/data/raw/EGFE/extractedFeatures/X- train clusters.json"
 
     # clusters_data_path = "project/data/raw/EGFE/extractedFeatures/X-train clusters.json"
-    base_path = Path(__file__).resolve().parent  # Get current script directory
-    clusters_data_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
+    # base_path = Path(__file__).resolve().parent  # Get current script directory
+    # clusters_data_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
 
-    with open(clusters_data_path, "r") as file:
-        clusters_data = json.load(file)
+    # with open(clusters_data_path, "r") as file:
+    #     clusters_data = json.load(file)
 
-    minimalist_checker = Minimalist(clusters_data)
-    feedback = minimalist_checker.evaluate_rule()
-    for f in feedback:
-        print(f)
+    # minimalist_checker = Minimalist(clusters_data)
+    # feedback = minimalist_checker.evaluate_rule()
+    # for f in feedback:
+    #     print(f)
 
 
     
