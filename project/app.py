@@ -3,7 +3,7 @@ import pandas as pd  # Import pandas
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
-from components.Heuristics_Component.heuristics.consistency import Consistency
+from components.Heuristics_Component.heuristic_rules.consistency import Consistency
 
 # Initialize Flask
 app = Flask(__name__)

@@ -1,5 +1,5 @@
-import pandas as pd 
-from components.Heuristics_Component.heuristics.heuristic import HeuristicInterface
+import pandas as pd
+from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface 
 
 class Minimalist(HeuristicInterface):
     def __init__(self, clusters_data, max_elements=10, min_elements=3):
