@@ -70,23 +70,27 @@
     };
 
     closeButton.onclick = () => {
-      // Optionally, you can notify the plugin to close if you want to handle it in the Figma side
       figma.closePlugin(); 
     };
 
     // Listen for messages from the plugin
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
-      if (msg && msg.type === 'feedback') {
-        // Show feedback screen
+      if (msg && msg.type === 'collective-feedback') {
+        // Hide processing screen
         processingScreen.style.display = 'none';
         feedbackScreen.style.display = 'block';
-        feedbackText.textContent = JSON.stringify(msg.feedback, null, 2);
+
+        // Display feedback for all frames
+        const feedbackMessages = msg.feedback.map(item => {
+          return `Frame: ${item.frameName}\nFeedback: ${JSON.stringify(item.feedback, null, 2)}`;
+        }).join("\n\n");
+
+        feedbackText.textContent = feedbackMessages;
       } else {
         console.error("Unknown message:", msg);
       }
     };
   </script>
 </body>
-
 </html>

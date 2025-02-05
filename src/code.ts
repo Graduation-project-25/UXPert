@@ -20,6 +20,9 @@ figma.ui.onmessage = async (msg) => {
             return; // Don't close the plugin.
         }
 
+        // Array to accumulate all feedback
+        const allFeedback = [];
+
         // Step 2: Extract features from frames and their children
         for (const frame of frames) {
             // Find all visible children of the selected frame (elements inside the frame)
@@ -87,26 +90,30 @@ figma.ui.onmessage = async (msg) => {
 
                 if (result.consistency_results.Feedback) {
                     console.log("📤 Sending feedback to UI...");
-                    console.log("Feedback Data:", result.consistency_results.Feedback);
 
-                    // Send feedback to UI for each frame
-                    figma.ui.postMessage({
-                        type: 'feedback',
-                        feedback: {
-                            frameName: frame.name,
-                            feedback: result.consistency_results.Feedback
-                        }
+                    // Accumulate feedback for each frame
+                    allFeedback.push({
+                        frameName: frame.name,
+                        feedback: result.consistency_results.Feedback,
                     });
 
-                    console.log("✅ Feedback message sent to UI");
+                    console.log("✅ Feedback recorded for frame:", frame.name);
                 } else {
-                    console.log("No feedback available.");
+                    console.log("No feedback available for frame:", frame.name);
                 }
 
             } catch (error) {
                 console.error("Error during fetch:", error);
                 figma.notify(`Failed to send elements from ${frame.name} to backend.`);
             }
+        }
+
+        // After processing all frames, send consolidated feedback to UI
+        if (allFeedback.length > 0) {
+            figma.ui.postMessage({
+                type: 'collective-feedback',
+                feedback: allFeedback
+            });
         }
 
         // Keep the plugin open to show feedback
