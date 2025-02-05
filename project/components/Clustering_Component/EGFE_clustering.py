@@ -242,40 +242,40 @@ class EGFE_Clustering(ClusteringInterface):
 
 
 #######################################################################################################
-    def analyze_clusters(self, df):
-        consistency_instance = HeuristicFactory.check_rule("consistency")
-        cluster_groups = df.groupby('Cluster')
-        cluster_analysis = []
+    # def analyze_clusters(self, df):
+    #     consistency_instance = HeuristicFactory.check_rule("consistency")
+    #     cluster_groups = df.groupby('Cluster')
+    #     cluster_analysis = []
         
-        for cluster_id, group in cluster_groups:    
-            num_elements = len(group)
-            avg_width = group['width'].mean()
-            avg_height = group['height'].mean()
+    #     for cluster_id, group in cluster_groups:    
+    #         num_elements = len(group)
+    #         avg_width = group['width'].mean()
+    #         avg_height = group['height'].mean()
             
-            print(group.columns)
-            # Prevent division by zero in density calculation
-            bbox_width = group['position.x'].max() - group['position.x'].min()
-            bbox_height = group['position.y'].max() - group['position.y'].min()
-            area = bbox_width * bbox_height if bbox_width > 0 and bbox_height > 0 else 1
-            avg_density = num_elements / area  # Now safe from division by zero
+    #         print(group.columns)
+    #         # Prevent division by zero in density calculation
+    #         bbox_width = group['position.x'].max() - group['position.x'].min()
+    #         bbox_height = group['position.y'].max() - group['position.y'].min()
+    #         area = bbox_width * bbox_height if bbox_width > 0 and bbox_height > 0 else 1
+    #         avg_density = num_elements / area  # Now safe from division by zero
 
-            # Compute alignment consistency and heuristic consistency score
-            alignment_consistency = consistency_instance.calculate_alignment_consistency(group)
-            consistency_scores = consistency_instance.evaluate_rule(group)
-            print("Factory pattern Testing, Consistency:", consistency_scores)
+    #         # Compute alignment consistency and heuristic consistency score
+    #         alignment_consistency = consistency_instance.calculate_alignment_consistency(group)
+    #         consistency_scores = consistency_instance.evaluate_rule(group)
+    #         print("Factory pattern Testing, Consistency:", consistency_scores)
             
-            # Store analysis
-            cluster_analysis.append({
-                "Cluster": cluster_id,
-                "NumElements": num_elements,
-                "AvgWidth": avg_width,
-                "AvgHeight": avg_height,
-                "AvgDensity": avg_density,
-                "AlignmentConsistency": alignment_consistency,
-                "TotalConsistency": consistency_scores,
-            })
+    #         # Store analysis
+    #         cluster_analysis.append({
+    #             "Cluster": cluster_id,
+    #             "NumElements": num_elements,
+    #             "AvgWidth": avg_width,
+    #             "AvgHeight": avg_height,
+    #             "AvgDensity": avg_density,
+    #             "AlignmentConsistency": alignment_consistency,
+    #             "TotalConsistency": consistency_scores,
+    #         })
         
-        return cluster_analysis
+    #     return cluster_analysis
 
 
 

@@ -3,11 +3,16 @@ import os
 from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 
+dataset_folder = './data/raw/EGFE'
+output_folder = dataset_folder + '/extractedFeatures'
+train_folder = output_folder + '/train'
 
 class EGFE_HeuristicEvaluation():    
-    # def __init__(self, cluster_json_file):
-    #     with open(cluster_json_file, 'r') as f:
-    #         self.clusters = json.load(f)
+    def __init__(self, cluster_json_file):
+        self.clustering = EGFE_Clustering(train_folder, output_folder)
+        self.cluster_json_file = cluster_json_file
+        with open(cluster_json_file, 'r') as f:
+            self.clusters = json.load(f)
 
 
     def evaluate_minimalist_on_designs(self, train_folder):
@@ -59,3 +64,64 @@ class EGFE_HeuristicEvaluation():
         # Optionally, save the updated clusters back to a new file
         # with open('evaluated_clusters.json', 'w') as f:
         #     json.dump(self.clusters, f, indent=4)
+
+    def evaluate_minimalist_on_clusters(self):
+        DBSCAN_dataset, clusters = self.clustering.dbscan_cluster('screen_size_and_type')
+        
+        # Initialize Minimalist rule
+        minimalist_rule = Minimalist()  
+        cluster_feedback = {}
+
+        for cluster in clusters:
+            # Ignore noise points
+            if cluster == -1:
+                continue  
+
+            # Filter cluster data
+            cluster_data = DBSCAN_dataset[DBSCAN_dataset["Cluster"] == cluster]  
+
+            print(cluster_data.columns)
+            if 'elements' not in cluster_data.columns:
+                raise KeyError("'elements' column is missing from cluster_data.")
+            
+            # Convert cluster data to a dictionary structure expected by Minimalist
+            design_json = {
+                "screen_size": {
+                    "screen_width": cluster_data["screen_width"].iloc[0],
+                    "screen_height": cluster_data["screen_height"].iloc[0]
+                },
+                "elements": []
+            }
+
+            # Extract UI elements from columns that start with "type_"
+            for _, row in cluster_data.iterrows():
+                for col in cluster_data.columns:
+                    if col.startswith("type_") and row[col] > 0:  # Check presence of element
+                        design_json["elements"].append({"type": col, "width": 100, "height": 100})
+
+            # Apply Minimalist evaluation
+            feedback = minimalist_rule.evaluate_rule(cluster_data)
+            cluster_feedback[cluster] = feedback
+
+        return cluster_feedback
+
+    def evaluate_minimalist(self):
+        minimalist_rule = Minimalist()
+        results = {}
+
+        print(type(self.clusters))
+        # print(self.clusters)
+
+        # Check if self.clusters is a dictionary
+        if isinstance(self.clusters, dict):
+            for cluster_id, cluster_data in self.clusters.items():
+                try:
+                    feedback = minimalist_rule.evaluate_rule(cluster_data)
+                    results[cluster_id] = feedback
+                except Exception as e:
+                    results[cluster_id] = f"Error evaluating cluster {cluster_id}: {str(e)}"
+        else:
+            results["error"] = "self.clusters is neither a list nor a dictionary"
+        
+        return results
+

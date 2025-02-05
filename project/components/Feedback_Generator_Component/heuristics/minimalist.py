@@ -143,7 +143,7 @@ class Minimalist(HeuristicInterface):
     def evaluate_rule(self, cluster_data):
         feedback = {}
         # Call the count UI elements check
-        count, count_status = self.count_ui_elements(design_json["elements"])
+        count, count_status = self.count_ui_elements(cluster_data["elements"])
         feedback["ui_element_count"] = f"Number of UI elements: {count}. Status: {count_status}"
 
         # Call the check element count function
@@ -160,7 +160,7 @@ class Minimalist(HeuristicInterface):
         #     feedback["redundant_elements"] = element_feedback["redundant_elements"]
 
         # Call the screen type inference
-        screen_type = self.infer_screen_type(design_json)
+        screen_type = self.infer_screen_type(cluster_data)
         feedback["screen_type"] = f"Screen type: {screen_type}"
 
         # Call the irrelevant elements check

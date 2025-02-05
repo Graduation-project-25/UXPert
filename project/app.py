@@ -2,61 +2,59 @@ import json
 import pandas as pd  # Import pandas
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from datetime import datetime
 import os
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
 
-config = {}
-with open('.config', 'r') as f:
-    for line in f:
-        key, value = line.strip().split('=')
-        config[key] = value
-
-# Initialize the Flask application
+# Initialize Flask
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
-
-# Define the directory to store the design data
-designs_dir = 'designs_data'
-if not os.path.exists(designs_dir):
-    os.makedirs(designs_dir)  # Create the directory if it doesn't exist
+CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
     if request.method == 'OPTIONS':
         return '', 200  
 
-    # Parse JSON data from the request
     data = request.get_json()
-    user_id = data.get("user_id", "unknown_user")
+    
+    if not data:
+        return jsonify({"error": "No data received"}), 400
+
     user_name = data.get("user_name", "Unknown User")
     design_name = data.get("design_name", "Untitled Design")
     elements = data.get('elements', [])
 
-    if not user_id or not elements:
-        return jsonify({"error": "Missing user_id or elements"}), 400
+    if not elements:
+        return jsonify({"error": "No elements found"}), 400
 
-    # Log the received elements
-    print(f"Received design from {user_name} ({user_id}): {design_name}")
-    for index, element in enumerate(elements):
-        print(f"Element {index + 1}: {element}")
+    print(f"Received design from {user_name}: {design_name}")
 
-    # Convert the elements to a pandas DataFrame
+    # Convert elements to DataFrame
     elements_df = pd.DataFrame(elements)
 
-    # Now, evaluate consistency based on the model
-    consistency_evaluator = Consistency()
-    consistency_results = consistency_evaluator.evaluate_rule(elements_df)
+    try:
+        # Evaluate consistency
+        consistency_evaluator = Consistency()
+        consistency_results = consistency_evaluator.evaluate_rule(elements_df)
 
-    # Print the consistency results in the terminal
-    print(f"Consistency evaluation results: {consistency_results}")
+        print(f"Consistency evaluation results: {consistency_results}")
 
-    # Return the response without saving the design
-    return jsonify({
-        "message": "Design processed successfully (no file saved)!",
-        "status": 200,
-        "consistency": consistency_results 
-    }), 200
+        # Prepare human-readable feedback
+        feedback = {
+            "ColorConsistency": f"Color consistency is {consistency_results.get('ColorConsistency', 0)}%.",
+            "AlignmentConsistency": f"Alignment consistency is {consistency_results.get('AlignmentConsistency', 0)}%.",
+            "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
+            "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
+            "Feedback": consistency_results.get('Feedback', {})
+        }
+
+        return jsonify({
+            "message": "Design processed successfully!",
+            "status": 200,
+            "consistency_results": feedback  # Send the human-readable feedback
+        }), 200
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        return jsonify({"error": "An error occurred during processing."}), 500
 
 @app.route('/', methods=['GET'])
 def home():
