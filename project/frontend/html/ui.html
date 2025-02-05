@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <title>Figma Plugin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +9,7 @@
       text-align: center;
       margin: 0;
       padding: 20px;
-      background-color: #f9f9f9; /* Light background color */
+      background-color: #f9f9f9;
     }
 
     button {
@@ -18,80 +17,62 @@
       font-size: 16px;
       cursor: pointer;
       border: none;
-      background-color: #007bff; /* Primary color */
+      background-color: #007bff;
       color: white;
       border-radius: 5px;
       transition: background-color 0.3s;
     }
 
     button:hover {
-      background-color: #0056b3; /* Darker shade */
+      background-color: #0056b3;
     }
 
-    #feedback-screen,
-    #processing-screen {
+    #feedback-screen, #processing-screen {
       display: none;
     }
 
-    .card {
+    .feedback-card {
       background: white;
       border-radius: 8px;
       box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-      margin: 20px;
+      margin: 15px;
       padding: 15px;
       text-align: left;
-      transition: transform 0.3s, box-shadow 0.3s;
+      display: flex;
+      align-items: center;
     }
 
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    .feedback-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #3498db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      margin-right: 15px;
     }
 
-    .card h2 {
-      margin: 0 0 10px;
-      font-size: 20px; /* Slightly larger font size */
-      color: #0056b3; /* Heading color */
+    .feedback-content {
+      flex: 1;
     }
 
     .divider {
       height: 1px;
       background-color: #e0e0e0;
-      margin: 10px 0; /* Add margin for spacing */
+      margin: 10px 0;
     }
 
-    .spinner {
-      border: 5px solid #f3f3f3; /* Light spinner */
-      border-top: 5px solid #3498db; /* Blue spinner */
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    pre {
-      background-color: #f6f6f6;
+    .screenshot {
+      max-width: 100px;
       border-radius: 5px;
-      padding: 10px;
-      overflow-x: auto; /* Prevent overflow */
-      font-family: 'Courier New', Courier, monospace; /* Monospace font for better code readability */
-      white-space: pre-wrap; /* Wrap long lines */
-    }
-
-    /* Style for processing screen message */
-    h1 {
-      font-size: 24px;
-      color: #333; /* Darker color for better readability */
+      margin-right: 10px;
     }
   </style>
 </head>
-
 <body>
   <div id="initial-screen">
     <h1>Start Detection</h1>
@@ -100,7 +81,6 @@
 
   <div id="processing-screen">
     <h1>Processing...</h1>
-    <div class="spinner"></div>
     <p>Please wait while the design is being evaluated.</p>
   </div>
 
@@ -111,50 +91,43 @@
   </div>
 
   <script>
-    const startButton = document.getElementById('start');
-    const closeButton = document.getElementById('close');
-    const initialScreen = document.getElementById('initial-screen');
-    const processingScreen = document.getElementById('processing-screen');
-    const feedbackScreen = document.getElementById('feedback-screen');
-    const feedbackContainer = document.getElementById('feedback-container');
-
-    startButton.onclick = () => {
-      initialScreen.style.display = 'none';
-      processingScreen.style.display = 'block';
-
-      parent.postMessage({
-        pluginMessage: {
-          type: 'start-detection'
-        }
-      }, '*');
+    document.getElementById('start').onclick = () => {
+      document.getElementById('initial-screen').style.display = 'none';
+      document.getElementById('processing-screen').style.display = 'block';
+      parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
     };
 
-    closeButton.onclick = () => {
-      figma.closePlugin(); 
+    document.getElementById('close').onclick = () => {
+      parent.postMessage({ pluginMessage: { type: 'close' } }, '*');
     };
 
-    // Listen for messages from the plugin
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
       if (msg && msg.type === 'collective-feedback') {
-        // Hide processing screen
-        processingScreen.style.display = 'none';
-        feedbackScreen.style.display = 'block';
+        document.getElementById('processing-screen').style.display = 'none';
+        document.getElementById('feedback-screen').style.display = 'block';
+        document.getElementById('feedback-container').innerHTML = '';
 
-        // Clear previous feedback
-        feedbackContainer.innerHTML = '';
-
-        // Display feedback for all frames
         msg.feedback.forEach(item => {
           const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `<h2>Frame: ${item.frameName}</h2>
-                            <div class="divider"></div>
-                            <pre>${JSON.stringify(item.feedback, null, 2)}</pre>`;
-          feedbackContainer.appendChild(card);
+          card.className = 'feedback-card';
+
+          const image = document.createElement('img');
+          image.src = item.screenshot;
+          image.className = 'screenshot';
+
+          const content = document.createElement('div');
+          content.className = 'feedback-content';
+          content.innerHTML = `
+            <h2>${item.frameName}</h2>
+            <div class='divider'></div>
+            <p>${JSON.stringify(item.feedback, null, 2)}</p>
+          `;
+
+          card.appendChild(image);
+          card.appendChild(content);
+          document.getElementById('feedback-container').appendChild(card);
         });
-      } else {
-        console.error("Unknown message:", msg);
       }
     };
   </script>
