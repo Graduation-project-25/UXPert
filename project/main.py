@@ -38,11 +38,11 @@ def main():
     egfe_clustering = EGFE_Clustering(train_folder, output_folder)
     egfe_ui_extraction = EGFE_FeatureExtraction()
     egfe_visualization = EGFE_Visualization()
-    egfe_clustering_testing = EGFE_ClusteringTesting(train_folder)
-    egfe_load_data = EGFE_LoadData(train_folder)
+    # egfe_clustering_testing = EGFE_ClusteringTesting(train_folder)
+    egfe_load_data = EGFE_LoadData()
     minimalist_evaluation = MinimalistEvaluation()
 
-    minimalist_evaluation.evaluate_rule(train_folder)
+    # minimalist_evaluation.evaluate_rule(train_folder)
 
 
 
@@ -60,7 +60,7 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(data_to_evaluate)
 
@@ -80,7 +80,8 @@ def main():
     # egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
     
     # Step 8: Assign Clusters to Test Data
-    # new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data, test_folder, clusters)
+    # new_x_test = egfe_clustering_testing.assign_test_color_clusters(test_folder)
+    # print(new_x_test)
     # egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_data)
     
     # Step 9: Minimalist Heuristic Evaluation
@@ -155,33 +156,33 @@ def main():
     # df = pd.DataFrame(data)
     #clustered_test_data, _, _ = egfe_clustering.dbscan_cluster(test_folder)
     # Step 2: Create an instance of ClusteringConsistency
-    clustering_instance = EGFE_Clustering(train_folder, output_folder)
+    # clustering_instance = EGFE_Clustering(train_folder, output_folder)
 
     # List of features to loop through
-    features_to_check = ['color', 'position', 'size', 'spacing']  # Added 'spacing' here
+    # features_to_check = ['color', 'position', 'size', 'spacing']  # Added 'spacing' here
 
-    # Create an empty dictionary to store the reports
-    consistency_reports = {}
+    # # Create an empty dictionary to store the reports
+    # consistency_reports = {}
 
-    # Loop through the features and generate consistency reports
-    for feature in features_to_check:
-        # Get the clustered data and clusters based on the feature
-        clustered_data, clusters = clustering_instance.dbscan_cluster(feature)
-        print(clustered_data.columns)
+    # # Loop through the features and generate consistency reports
+    # for feature in features_to_check:
+    #     # Get the clustered data and clusters based on the feature
+    #     clustered_data, clusters = clustering_instance.dbscan_cluster(feature)
+    #     print(clustered_data.columns)
         
-        # Check if the clustered data is not empty and generate consistency report
-        if clustered_data is not None and not clustered_data.empty:
-            consistency_instance = ClusteringConsistency(clustered_data)
-            consistency_report = consistency_instance.generate_consistency_report()
+    #     # Check if the clustered data is not empty and generate consistency report
+    #     if clustered_data is not None and not clustered_data.empty:
+    #         consistency_instance = ClusteringConsistency(clustered_data)
+    #         consistency_report = consistency_instance.generate_consistency_report()
             
-            # Store the report in the dictionary
-            consistency_reports[feature] = consistency_report
+    #         # Store the report in the dictionary
+    #         consistency_reports[feature] = consistency_report
 
-    # Print the final consistency report for all features
-    print("Cluster Consistency Reports:")
-    for feature, report in consistency_reports.items():
-        print(f"Feature: {feature}")
-        print(report)
+    # # Print the final consistency report for all features
+    # print("Cluster Consistency Reports:")
+    # for feature, report in consistency_reports.items():
+    #     print(f"Feature: {feature}")
+    #     print(report)
 if __name__ == "__main__":
     main()
 #     print(f"Analyzing consistency for {feature} clusters...")

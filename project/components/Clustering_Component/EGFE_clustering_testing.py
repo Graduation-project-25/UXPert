@@ -12,8 +12,34 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
         self.data_loader = EGFE_LoadData()
         # self.egfe_clustering = EGFE_Clustering(self.train_folder,self.output_folder)
 
-    def assign_test_clusters(self, X_train, X_test, dbscan):
-        # X_train = self.data_loader.load_data(train_folder)
+    def assign_test_clusters(self, train_folder, X_test, dbscan):
+        print("s")
+    #     X_train = self.data_loader.load_data(train_folder)
+    #     # Compute the cluster centers from `X_train`
+    #     unique_clusters = X_train['Cluster'].unique()
+    #     cluster_centers = {
+    #         cluster: X_train[X_train['Cluster'] == cluster].mean(axis=0) 
+    #         for cluster in unique_clusters 
+    #         # if cluster != -1  # Exclude noise
+    #     }
+    #     # Calculate distances from `X_test` samples to cluster centers
+    #     test_features = X_test[['width', 'height', 'position.x', 'position.y']+ 
+    #                 [col for col in X_train.columns if col.startswith('color_')] + 
+    #                 [col for col in X_train.columns if col.startswith('type_')] ].values
+    #     cluster_centers_array = np.array(list(cluster_centers.values()))[:,:-1]
+    #     distances = cdist(test_features, cluster_centers_array)
+
+    #     # Assign clusters based on the minimum distance
+    #     assigned_clusters = distances.argmin(axis=1)
+    #     X_test['Assigned_Cluster'] = assigned_clusters
+
+    #     return X_test
+
+
+
+
+    def assign_test_color_clusters(self, train_folder, X_test):
+        X_train = self.data_loader.load_data(train_folder)
         # Compute the cluster centers from `X_train`
         unique_clusters = X_train['Cluster'].unique()
         cluster_centers = {
@@ -22,9 +48,7 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
             # if cluster != -1  # Exclude noise
         }
         # Calculate distances from `X_test` samples to cluster centers
-        test_features = X_test[['width', 'height', 'position.x', 'position.y']+ 
-                    [col for col in X_train.columns if col.startswith('color_')] + 
-                    [col for col in X_train.columns if col.startswith('type_')] ].values
+        test_features = X_test[[col for col in X_train.columns if col.startswith('color_')]].values
         cluster_centers_array = np.array(list(cluster_centers.values()))[:,:-1]
         distances = cdist(test_features, cluster_centers_array)
 
@@ -33,6 +57,7 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
         X_test['Assigned_Cluster'] = assigned_clusters
 
         return X_test
+
 
     def evaluate_test_clusters(self,X_test, X_train):
         # Compare cluster consistency or use metrics like silhouette scores

@@ -64,6 +64,7 @@ class EGFE_Clustering(ClusteringInterface):
         # Prepare the dataset with clusters
         clustered_data = X_train_selected.copy()
         clustered_data.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
+        
         #save cluster in json
         cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors and type.json")      
         self.save_cluster_as_json(clustered_data,cluster_json_path,'Cluster')
