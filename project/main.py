@@ -17,6 +17,7 @@ from components.Feedback_Generator_Component.heuristics.minimalist import Minima
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
 from components.Clustering_Component.EGFE_heuristic_evaluation import EGFE_HeuristicEvaluation
+from components.Feedback_Generator_Component.heuristics.Consistency_using_clusters import ClusteringConsistency
 
 
 pd.set_option('display.max_columns', None)
@@ -51,20 +52,20 @@ def main():
 
 
     # Step 1: Save json in extracted features folder
-    # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
+    egfe_ui_processing.process_ui_elements(json_folder, output_folder)
     
     # Step 2: Split Data into Train and Test
-    # splitter.save_split_files(train_folder, test_folder)
+    splitter.save_split_files(train_folder, test_folder)
     
     # Step 3: Load Normalized train data
-    # train_data = egfe_load_data.load_train_data()
+    train_data = egfe_load_data.load_train_data()
     
     # Step 4: Visualize UI Elements (Scatter Plot)
-    # egfe_visualization.scatter_plot_ui_elements(train_data)
+    egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
-    # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(data_to_evaluate)
 
 
