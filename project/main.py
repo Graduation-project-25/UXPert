@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import pandas as pd
 from pathlib import Path
 
@@ -12,7 +13,8 @@ from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNorma
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
-from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
+# from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
+from components.Feedback_Generator_Component.heuristics.mini import Minimalist
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
 from components.Clustering_Component.EGFE_heuristic_evaluation import EGFE_HeuristicEvaluation
@@ -40,7 +42,7 @@ def main():
     egfe_visualization = EGFE_Visualization()
     egfe_clustering_testing = EGFE_ClusteringTesting(train_folder)
     egfe_load_data = EGFE_LoadData(train_folder)
-    minimalist = Minimalist()
+    # minimalist = Minimalist()
 
     # Step 1: Process UI Elements
     # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
@@ -79,16 +81,31 @@ def main():
     # print("Number of elements =", element_count)
     # print("Status of the elements =", status)
 
+    # base_path = Path(__file__).resolve().parent  # Get current script directory
+    # file_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
+
+    # if not file_path.exists():
+    #     raise FileNotFoundError(f"File not found: {file_path}")
+
+    # evaluator = EGFE_HeuristicEvaluation(str(file_path))
+    # # evaluation_results = evaluator.evaluate_minimalist_on_clusters()
+    # evaluator.evaluate_minimalist()
+    # print(evaluator.evaluate_minimalist())
+
+    # clusters_data = "project/data/raw/EGFE/extractedFeatures/X- train clusters.json"
+
+    # clusters_data_path = "project/data/raw/EGFE/extractedFeatures/X-train clusters.json"
     base_path = Path(__file__).resolve().parent  # Get current script directory
-    file_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
+    clusters_data_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
 
-    if not file_path.exists():
-        raise FileNotFoundError(f"File not found: {file_path}")
+    with open(clusters_data_path, "r") as file:
+        clusters_data = json.load(file)
 
-    evaluator = EGFE_HeuristicEvaluation(str(file_path))
-    # evaluation_results = evaluator.evaluate_minimalist_on_clusters()
-    evaluator.evaluate_minimalist()
-    print(evaluator.evaluate_minimalist())
+
+    minimalist_checker = Minimalist(clusters_data)
+    feedback = minimalist_checker.evaluate_rule()
+    for f in feedback:
+        print(f)
 
 
     
