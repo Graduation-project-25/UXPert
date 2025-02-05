@@ -1,9 +1,7 @@
-import pandas as pd 
-
-from components.Feedback_Generator_Component.heuristics.heuristic import HeuristicInterface
+import pandas as pd
+from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface 
 
 class Minimalist(HeuristicInterface):
-
     def __init__(self, clusters_data, max_elements=10, min_elements=3):
         """
         Initialize the Minimalist heuristic.
@@ -145,7 +143,6 @@ class Minimalist(HeuristicInterface):
         else:
             return white_space_ratio, "Fail - Cluttered Design"
 
-
     def evaluate_rule(self):
         """
         Evaluate the design based on the minimalist rule.
@@ -178,3 +175,4 @@ class Minimalist(HeuristicInterface):
             element.get("type_rectangle", 0) == 0 and 
             element.get("type_oval", 0) == 0
         )
+

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
 
-from components.Feedback_Generator_Component.heuristics.heuristic import HeuristicInterface
+from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
 
 class ClusteringConsistency(HeuristicInterface):
     def __init__(self, dbscan_dataset):

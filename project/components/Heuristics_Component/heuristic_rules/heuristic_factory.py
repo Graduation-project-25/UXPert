@@ -1,7 +1,7 @@
-from components.Feedback_Generator_Component.heuristics.heuristic import HeuristicInterface
-from components.Feedback_Generator_Component.heuristics.consistency import Consistency
-from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
-from components.Feedback_Generator_Component.heuristics.Consistency_using_clusters import ClusteringConsistency
+from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
+from components.Heuristics_Component.heuristic_rules.consistency import Consistency
+from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist
+from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
 
 
 class HeuristicFactory:

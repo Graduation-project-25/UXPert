@@ -2,6 +2,8 @@ import os
 import sys
 import pandas as pd
 
+from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 from components.Clustering_Component.EGFE_clustering_evaluation import EGFE_ClusteringEvaluation
@@ -11,11 +13,7 @@ from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNorma
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
-from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
-from components.Feedback_Generator_Component.heuristics.consistency import Consistency
-from components.Clustering_Component.EGFE_heuristic_evaluation import EGFE_HeuristicEvaluation
-from components.Feedback_Generator_Component.heuristics.Consistency_using_clusters import ClusteringConsistency
 
 
 pd.set_option('display.max_columns', None)
@@ -41,28 +39,27 @@ def main():
     egfe_visualization = EGFE_Visualization()
     egfe_clustering_testing = EGFE_ClusteringTesting(train_folder)
     egfe_load_data = EGFE_LoadData(train_folder)
-    # screen_size_cluster_file = output_folder + '/X-train Clusters based on screen size.json'
-    egfe_heuristic_evaluation = EGFE_HeuristicEvaluation()
+    minimalist_evaluation = MinimalistEvaluation()
 
-    egfe_heuristic_evaluation.evaluate_minimalist_on_designs(train_folder, evaluation_folder)
+    minimalist_evaluation.evaluate_rule(train_folder)
 
 
 
 
     # Step 1: Save json in extracted features folder
-    egfe_ui_processing.process_ui_elements(json_folder, output_folder)
+    # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
     
     # Step 2: Split Data into Train and Test
     #splitter.save_split_files(train_folder, test_folder)
     
     # Step 3: Load Normalized train data
-    train_data = egfe_load_data.load_train_data()
+    # train_data = egfe_load_data.load_train_data()
     
     # Step 4: Visualize UI Elements (Scatter Plot)
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     #clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(data_to_evaluate)
 
@@ -154,8 +151,7 @@ def main():
     #     'color_b': [0.3, 0.3, 0.3, 0.4, 0.7, 0.7]
     # }
 
-# # Convert the dictionary to a DataFrame
-# df = pd.DataFrame(data)
+    # df = pd.DataFrame(data)
     #clustered_test_data, _, _ = egfe_clustering.dbscan_cluster(test_folder)
     # Step 2: Create an instance of ClusteringConsistency
     clustering_instance = EGFE_Clustering(train_folder, output_folder)
@@ -184,17 +180,6 @@ def main():
     for feature, report in consistency_reports.items():
             print(f"Feature: {feature}")
             print(report)
-
-if __name__ == "__main__":
-    main()
-#     print(f"Analyzing consistency for {feature} clusters...")
-#     clustering_instance.analyze_clusters()
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
