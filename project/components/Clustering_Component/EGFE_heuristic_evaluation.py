@@ -25,12 +25,9 @@ class EGFE_HeuristicEvaluation():
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                    # print(data.get('width'))
-                    print(file_name,'\n' )
-
-                    result = minimalist.calculate_white_space_ratio(data,data['screen_size']['screen_width'],data['screen_size']['screen_width'])
-                # print(result)
-
+                    print(file_name)
+                result = minimalist.evaluate_minimalist(data,data['screen_size']['screen_width'],data['screen_size']['screen_width'])
+                print(result)
 
             except (json.JSONDecodeError, KeyError) as e:
                 print(f"Error processing {file_name}: {e}. Skipping file.")
