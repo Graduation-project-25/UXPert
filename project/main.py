@@ -4,7 +4,7 @@ import json
 import pandas as pd
 from pathlib import Path
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(_file_), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 from components.Clustering_Component.EGFE_clustering_evaluation import EGFE_ClusteringEvaluation
 from components.Clustering_Component.EGFE_clustering_testing import EGFE_ClusteringTesting
@@ -13,7 +13,7 @@ from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNorma
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
-from components.Feedback_Generator_Component.heuristics.mini import Minimalist
+from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Feedback_Generator_Component.heuristics.consistency import Consistency
 from components.Clustering_Component.EGFE_heuristic_evaluation import EGFE_HeuristicEvaluation
@@ -106,7 +106,7 @@ def main():
     # clusters_data = "project/data/raw/EGFE/extractedFeatures/X- train clusters.json"
 
     # clusters_data_path = "project/data/raw/EGFE/extractedFeatures/X-train clusters.json"
-    # base_path = Path(_file_).resolve().parent  # Get current script directory
+    # base_path = Path(__file__).resolve().parent  # Get current script directory
     # clusters_data_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
 
     # with open(clusters_data_path, "r") as file:
@@ -119,24 +119,32 @@ def main():
 
 
 
-    clustering_instance = EGFE_Clustering(train_folder, output_folder)
+    # clustering_instance = EGFE_Clustering(train_folder, output_folder)
 
-    # Run clustering for different features
-    features = ['color', 'position', 'size']
-    cluster_results = {}
+    # # Run clustering for different features
+    # features = ['color', 'position', 'size']
+    # cluster_results = {}
 
-    for feature in features:
-        print(f"Clustering based on {feature}...")
-        DBSCAN_dataset, clusters = clustering_instance.dbscan_cluster(feature)
-        cluster_results[feature] = DBSCAN_dataset  # Store clustering results
+    # for feature in features:
+    #     print(f"Clustering based on {feature}...")
+    #     DBSCAN_dataset, clusters = clustering_instance.dbscan_cluster(feature)
+    #     cluster_results[feature] = DBSCAN_dataset  # Store clustering results
         
-    # Perform Consistency Analysis
-    for feature, df in cluster_results.items():
-        print(df.head())  # Check first few rows
+    # # Perform Consistency Analysis
+    # for feature, df in cluster_results.items():
+    #     print(df.head())  # Check first few rows
 
-        print(f"Analyzing consistency for {feature} clusters...")
-        clustering_instance.analyze_clusters()
-    if __name__ == "__main__":
-        main()
+    #     print(f"Analyzing consistency for {feature} clusters...")
+    #     clustering_instance.analyze_clusters()
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    main()
 
 
