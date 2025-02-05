@@ -67,7 +67,7 @@ figma.ui.onmessage = async (msg) => {
 
                 if (!processResponse.ok) throw new Error(`HTTP error! Status: ${processResponse.status}`);
                 
-                figma.notify(`${serializedNodes.length} Features saved successfully from ${frame.name}!`);
+               // figma.notify(`${serializedNodes.length} Features saved successfully from ${frame.name}!`);
                 const result = await processResponse.json() as ConsistencyResult;
 
                 if (result.consistency_results.Feedback) {
