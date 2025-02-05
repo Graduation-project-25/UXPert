@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
-from components.Heuristics_Component.heuristics.heuristic import HeuristicInterface
+
+from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
+
 
 class Consistency(HeuristicInterface):
     
