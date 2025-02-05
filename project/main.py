@@ -46,7 +46,7 @@ def main():
     egfe_heuristic_evaluation = EGFE_HeuristicEvaluation()
 
     # egfe_heuristic_evaluation.evaluate_minimalist_on_designs(train_folder)
-    egfe_heuristic_evaluation.evaluate_consistency(train_folder)
+    # egfe_heuristic_evaluation.evaluate_consistency(train_folder)
 
 
 
@@ -55,17 +55,17 @@ def main():
     egfe_ui_processing.process_ui_elements(json_folder, output_folder)
     
     # Step 2: Split Data into Train and Test
-    splitter.save_split_files(train_folder, test_folder)
+    #splitter.save_split_files(train_folder, test_folder)
     
     # Step 3: Load Normalized train data
     train_data = egfe_load_data.load_train_data()
     
     # Step 4: Visualize UI Elements (Scatter Plot)
-    egfe_visualization.scatter_plot_ui_elements(train_data)
+    #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
     clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
-    clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
+    #clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(data_to_evaluate)
 
 
@@ -145,8 +145,47 @@ def main():
         
 
 
+    # data = {
+    #     'Cluster': ['Cluster_1', 'Cluster_1', 'Cluster_2', 'Cluster_2', 'Cluster_3', 'Cluster_3'],
+    #     'position.x': [1.1, 1.2, 5.0, 5.1, 10.5, 10.6],
+    #     'position.y': [2.1, 2.2, 6.0, 6.1, 11.5, 11.6],
+    #     'width': [100, 100, 200, 210, 300, 310],
+    #     'height': [150, 150, 250, 260, 350, 340],
+    #     'color_r': [0.1, 0.1, 0.5, 0.5, 0.9, 0.8],
+    #     'color_g': [0.2, 0.2, 0.4, 0.3, 0.8, 0.9],
+    #     'color_b': [0.3, 0.3, 0.3, 0.4, 0.7, 0.7]
+    # }
 
+# # Convert the dictionary to a DataFrame
+# df = pd.DataFrame(data)
+    #clustered_test_data, _, _ = egfe_clustering.dbscan_cluster(test_folder)
+    # Step 2: Create an instance of ClusteringConsistency
+    clustering_instance = EGFE_Clustering(train_folder, output_folder)
 
+        # List of features to loop through (you can modify this list)
+    features_to_check = ['color', 'position', 'size']
+
+        # Create an empty dictionary to store the reports
+    consistency_reports = {}
+
+        # Loop through the features and generate consistency reports
+    for feature in features_to_check:
+            # Get the clustered data and clusters based on the feature
+            clustered_data, clusters = clustering_instance.dbscan_cluster(feature)
+            
+            # Check if the clustered data is not empty and generate consistency report
+    if clustered_data is not None and not clustered_data.empty:
+                consistency_instance = ClusteringConsistency(clustered_data)
+                consistency_report = consistency_instance.generate_consistency_report()
+                
+                # Store the report in the dictionary
+                consistency_reports[feature] = consistency_report
+
+        # Print the final consistency report for all features
+    print("Cluster Consistency Reports:")
+    for feature, report in consistency_reports.items():
+            print(f"Feature: {feature}")
+            print(report)
 
 if __name__ == "__main__":
     main()
