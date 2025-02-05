@@ -93,13 +93,27 @@
     //});
     // Listen for messages from the plugin
     window.onmessage = (event) => {
-      console.log('Message received:', event.data.pluginMessage); // For debugging
+      console.log("📩 UI Received Message:", event.data.pluginMessage);
+
       const msg = event.data.pluginMessage;
       if (msg && msg.type === 'feedback') {
-        // Process the feedback and display it
-        console.log("Feedback:", msg.feedback);
-        document.getElementById('feedback-text').textContent = msg.feedback;
+        console.log("✅ UI received feedback:", msg.feedback);
+
+        // Show feedback screen
+        document.getElementById('processing-screen').style.display = 'none';
+        document.getElementById('feedback-screen').style.display = 'block';
+        document.getElementById('feedback-text').textContent = JSON.stringify(msg.feedback, null, 2);
+      } else {
+        console.error("❌ UI received an unknown message:", msg);
       }
+
+      // Send a log back to the main Figma console
+      parent.postMessage({
+        pluginMessage: {
+          type: 'debug-log',
+          message: "UI received message but didn't update!"
+        }
+      }, '*');
     };
   </script>
 </body>
