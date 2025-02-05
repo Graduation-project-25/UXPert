@@ -1,17 +1,20 @@
 import json
 import json
+import os
+import pandas as pd
+
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from components.Feedback_Generator_Component.heuristics.minimalist import Minimalist
 from components.Feedback_Generator_Component.heuristics.heuristic_factory import HeuristicFactory
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
+from components.Feedback_Generator_Component.heuristics.Consistency_using_clusters import ClusteringConsistency
+
 
 dataset_folder = './data/raw/EGFE'
 output_folder = dataset_folder + '/extractedFeatures'
 train_folder = output_folder + '/train'
-import pandas as pd
 
-from components.Feedback_Generator_Component.heuristics.Consistency_using_clusters import ClusteringConsistency
 class EGFE_HeuristicEvaluation():    
     def __init__(self):
         self.clustering = EGFE_Clustering(train_folder, output_folder)
@@ -20,7 +23,6 @@ class EGFE_HeuristicEvaluation():
         #     self.clusters = json.load(f)
 
     def evaluate_minimalist_on_designs(self, train_folder, output_folder):
-        # minimalist = Minimalist()
         minimalist_instance = HeuristicFactory.check_rule("minimalist")
 
         for file_name in os.listdir(train_folder):
@@ -30,7 +32,7 @@ class EGFE_HeuristicEvaluation():
                     data = json.load(f)
                     print(file_name)
                 white_space_ratio, feedback = minimalist_instance.evaluate_minimalist(data,data['screen_size']['screen_width'],data['screen_size']['screen_height'])
-                print(feedback)
+                # print(feedback)
                 # Store elements with their evaluation
                 result_data = {
                     "design_id": file_name,
@@ -45,66 +47,6 @@ class EGFE_HeuristicEvaluation():
 
             except (json.JSONDecodeError, KeyError) as e:
                 print(f"Error processing {file_name}: {e}. Skipping file.")
-    def evaluate_minimalist_on_clusters(self):
-        DBSCAN_dataset, clusters = self.clustering.dbscan_cluster('screen_size_and_type')
-        
-        # Initialize Minimalist rule
-        minimalist_rule = Minimalist()  
-        cluster_feedback = {}
-
-        for cluster in clusters:
-            # Ignore noise points
-            if cluster == -1:
-                continue  
-
-            # Filter cluster data
-            cluster_data = DBSCAN_dataset[DBSCAN_dataset["Cluster"] == cluster]  
-
-            print(cluster_data.columns)
-            if 'elements' not in cluster_data.columns:
-                raise KeyError("'elements' column is missing from cluster_data.")
-            
-            # Convert cluster data to a dictionary structure expected by Minimalist
-            design_json = {
-                "screen_size": {
-                    "screen_width": cluster_data["screen_width"].iloc[0],
-                    "screen_height": cluster_data["screen_height"].iloc[0]
-                },
-                "elements": []
-            }
-
-            # Extract UI elements from columns that start with "type_"
-            for _, row in cluster_data.iterrows():
-                for col in cluster_data.columns:
-                    if col.startswith("type_") and row[col] > 0:  # Check presence of element
-                        design_json["elements"].append({"type": col, "width": 100, "height": 100})
-
-            # Apply Minimalist evaluation
-            feedback = minimalist_rule.evaluate_rule(cluster_data)
-            cluster_feedback[cluster] = feedback
-
-        return cluster_feedback
-
-    def evaluate_minimalist(self):
-        minimalist_rule = Minimalist()
-        results = {}
-
-        print(type(self.clusters))
-        # print(self.clusters)
-
-        # Check if self.clusters is a dictionary
-        if isinstance(self.clusters, dict):
-            for cluster_id, cluster_data in self.clusters.items():
-                try:
-                    feedback = minimalist_rule.evaluate_rule(cluster_data)
-                    results[cluster_id] = feedback
-                except Exception as e:
-                    results[cluster_id] = f"Error evaluating cluster {cluster_id}: {str(e)}"
-        else:
-            results["error"] = "self.clusters is neither a list nor a dictionary"
-        
-        return results
-
 
     def save_white_space_ratio_evaluation_result(self, file_name, result_data, output_folder):
         """ Saves the evaluation result for each design in a new JSON file """

@@ -1,8 +1,6 @@
 import os
 import sys
-import json
 import pandas as pd
-from pathlib import Path
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
