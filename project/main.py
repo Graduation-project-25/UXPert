@@ -5,6 +5,7 @@ import pandas as pd
 from pathlib import Path
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 from components.Clustering_Component.EGFE_clustering_evaluation import EGFE_ClusteringEvaluation
 from components.Clustering_Component.EGFE_clustering_testing import EGFE_ClusteringTesting
@@ -44,7 +45,8 @@ def main():
     # screen_size_cluster_file = output_folder + '/X-train Clusters based on screen size.json'
     egfe_heuristic_evaluation = EGFE_HeuristicEvaluation()
 
-    egfe_heuristic_evaluation.evaluate_minimalist_on_designs(train_folder)
+    # egfe_heuristic_evaluation.evaluate_minimalist_on_designs(train_folder)
+    egfe_heuristic_evaluation.evaluate_consistency(train_folder)
 
 
 
@@ -118,6 +120,10 @@ def main():
     #     print(f)
 
 
+    
+
+    
+
 
     # clustering_instance = EGFE_Clustering(train_folder, output_folder)
 
@@ -134,6 +140,11 @@ def main():
     # for feature, df in cluster_results.items():
     #     print(df.head())  # Check first few rows
 
+        print(f"Analyzing consistency for {feature} clusters...")
+        clustering_instance.analyze_clusters()
+        
+    if __name__ == "__main__":
+        main()
     #     print(f"Analyzing consistency for {feature} clusters...")
     #     clustering_instance.analyze_clusters()
 

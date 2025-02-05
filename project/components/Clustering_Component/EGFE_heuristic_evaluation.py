@@ -11,7 +11,7 @@ output_folder = dataset_folder + '/extractedFeatures'
 train_folder = output_folder + '/train'
 import pandas as pd
 
-from project.components.Feedback_Generator_Component.heuristics.Consistency_using_clusters import ClusteringConsistency
+from components.Feedback_Generator_Component.heuristics.Consistency_using_clusters import ClusteringConsistency
 class EGFE_HeuristicEvaluation():    
     def __init__(self):
         self.clustering = EGFE_Clustering(train_folder, output_folder)
