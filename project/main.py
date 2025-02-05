@@ -2,7 +2,8 @@ import os
 import sys
 import pandas as pd
 
-from project.components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
+from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
+from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering

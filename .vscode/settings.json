@@ -3,6 +3,7 @@
         "./project/backend/models",
         "./project/backend/utils",
         "./project/backend/heuristics",
-        "./project/backend/model"
+        "./project/backend/model",
+        "./project"
     ]
 }
