@@ -38,7 +38,7 @@ def main():
     egfe_clustering = EGFE_Clustering(train_folder, output_folder)
     egfe_ui_extraction = EGFE_FeatureExtraction()
     egfe_visualization = EGFE_Visualization()
-    # egfe_clustering_testing = EGFE_ClusteringTesting(train_folder)
+    egfe_clustering_testing = EGFE_ClusteringTesting()
     egfe_load_data = EGFE_LoadData()
     minimalist_evaluation = MinimalistEvaluation()
 
@@ -80,7 +80,7 @@ def main():
     # egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
     
     # Step 8: Assign Clusters to Test Data
-    # new_x_test = egfe_clustering_testing.assign_test_color_clusters(test_folder)
+    new_x_test = egfe_clustering_testing.assign_test_color_clusters(clustered_data,test_folder)
     # print(new_x_test)
     # egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_data)
     
