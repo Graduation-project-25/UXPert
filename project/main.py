@@ -92,7 +92,11 @@ def main():
     new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'position')
     # print(new_x_test)
     egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder,'position')
-    # egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_test_data)
+    print("clustered data:")
+    print(clustered_data)
+    print("new x test data:")
+    print(new_x_test)
+    egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_data)
     
     # Step 9: Minimalist Heuristic Evaluation
     # element_count, status = minimalist.count_ui_elements(clustered_data)

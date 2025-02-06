@@ -6,6 +6,7 @@ from scipy.spatial.distance import cdist
 from components.Clustering_Component.clustering_testing import ClusteringTestingInterface
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
+from sklearn.metrics import silhouette_score, davies_bouldin_score
 
 
 class EGFE_ClusteringTesting(ClusteringTestingInterface):
@@ -113,6 +114,7 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
         X_test['Assigned_Cluster'] = assigned_clusters
         print("X test after clustering")
         print(X_test)
+        
         return X_test
     
     def save_clusters_to_json(self, X_test, output_folder, feature):
@@ -182,15 +184,48 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
 
     #     return X_test
 
-    def evaluate_test_clusters(self,X_test, X_train):
-        # Compare cluster consistency or use metrics like silhouette scores
-        train_clusters = X_train['Cluster'].unique()
-        test_clusters = X_test['Assigned_Cluster'].unique()
-
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        cluster_json_path = os.path.join(script_dir, "X-test clusters.json")      
-        self.egfe_clustering.save_cluster_as_json(X_test,cluster_json_path,'Assigned_Cluster')
+    
 
 
-        print("Clusters in training data:", train_clusters)
-        print("Clusters assigned to test data:", test_clusters)
+    # def evaluate_test_clusters(self, X_test, X_train):
+    #     # Ensure the necessary columns exist
+    #     if 'Cluster' not in X_train.columns:
+    #         raise ValueError("X_train does not contain the 'Cluster' column. Check the data source.")
+    #     if 'Assigned_Cluster' not in X_test.columns:
+    #         raise ValueError("X_test does not contain the 'Assigned_Cluster' column. Check the data source.")
+
+    #     # Extract cluster labels
+    #     train_clusters = X_train['Cluster'].unique()
+    #     test_clusters = X_test['Assigned_Cluster'].unique()
+
+    #     # Save clusters as JSON
+    #     # script_dir = os.path.dirname(os.path.abspath(__file__))
+    #     # cluster_json_path = os.path.join(script_dir, "X-test clusters.json")      
+    #     # self.save_clusters_to_json(self, X_test, output_folder, feature)
+
+    #     print("Clusters in training data:", train_clusters)
+    #     print("Clusters assigned to test data:", test_clusters)
+
+    #     # Ensure we have multiple clusters to evaluate the metrics
+    #     if len(test_clusters) < 2:
+    #         print("Not enough clusters to evaluate Silhouette Score or Davies-Bouldin Index.")
+    #         return
+
+    #     # Extract feature data for clustering evaluation
+    #     feature_columns = [col for col in X_test.columns if col not in ['Assigned_Cluster', 'name']]
+    #     X_features = X_test[feature_columns].values  # Convert to numpy array
+    #     labels = X_test['Assigned_Cluster'].values
+
+    #     # Compute Silhouette Score
+    #     try:
+    #         silhouette_avg = silhouette_score(X_features, labels)
+    #         print(f"Silhouette Score: {silhouette_avg:.4f}")
+    #     except ValueError:
+    #         print("Silhouette Score could not be computed. Ensure more than one cluster exists.")
+
+    #     # Compute Davies-Bouldin Index
+    #     try:
+    #         db_index = davies_bouldin_score(X_features, labels)
+    #         print(f"Davies-Bouldin Index: {db_index:.4f}")
+    #     except ValueError:
+    #         print("Davies-Bouldin Index could not be computed. Ensure more than one cluster exists.")
