@@ -75,6 +75,7 @@
         "TotalConsistency": "Total consistency score is 40.0%.",
         "Feedback": {
             "ColorConsistency": "Colors are consistent across similar-sized elements.",
+            "ColorConsistency": "Colors are consistent across similar-sized elements.",
             "AlignmentConsistency": "Alignment needs improvement.",
             "SizeProportionality": "Size proportionality is off, consider adjusting element sizes."
         }
