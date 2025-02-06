@@ -113,7 +113,7 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
         print(X_test)
         return X_test
     
-    def save_clusters_to_json(self, X_test, output_folder):
+    def save_clusters_to_json(self, X_test, output_folder, feature):
         # Create a dictionary to hold the clusters
         clusters_dict = {}
 
@@ -122,6 +122,17 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
             cluster_id = row['Assigned_Cluster']
             # Get the row data (excluding 'Assigned_Cluster' column) and convert to a dictionary
             row_data = row.drop('Assigned_Cluster').to_dict()
+
+            # Only keep the columns that are part of the selected feature for clustering
+            if feature == "color":
+                # Keep only the color-related columns
+                row_data = {key: value for key, value in row_data.items() if key.startswith('color_') or key.startswith('type_')}
+            elif feature == "size":
+                # Keep only the size-related columns (e.g., 'width', 'height')
+                row_data = {key: value for key, value in row_data.items() if key in ['width', 'height'] or key.startswith('type_')}
+            elif feature == "position":
+                # Keep only the position-related columns (e.g., 'position.x', 'position.y')
+                row_data = {key: value for key, value in row_data.items() if key in ['position.x', 'position.y'] or key.startswith('type_')}
 
             # Replace any NaN values with 0 in the row_data
             row_data = {key: 0 if value != value else value for key, value in row_data.items()}

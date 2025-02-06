@@ -84,9 +84,9 @@ def main():
     # egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
     
     # Step 8: Assign Clusters to Test Data
-    new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'color')
+    new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'size')
     # print(new_x_test)
-    egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder)
+    egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder,'size')
     # egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_test_data)
     
     # Step 9: Minimalist Heuristic Evaluation
