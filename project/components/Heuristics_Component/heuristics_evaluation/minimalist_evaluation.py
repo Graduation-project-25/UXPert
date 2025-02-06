@@ -50,3 +50,31 @@ class MinimalistEvaluation(HeuristicEvaluationInterface):
         output_file_path = os.path.join(evaluation_folder, "white_space_evaluation.json")
         with open(output_file_path, 'w', encoding='utf-8') as out_file:
             json.dump(data_to_save, out_file, indent=4, ensure_ascii=False)
+
+    def evaluate_minimalist(self, clusters_data, evaluation_folder):
+        rule = HeuristicFactory.check_rule("minimalist")
+        data_to_save = {}
+
+        for cluster_id, elements in clusters_data.items():
+            feedback = rule.evaluate_cluster(elements, cluster_id)
+
+            # Save feedback for each cluster
+            result_data = {
+                "cluster_id": cluster_id,
+                "num_elements": len(elements),
+                "evaluation": feedback
+            }
+
+            # Store feedback grouped by cluster
+            if cluster_id not in data_to_save:
+                data_to_save[cluster_id] = []
+            data_to_save[cluster_id].append(result_data)
+
+        self.save_minimalist_evaluation_result(data_to_save, evaluation_folder)
+
+    def save_minimalist_evaluation_result(self, data_to_save, evaluation_folder):
+        os.makedirs(evaluation_folder, exist_ok=True)  
+
+        output_file_path = os.path.join(evaluation_folder, "minimalist_evaluation.json")
+        with open(output_file_path, 'w', encoding='utf-8') as out_file:
+            json.dump(data_to_save, out_file, indent=4, ensure_ascii=False)
