@@ -1,15 +1,18 @@
 import json
+import os
 import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import os
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
 
 # Initialize Flask
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
-OUTPUT_FILE = "output.json"  
+# Define output folder
+OUTPUT_FOLDER = "project/data/figma_features"
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)  # Ensure the folder exists
+OUTPUT_FILE = os.path.join(OUTPUT_FOLDER, "output.json")  # Save in folder
 
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
