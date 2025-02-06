@@ -1,6 +1,11 @@
 {
     "user_name": "Asmaa",
     "design_name": "simple test design",
+    "frame": {
+        "frameName": "iPhone 16 - 1",
+        "screen_width": 393,
+        "screen_height": 852
+    },
     "elements": [
         {
             "name": "Text",
