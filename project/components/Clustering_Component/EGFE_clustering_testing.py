@@ -65,20 +65,33 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
                                 [col for col in X_train.columns if col.startswith('type_')]
         else:
             raise ValueError("Invalid feature type. Choose from 'color', 'size', or 'position'.")
-
+        
         #  Ensure the selected features exist in X_test
+        # Add missing features as columns with all 0 values
         missing_features = [col for col in selected_features if col not in X_test.columns]
         for feature in missing_features:
             X_test[feature] = 0
-
-        #  Extract relevant features for clustering
+        # Extract relevant features for clustering
         X_train_selected = X_train[selected_features]
         X_test_selected = X_test[selected_features]
 
-        #  Convert all feature columns to numeric
+        # Convert all feature columns to numeric and replace NaN with 0 for all columns
         X_test_selected = X_test_selected.apply(pd.to_numeric, errors='coerce').fillna(0)
         X_train_selected = X_train_selected.apply(pd.to_numeric, errors='coerce').fillna(0)
+        
 
+        # Make sure all the features have no NaN (in case they are missing from test data but present in train data)
+        for column in selected_features:
+            if column not in X_test_selected:
+                X_test_selected[column] = 0  # Ensure missing columns are filled with 0
+            else:
+                X_test_selected[column] = X_test_selected[column].fillna(0)  # Fill NaN with 0 in existing columns
+        
+        for column in selected_features:
+            if column not in X_train_selected:
+                X_train_selected[column] = 0  # Ensure missing columns in X_train are also filled with 0
+            else:
+                X_train_selected[column] = X_train_selected[column].fillna(0)
         #  Compute cluster centers from training data
         unique_clusters = X_train['Cluster'].unique()
         cluster_centers = {
@@ -99,7 +112,39 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
         print("X test after clustering")
         print(X_test)
         return X_test
+    
+    def save_clusters_to_json(self, X_test, output_folder):
+        # Create a dictionary to hold the clusters
+        clusters_dict = {}
 
+        # Group the data by the assigned cluster and store the features in the cluster dictionary
+        for _, row in X_test.iterrows():
+            cluster_id = row['Assigned_Cluster']
+            # Get the row data (excluding 'Assigned_Cluster' column) and convert to a dictionary
+            row_data = row.drop('Assigned_Cluster').to_dict()
+
+            # Replace any NaN values with 0 in the row_data
+            row_data = {key: 0 if value != value else value for key, value in row_data.items()}
+
+            # Add the row data to the corresponding cluster list
+            if cluster_id not in clusters_dict:
+                clusters_dict[cluster_id] = []
+            clusters_dict[cluster_id].append(row_data)
+
+        # Define the output file path
+        output_file = os.path.join(output_folder, "assigned_clusters.json")
+        
+        # Save the clusters dictionary to the output folder
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(clusters_dict, f, ensure_ascii=False, indent=4)
+
+        print(f"Clusters saved to {output_file}")
+
+
+    # def save_cluster_as_json(self, clusters, cluster_json_path, group_by):
+    #         clusters_dict = clusters.groupby(group_by).apply(lambda df: df.to_dict(orient='records'), include_groups=False).to_dict()
+    #         with open(cluster_json_path, 'w', encoding='utf-8') as json_file:
+    #             json.dump(clusters_dict, json_file, indent=4, ensure_ascii=False)
 
 
     # def assign_test_color_clusters(self, X_train, X_test_folder):
