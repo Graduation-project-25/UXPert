@@ -27,6 +27,9 @@ figma.ui.onmessage = async (msg) => {
             const imageBase64 = figma.base64Encode(imageBytes);
             const imageDataUrl = `data:image/png;base64,${imageBase64}`;
 
+            const screenWidth = frame.width;
+            const screenHeight = frame.height;
+
             const childNodes = frame.children.filter(node => node.visible);
             const serializedNodes = childNodes.map(node => {
                 let color = { r: 0, g: 0, b: 0 };
@@ -47,9 +50,12 @@ figma.ui.onmessage = async (msg) => {
                     color_r: color.r,  
                     color_g: color.g,  
                     color_b: color.b,  
-                    frameName: frame.name
                 };
             });
+
+            console.log(`Frame: ${frame.name}`);
+            console.log(`Screen Width: ${screenWidth}, Screen Height: ${screenHeight}`);
+            console.log("Extracted Features:", serializedNodes); // Print extracted features in console
 
             const user_name = figma.currentUser ? figma.currentUser.name : "Unknown User";
             const design_name = figma.root.name ?? "Untitled Design";
@@ -61,13 +67,17 @@ figma.ui.onmessage = async (msg) => {
                     body: JSON.stringify({
                         user_name,
                         design_name,
+                        frame: {
+                            frameName: frame.name,
+                            screen_width: screenWidth,
+                            screen_height: screenHeight
+                        },
                         elements: serializedNodes
                     }),
                 });
 
                 if (!processResponse.ok) throw new Error(`HTTP error! Status: ${processResponse.status}`);
-                
-               // figma.notify(`${serializedNodes.length} Features saved successfully from ${frame.name}!`);
+
                 const result = await processResponse.json() as ConsistencyResult;
 
                 if (result.consistency_results.Feedback) {
