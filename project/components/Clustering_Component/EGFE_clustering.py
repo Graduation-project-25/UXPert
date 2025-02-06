@@ -18,7 +18,6 @@ class EGFE_Clustering(ClusteringInterface):
         self.egfe_ui_processing = EGFE_UiProcessing()
         self.egfe_load_data = EGFE_LoadData()
     
-
     def dbscan_cluster(self, feature):
         clustered_data = None
         clusters = None
@@ -53,10 +52,8 @@ class EGFE_Clustering(ClusteringInterface):
         type_features =  [col for col in X_train.columns if col.startswith('type_')]
         X_train_selected = X_train[color_features + type_features]  
 
-        #Remove null values
-        if X_train_selected.isnull().any().any():
-            X_train_selected = X_train_selected.fillna(0)
-            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+        #Removing null values
+        X_train_selected = self.egfe_load_data.remove_type_null_values(X_train_selected)
 
         # Apply DBSCAN
         clustering = DBSCAN(eps=0.2, min_samples=5).fit(X_train_selected)
@@ -79,10 +76,8 @@ class EGFE_Clustering(ClusteringInterface):
         type_features =  [col for col in X_train.columns if col.startswith('type_')]
         X_train_selected = X_train[size_features + type_features]
 
-        #Remove null values
-        if X_train_selected.isnull().any().any():
-            X_train_selected = X_train_selected.fillna(0)
-            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+        #Removing null values
+        X_train_selected = self.egfe_load_data.remove_type_null_values(X_train_selected)
 
         # # Fit the DBSCAN model
         # clustering = DBSCAN(eps=0.1, min_samples=15).fit(X_train_selected)
@@ -114,10 +109,9 @@ class EGFE_Clustering(ClusteringInterface):
         size_features = ['position.x', 'position.y']
         type_features =  [col for col in X_train.columns if col.startswith('type_')]
         X_train_selected = X_train[size_features + type_features]
-        #Remove null values
-        if X_train_selected.isnull().any().any():
-            X_train_selected = X_train_selected.fillna(0)
-            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+
+        #Removing null values
+        X_train_selected = self.egfe_load_data.remove_type_null_values(X_train_selected)
 
         # To Enhance Accuracy
         # Fit Nearest Neighbors model
@@ -159,10 +153,8 @@ class EGFE_Clustering(ClusteringInterface):
     #     # # Prepare the dataset with clusters
     #     # clustered_data = X_train.copy()  # Keep all original columns        
         
-    #     # #Remove null values
-    #     # if clustered_data.isnull().any().any():
-    #     #     clustered_data = clustered_data.fillna(0)
-    #     #     clustered_data = clustered_data.astype({col: 'int' for col in clustered_data.columns if col.startswith('type_')})
+    #   # Removing null values
+        # X_train_selected = self.egfe_load_data.remove_type_null_values(X_train_selected)
         
     #     # # Drop unwanted columns 
     #     # columns_to_drop = ['color', 'name']
@@ -185,10 +177,8 @@ class EGFE_Clustering(ClusteringInterface):
         type_features =  [col for col in X_train.columns if col.startswith('type_')]
         X_train_selected = X_train[screen_size + type_features]
  
-        #Remove null values
-        if X_train_selected.isnull().any().any():
-            X_train_selected = X_train_selected.fillna(0)
-            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+        #Removing null values
+        X_train_selected = self.egfe_load_data.remove_type_null_values(X_train_selected)
 
         # Apply DBSCAN
         clustering = DBSCAN(eps=0.2, min_samples=10).fit(X_train_selected)
@@ -213,6 +203,8 @@ class EGFE_Clustering(ClusteringInterface):
         outliers = X_train[X_train['Cluster'] == -1]
         export_to_csv(X_train, cluster_csv)
         export_to_csv(outliers, outliers_csv)
+
+    
 
 
 #######################################################################################################

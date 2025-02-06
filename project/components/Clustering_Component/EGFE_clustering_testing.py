@@ -9,12 +9,12 @@ from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
 
 class EGFE_ClusteringTesting(ClusteringTestingInterface):
     def __init__(self):
-        self.data_loader = EGFE_LoadData()
+        self.egfe_load_data = EGFE_LoadData()
         # self.egfe_clustering = EGFE_Clustering(self.train_folder,self.output_folder)
 
     def assign_test_clusters(self, train_folder, X_test, dbscan):
         print("s")
-    #     X_train = self.data_loader.load_data(train_folder)
+    #     X_train = self.egfe_load_data.load_data(train_folder)
     #     # Compute the cluster centers from `X_train`
     #     unique_clusters = X_train['Cluster'].unique()
     #     cluster_centers = {
@@ -39,18 +39,24 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
 
 
     def assign_test_color_clusters(self, X_train, X_test_folder):
-        X_test = self.data_loader.load_data(X_test_folder)
+        X_test = self.egfe_load_data.load_data(X_test_folder)
+        X_test = self.egfe_load_data.remove_type_null_values(X_test)
+
         # Compute the cluster centers from `X_train`
         unique_clusters = X_train['Cluster'].unique()
+        print(unique_clusters)
+        print(X_test)
         cluster_centers = {
             cluster: X_train[X_train['Cluster'] == cluster].mean(axis=0) 
             for cluster in unique_clusters 
             # if cluster != -1  # Exclude noise
         }
         # Calculate distances from `X_test` samples to cluster centers
-        test_features = X_test[['width', 'height', 'position.x', 'position.y']+ 
-                    [col for col in X_train.columns if col.startswith('color_')] + 
-                    [col for col in X_train.columns if col.startswith('type_')] ].values
+        color_features = [col for col in X_train.columns if col.startswith('color_')]
+        type_features = [col for col in X_train.columns if col.startswith('type_')] 
+        test_features = X_train[color_features+type_features].to_numpy()
+
+        
         cluster_centers_array = np.array(list(cluster_centers.values()))[:,:-1]
         distances = cdist(test_features, cluster_centers_array)
 
