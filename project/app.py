@@ -9,7 +9,7 @@ from components.Heuristics_Component.heuristic_rules.consistency import Consiste
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
-OUTPUT_FILE = "output.json"  # اسم ملف الإخراج
+OUTPUT_FILE = "output.json"  
 
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
@@ -50,13 +50,13 @@ def process_elements():
             "Feedback": consistency_results.get('Feedback', {})
         }
 
-        # 📝 حفظ النتائج في ملف JSON
+       
         output_data = {
             "user_name": user_name,
             "design_name": design_name,
-            "frame": frame_info,  # ✅ حفظ معلومات الإطار
-            "elements": elements,  # ✅ حفظ العناصر المستخرجة
-            "consistency_results": feedback  # ✅ حفظ التقييمات
+            "frame": frame_info,  
+            "elements": elements,
+            "consistency_results": feedback 
         }
 
         with open(OUTPUT_FILE, "w", encoding="utf-8") as json_file:
