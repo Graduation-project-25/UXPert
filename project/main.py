@@ -49,11 +49,6 @@ def main():
     minimalist_evaluation = MinimalistEvaluation()
     minimalist_test_evaluation = MinimalistTesting()
 
-    minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
-    minimalist_test_evaluation.evaluate_rule_test(test_folder, evaluation_folder)
-    minimalist_test_evaluation.analyze_results()
-
-
 
 
     # Step 1: Save json in extracted features folder
@@ -71,7 +66,7 @@ def main():
     # Step 5: DBSCAN Clustering Based on selected feature
     clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
-    # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
+    egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
 
@@ -89,15 +84,26 @@ def main():
     # egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
     
     # Step 8: Assign Clusters to Test Data
-    new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'position')
+    # new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'size')
     # print(new_x_test)
-    egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder,'position')
+    # egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder,'size')
     # egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_test_data)
     
     # Step 9: Minimalist Heuristic Evaluation
     # element_count, status = minimalist.count_ui_elements(clustered_data)
     # print("Number of elements =", element_count)
     # print("Status of the elements =", status)
+
+
+
+
+    # minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
+    # minimalist_test_evaluation.evaluate_rule_test(test_folder, evaluation_folder)
+    # white_space_evaluation = evaluation_folder + '/white_space_evaluation.json'
+    # white_space_test_evaluation = evaluation_folder + '/white_space_test_evaluation.json'
+
+    # minimalist_test_evaluation.analyze_results(white_space_evaluation,white_space_test_evaluation)
+
 
     ##############################################################################################
 
