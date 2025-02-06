@@ -42,14 +42,14 @@ class MinimalistTesting(HeuristicTestingInterface):
         # Save the results for both training and test data
         self.evaluation_results.save_white_space_ratio_evaluation_result(data_to_save, evaluation_folder,"white_space_test_evaluation.json")
 
-    def analyze_results(self):
+    def analyze_results(self,train_json,test_json):
         try:
-            with open('./data/raw/EGFE/extractedFeatures/evaluation/white_space_evaluation.json', 'r', encoding='utf-8') as f:
+            with open(train_json, 'r', encoding='utf-8') as f:
                 training_data = json.load(f)
         except (json.JSONDecodeError, KeyError) as e:
             print(f"Error processing: {e}. Skipping file.")
         try:
-            with open('./data/raw/EGFE/extractedFeatures/evaluation/white_space_test_evaluation.json', 'r', encoding='utf-8') as f:
+            with open(test_json, 'r', encoding='utf-8') as f:
                 test_data = json.load(f)
         except (json.JSONDecodeError, KeyError) as e:
             print(f"Error processing: {e}. Skipping file.")

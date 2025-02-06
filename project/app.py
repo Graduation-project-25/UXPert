@@ -1,13 +1,18 @@
-import json
 import pandas as pd  # Import pandas
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import os
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
 
 # Initialize Flask
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
+CORS(app)  # Enable CORS for all routes
+
+
+@app.route("/", methods=["GET"])
+def index():
+    print("Root route accessed")  # Log when the route is accessed
+    return "Backend is running successfully!"
+
 
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
@@ -34,8 +39,9 @@ def process_elements():
     try:
         # Evaluate consistency
         consistency_evaluator = Consistency()
-        consistency_results = consistency_evaluator.evaluate_rule(elements_df)
 
+        consistency_results = consistency_evaluator.evaluate_rule(elements_df)
+        # white_space_ratio = 
         print(f"Consistency evaluation results: {consistency_results}")
 
         # Prepare human-readable feedback
@@ -55,10 +61,9 @@ def process_elements():
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         return jsonify({"error": "An error occurred during processing."}), 500
+    
 
-@app.route('/', methods=['GET'])
-def home():
-    return "Welcome to the Flask server!", 200
+    
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
