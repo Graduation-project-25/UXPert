@@ -46,7 +46,7 @@ def main():
     egfe_load_data = EGFE_LoadData()
     minimalist_evaluation = MinimalistEvaluation()
 
-    # minimalist_evaluation.evaluate_rule(train_folder)
+    minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
 
 
 
@@ -64,9 +64,9 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
-    # egfe_clustering_evaluation.evaluate_clustering(data_to_evaluate)
+    # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
 
@@ -84,8 +84,7 @@ def main():
     # egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
     
     # Step 8: Assign Clusters to Test Data
-    new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'color')
-
+    # new_x_test = egfe_clustering_testing.assign_test_color_clusters(clustered_data,test_folder)
     # print(new_x_test)
     # egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_data)
     
