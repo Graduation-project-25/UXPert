@@ -1,7 +1,8 @@
 import os
+import json
+import pandas as pd
 import numpy as np
 from scipy.spatial.distance import cdist
-
 from components.Clustering_Component.clustering_testing import ClusteringTestingInterface
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
@@ -35,11 +36,23 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
 
     #     return X_test
 
-    def assign_test_clusters(self, train_folder, X_test, feature):
-        # Load training data
-        X_train = self.data_loader.load_data(train_folder)
+ 
 
-        # Select features based on the given feature type
+
+
+
+
+
+    def assign_test_clusters(self, train_data, test_folder, feature):
+    
+
+        #  Load test data from the folder
+        X_test = self.egfe_load_data.load_data(test_folder)
+
+        # Keep train data unchanged
+        X_train = train_data
+
+        #  Select features based on feature type
         if feature == "color":
             selected_features = [col for col in X_train.columns if col.startswith('color_')] + \
                                 [col for col in X_train.columns if col.startswith('type_')]
@@ -52,28 +65,35 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
         else:
             raise ValueError("Invalid feature type. Choose from 'color', 'size', or 'position'.")
 
-        # Extract the relevant features for training and test data
+        #  Ensure the selected features exist in X_test
+        missing_features = [col for col in selected_features if col not in X_test.columns]
+        if missing_features:
+            raise KeyError(f"Missing features in X_test: {missing_features}")
+
+        #  Extract relevant features for clustering
         X_train_selected = X_train[selected_features]
         X_test_selected = X_test[selected_features]
 
-        # Compute cluster centers from training data
+        #  Convert all feature columns to numeric
+        X_test_selected = X_test_selected.apply(pd.to_numeric, errors='coerce').fillna(0)
+        X_train_selected = X_train_selected.apply(pd.to_numeric, errors='coerce').fillna(0)
+
+        #  Compute cluster centers from training data
         unique_clusters = X_train['Cluster'].unique()
-        print(unique_clusters)
-        print(X_test)
         cluster_centers = {
             cluster: X_train_selected[X_train['Cluster'] == cluster].mean(axis=0) 
             for cluster in unique_clusters
         }
 
-        # Convert to numpy arrays for distance computation
-        test_features = X_test_selected.values
-        cluster_centers_array = np.array(list(cluster_centers.values()))
+        #  Convert data to numpy arrays for distance computation
+        cluster_centers_array = np.array(list(cluster_centers.values()), dtype=np.float64)
+        test_features = X_test_selected.values.astype(np.float64)
 
-        # Compute distances and assign clusters
+        #  Compute distances and assign clusters
         distances = cdist(test_features, cluster_centers_array)
         assigned_clusters = distances.argmin(axis=1)
-        
-        # Assign clusters to X_test
+
+        #  Assign clusters to X_test
         X_test['Assigned_Cluster'] = assigned_clusters
 
         return X_test
