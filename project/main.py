@@ -84,7 +84,8 @@ def main():
     # egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
     
     # Step 8: Assign Clusters to Test Data
-    new_x_test = egfe_clustering_testing.assign_test_color_clusters(clustered_data,test_folder)
+    new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'color')
+
     # print(new_x_test)
     # egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_data)
     

@@ -10,6 +10,7 @@ class EGFE_LoadData(LoadDataInterface):
 
     def load_data(self, data_folder):
         """Load and merge all JSON files from the data folder into a DataFrame."""
+        
         all_data = []
         # max_num, min_num = self.get_max_min_file_name()
         
