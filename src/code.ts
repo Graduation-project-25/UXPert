@@ -7,7 +7,7 @@ interface ConsistencyResult {
 }
 
 // Show the initial UI with the start button
-figma.showUI(__html__, { width: 700, height: 500 });
+figma.showUI(__html__, { width: 1024, height: 3024 }); 
 
 figma.ui.onmessage = async (msg) => {
     if (msg.type === 'start-detection') {

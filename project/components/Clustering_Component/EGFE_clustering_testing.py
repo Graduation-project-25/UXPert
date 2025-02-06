@@ -45,12 +45,10 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
 
 
     def assign_test_clusters(self, train_data, test_folder, feature):
-    
-
         #  Load test data from the folder
         X_test = self.egfe_load_data.load_data(test_folder)
-        print("X test:")
-        print(X_test)
+        # print("X test:")
+        # print(X_test)
         # Keep train data unchanged
         X_train = train_data
 
@@ -112,9 +110,8 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
 
         #  Assign clusters to X_test
         X_test['Assigned_Cluster'] = assigned_clusters
-        print("X test after clustering")
-        print(X_test)
-        
+        # print("X test after clustering")
+        # print(X_test)
         return X_test
     
     def save_clusters_to_json(self, X_test, output_folder, feature):

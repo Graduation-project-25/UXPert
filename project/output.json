@@ -1,0 +1,70 @@
+{
+    "user_name": "Asmaa",
+    "design_name": "simple test design",
+    "frame": {
+        "frameName": "iPhone 16 - 1",
+        "screen_width": 393,
+        "screen_height": 852
+    },
+    "elements": [
+        {
+            "name": "Text",
+            "type": "TEXT",
+            "width": 93,
+            "height": 92,
+            "position.x": 129,
+            "position.y": 24,
+            "rotation": 0,
+            "color_r": 0,
+            "color_g": 0,
+            "color_b": 0
+        },
+        {
+            "name": "Text",
+            "type": "TEXT",
+            "width": 93,
+            "height": 92,
+            "position.x": 155,
+            "position.y": 60,
+            "rotation": 0,
+            "color_r": 0.7216145992279053,
+            "color_g": 0.5051302313804626,
+            "color_b": 0.5051302313804626
+        },
+        {
+            "name": "Rectangle 1",
+            "type": "RECTANGLE",
+            "width": 275,
+            "height": 107,
+            "position.x": 29,
+            "position.y": 305,
+            "rotation": 0,
+            "color_r": 0.11521240323781967,
+            "color_g": 0.01626533828675747,
+            "color_b": 0.6099478602409363
+        },
+        {
+            "name": "Ellipse 1",
+            "type": "ELLIPSE",
+            "width": 149,
+            "height": 144,
+            "position.x": 155,
+            "position.y": 146,
+            "rotation": 0,
+            "color_r": 0.5282812714576721,
+            "color_g": 0.3433828353881836,
+            "color_b": 0.3433828353881836
+        }
+    ],
+    "consistency_results": {
+        "ColorConsistency": "Color consistency is 83.33%.",
+        "AlignmentConsistency": "Alignment consistency is 0.02%.",
+        "SizeProportionality": "Size proportionality is 0%.",
+        "TotalConsistency": "Total consistency score is 33.34%.",
+        "Feedback": {
+            "ColorConsistency": "Colors are inconsistent for some similar-sized elements.",
+            "AlignmentConsistency": "Alignment needs improvement.",
+            "SizeProportionality": "Size proportionality is off, consider adjusting element sizes."
+        }
+    }
+}

@@ -41,6 +41,7 @@ class Minimalist(HeuristicInterface):
         return None
 
     def is_irrelevant(self, element):
+        # Checks if an element is irrelevant (e.g., no text and not a primary shape). """
         # In this case, an element may be considered irrelevant if it has no text and is not a primary shape.
         return (
             element.get("type_text", 0) == 0 and  

@@ -1,5 +1,5 @@
 import json
-import pandas as pd  # Import pandas
+import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
@@ -8,6 +8,8 @@ from components.Heuristics_Component.heuristic_rules.consistency import Consiste
 # Initialize Flask
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
+
+OUTPUT_FILE = "output.json"  
 
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
@@ -21,6 +23,7 @@ def process_elements():
 
     user_name = data.get("user_name", "Unknown User")
     design_name = data.get("design_name", "Untitled Design")
+    frame_info = data.get("frame", {})
     elements = data.get('elements', [])
 
     if not elements:
@@ -47,11 +50,24 @@ def process_elements():
             "Feedback": consistency_results.get('Feedback', {})
         }
 
+       
+        output_data = {
+            "user_name": user_name,
+            "design_name": design_name,
+            "frame": frame_info,  
+            "elements": elements,
+            "consistency_results": feedback 
+        }
+
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as json_file:
+            json.dump(output_data, json_file, indent=4, ensure_ascii=False)
+
         return jsonify({
             "message": "Design processed successfully!",
             "status": 200,
-            "consistency_results": feedback  # Send the human-readable feedback
+            "consistency_results": feedback
         }), 200
+
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         return jsonify({"error": "An error occurred during processing."}), 500
