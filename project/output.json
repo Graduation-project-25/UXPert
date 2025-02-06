@@ -1,68 +1,80 @@
 {
-    "user_name": "Asmaa",
-    "design_name": "simple test design",
+    "user_name": "Nermein",
+    "design_name": "Moon Store",
     "frame": {
-        "frameName": "iPhone 16 - 1",
-        "screen_width": 393,
-        "screen_height": 852
+        "frameName": "Welcome screen",
+        "screen_width": 430,
+        "screen_height": 932
     },
     "elements": [
         {
-            "name": "Text",
-            "type": "TEXT",
-            "width": 93,
-            "height": 92,
-            "position.x": 129,
-            "position.y": 24,
+            "name": "image 2",
+            "type": "RECTANGLE",
+            "width": 428,
+            "height": 932,
+            "position.x": 0,
+            "position.y": 0,
             "rotation": 0,
             "color_r": 0,
             "color_g": 0,
             "color_b": 0
         },
         {
-            "name": "Text",
+            "name": "Frame 49",
+            "type": "FRAME",
+            "width": 377,
+            "height": 255.30435180664062,
+            "position.x": 46,
+            "position.y": 454,
+            "rotation": 0,
+            "color_r": 0,
+            "color_g": 0,
+            "color_b": 0
+        },
+        {
+            "name": "Registration",
             "type": "TEXT",
-            "width": 93,
-            "height": 92,
-            "position.x": 155,
-            "position.y": 60,
+            "width": 154,
+            "height": 43,
+            "position.x": 130,
+            "position.y": 730,
             "rotation": 0,
-            "color_r": 0.7216145992279053,
-            "color_g": 0.5051302313804626,
-            "color_b": 0.5051302313804626
+            "color_r": 0.06666667014360428,
+            "color_g": 0.2235294133424759,
+            "color_b": 0.27450981736183167
         },
         {
-            "name": "Rectangle 1",
+            "name": "Screenshot 2023-11-20 130714 2",
             "type": "RECTANGLE",
-            "width": 275,
-            "height": 107,
-            "position.x": 29,
-            "position.y": 305,
+            "width": 321.4953308105469,
+            "height": 257.65875244140625,
+            "position.x": 73,
+            "position.y": 29,
             "rotation": 0,
-            "color_r": 0.11521240323781967,
-            "color_g": 0.01626533828675747,
-            "color_b": 0.6099478602409363
+            "color_r": 0,
+            "color_g": 0,
+            "color_b": 0
         },
         {
-            "name": "Ellipse 1",
-            "type": "ELLIPSE",
-            "width": 149,
-            "height": 144,
-            "position.x": 155,
-            "position.y": 146,
+            "name": "Express yourself through our unique and bold clothing.",
+            "type": "TEXT",
+            "width": 444,
+            "height": 127,
+            "position.x": -15,
+            "position.y": 294,
             "rotation": 0,
-            "color_r": 0.5282812714576721,
-            "color_g": 0.3433828353881836,
-            "color_b": 0.3433828353881836
+            "color_r": 0.06666667014360428,
+            "color_g": 0.2235294133424759,
+            "color_b": 0.27450981736183167
         }
     ],
     "consistency_results": {
-        "ColorConsistency": "Color consistency is 83.33%.",
-        "AlignmentConsistency": "Alignment consistency is 0.02%.",
+        "ColorConsistency": "Color consistency is 100.0%.",
+        "AlignmentConsistency": "Alignment consistency is 0.0%.",
         "SizeProportionality": "Size proportionality is 0%.",
-        "TotalConsistency": "Total consistency score is 33.34%.",
+        "TotalConsistency": "Total consistency score is 40.0%.",
         "Feedback": {
-            "ColorConsistency": "Colors are inconsistent for some similar-sized elements.",
+            "ColorConsistency": "Colors are consistent across similar-sized elements.",
             "AlignmentConsistency": "Alignment needs improvement.",
             "SizeProportionality": "Size proportionality is off, consider adjusting element sizes."
         }
