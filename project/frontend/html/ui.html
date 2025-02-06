@@ -9,27 +9,49 @@
       text-align: center;
       margin: 0;
       padding: 20px;
-      background-color: #f9f9f9;
+      background: linear-gradient(to right, #a8c0ff, #3f94f8); /* Gradient background */
+    }
+
+    #initial-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+      text-transform: uppercase; /* More modern heading */
     }
 
     button {
-      padding: 12px 25px;
-      font-size: 18px;
+      padding: 15px 30px;
+      font-size: 20px;
       cursor: pointer;
       border: none;
-      background-color: #008CBA;
+      background: linear-gradient(45deg, #008CBA, #00c6ff); /* Gradient button */
       color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
+      border-radius: 50px; /* Rounded button */
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease-in-out;
+      transform-origin: center;
     }
 
     button:hover {
-      background-color: #005f73;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      background: linear-gradient(45deg, #00c6ff, #008CBA);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      transform: scale(1.1); /* Slightly enlarge button on hover */
     }
 
-    #feedback-screen, #processing-screen, #progress-container {
+    button:active {
+      transform: scale(1); /* Button presses back to normal size */
+    }
+
+    #processing-screen, #feedback-screen, #progress-container {
       display: none;
     }
 
@@ -52,7 +74,21 @@
       width: 100%;
       height: 20px;
       border-radius: 10px;
+      background-color: #e0e0e0; /* Light grey background for the progress bar */
     }
+    
+    progress::-webkit-progress-bar {
+      background-color: #0b55a9;
+    }
+    
+    progress::-webkit-progress-value {
+      background-color: #fff; 
+    }
+    
+    progress::-moz-progress-bar {
+      background-color: #fff;
+    }
+    
 
     #feedback-container {
       margin-top: 30px;
