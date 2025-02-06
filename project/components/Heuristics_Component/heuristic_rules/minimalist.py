@@ -1,4 +1,3 @@
-import pandas as pd
 from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface 
 
 class Minimalist(HeuristicInterface):
@@ -26,7 +25,7 @@ class Minimalist(HeuristicInterface):
         white_space_ratio = 1 - (total_element_area / screen_area)  
         return max(0, white_space_ratio)  # Ensure it's not negative
 
-    def evaluate_minimalist(self, elements, screen_width, screen_height):
+    def evaluate_white_space_ratio(self, elements, screen_width, screen_height):
         # Call the white space ratio check
         white_space_ratio = self.calculate_white_space_ratio(elements, screen_width, screen_height)
         if white_space_ratio >= 0.4:
@@ -34,25 +33,6 @@ class Minimalist(HeuristicInterface):
         else:
             return white_space_ratio, "Cluttered Design - Try to increase the white space between elements in your design"
 
-    def evaluate_rule(self, clusters_data):
-        feedback = []
-
-        # Use clusters_data passed as argument, not self.clusters_data
-        for cluster_id, elements in clusters_data.items():
-            num_elements = len(elements)
-            
-            # Evaluate based on the number of elements
-            rule_feedback = self.evaluate_elements_count(num_elements, cluster_id)
-            if rule_feedback:
-                feedback.append(rule_feedback)
-
-            # Check for irrelevant elements
-            irrelevant_elements = [el for el in elements if self.is_irrelevant(el)]
-            if irrelevant_elements:
-                feedback.append(f"Cluster {cluster_id}: Contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
-        
-        return feedback if feedback else ["Design adheres to the minimalist rule."]
-        
     def evaluate_elements_count(self, num_elements, cluster_id):
         if num_elements > self.max_elements:
             return f"Cluster {cluster_id}: Too many elements ({num_elements}). Consider removing unnecessary elements."
@@ -69,6 +49,32 @@ class Minimalist(HeuristicInterface):
             element.get("type_oval", 0) == 0
         )
 
+
+    def evaluate_rule(self, clusters_data):
+        feedback = []
+
+        # Use clusters_data passed as argument, not self.clusters_data
+        for cluster_id, elements in clusters_data.items():
+            num_elements = len(elements)
+            
+            # check on the number of elements
+            elements_count_feedback = self.evaluate_elements_count(num_elements, cluster_id)
+            if elements_count_feedback:
+                feedback.append(elements_count_feedback)
+
+            # Check for irrelevant elements
+            irrelevant_elements = [el for el in elements if self.is_irrelevant(el)]
+            if irrelevant_elements:
+                feedback.append(f"Cluster {cluster_id}: Contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
+
+            # Check for white space ratio
+            # white_space_ratio_feedback = self.evaluate_white_space_ratio(elements, screen_width, screen_height)
+            # if white_space_ratio_feedback:
+                # feedback.append(white_space_ratio_feedback)
+            
+        
+        return feedback if feedback else ["Design adheres to the minimalist rule."]
+        
 
 
 

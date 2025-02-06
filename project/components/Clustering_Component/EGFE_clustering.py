@@ -261,3 +261,16 @@ class EGFE_Clustering(ClusteringInterface):
 
         print("Cluster Consistency Report:", report)
         return report
+    
+
+
+    def calculate_nearest_neighbours(X_train_selected, percentile, n_neighbors=5):
+        nearest_neighbors = NearestNeighbors(n_neighbors=5)
+        nearest_neighbors.fit(X_train_selected)
+        distances, indices = nearest_neighbors.kneighbors(X_train_selected)
+        distances = np.sort(distances[:, -1])        # Sort distances 
+
+        # # Fit the DBSCAN model
+        optimal_eps = distances[int(len(distances) * percentile)] 
+        return  optimal_eps
+    
