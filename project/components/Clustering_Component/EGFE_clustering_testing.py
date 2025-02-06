@@ -62,7 +62,8 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
                                 [col for col in X_train.columns if col.startswith('hight')]+\
                                 [col for col in X_train.columns if col.startswith('type_')]
         elif feature == "position":
-            selected_features = ['position.x', 'position.y'] + \
+            selected_features = [col for col in X_train.columns if col.startswith('position.x')] + \
+                                [col for col in X_train.columns if col.startswith('position.y')]+\
                                 [col for col in X_train.columns if col.startswith('type_')]
         else:
             raise ValueError("Invalid feature type. Choose from 'color', 'size', or 'position'.")
