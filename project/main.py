@@ -4,6 +4,7 @@ import json
 import pandas as pd
 from pathlib import Path
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
@@ -18,6 +19,7 @@ from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProces
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
+from components.Heuristics_Component.heuristics_testing.minimalist_testing import MinimalistTesting
 
 
 pd.set_option('display.max_columns', None)
@@ -45,8 +47,11 @@ def main():
     egfe_clustering_testing = EGFE_ClusteringTesting()
     egfe_load_data = EGFE_LoadData()
     minimalist_evaluation = MinimalistEvaluation()
+    minimalist_test_evaluation = MinimalistTesting()
 
-    # minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
+    minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
+    minimalist_test_evaluation.evaluate_rule_test(test_folder, evaluation_folder)
+    minimalist_test_evaluation.analyze_results()
 
 
 
@@ -55,7 +60,7 @@ def main():
     # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
     
     # Step 2: Split Data into Train and Test
-    #splitter.save_split_files(train_folder, test_folder)
+    # splitter.save_split_files(train_folder, test_folder)
     
     # Step 3: Load Normalized train data
     # train_data = egfe_load_data.load_train_data()
@@ -64,7 +69,7 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
@@ -84,9 +89,10 @@ def main():
     # egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
     
     # Step 8: Assign Clusters to Test Data
-    # new_x_test = egfe_clustering_testing.assign_test_color_clusters(clustered_data,test_folder)
+    new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'position')
     # print(new_x_test)
-    # egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_data)
+    egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder,'position')
+    # egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_test_data)
     
     # Step 9: Minimalist Heuristic Evaluation
     # element_count, status = minimalist.count_ui_elements(clustered_data)
