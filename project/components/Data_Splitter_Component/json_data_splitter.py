@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from components.Data_Splitter_Component.data_splitter import DataSplitterInterface
 
 class JSONDataSplitter(DataSplitterInterface):
-    def __init__(self, json_folder, train_ratio=0.8, seed=42):
+    def __init__(self, json_folder, train_ratio=0.8, seed=40):
         self.json_folder = json_folder
         self.train_ratio = train_ratio
         self.seed = seed

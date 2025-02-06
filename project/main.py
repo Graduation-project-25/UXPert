@@ -4,6 +4,7 @@ import json
 import pandas as pd
 from pathlib import Path
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
@@ -18,6 +19,7 @@ from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProces
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
+from components.Heuristics_Component.heuristics_testing.minimalist_testing import MinimalistTesting
 
 
 pd.set_option('display.max_columns', None)
@@ -45,8 +47,11 @@ def main():
     egfe_clustering_testing = EGFE_ClusteringTesting()
     egfe_load_data = EGFE_LoadData()
     minimalist_evaluation = MinimalistEvaluation()
+    minimalist_test_evaluation = MinimalistTesting()
 
     minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
+    minimalist_test_evaluation.evaluate_rule_test(test_folder, evaluation_folder)
+    minimalist_test_evaluation.analyze_results()
 
 
 
@@ -55,7 +60,7 @@ def main():
     # egfe_ui_processing.process_ui_elements(json_folder, output_folder)
     
     # Step 2: Split Data into Train and Test
-    #splitter.save_split_files(train_folder, test_folder)
+    # splitter.save_split_files(train_folder, test_folder)
     
     # Step 3: Load Normalized train data
     # train_data = egfe_load_data.load_train_data()

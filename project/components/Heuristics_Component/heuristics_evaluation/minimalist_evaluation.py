@@ -1,12 +1,12 @@
 import json
 import os
-
-import pandas as pd
+from components.Heuristics_Component.heuristics_evaluation.evaluation_results import EvaluationResults
 from components.Heuristics_Component.heuristics_evaluation.heuristic_evaluation import HeuristicEvaluationInterface
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 
 class MinimalistEvaluation(HeuristicEvaluationInterface):    
-    # def __init__(self):
+    def __init__(self):
+        self.evaluation_results = EvaluationResults()
 
     def evaluate_rule(self, designs, evaluation_folder):
         self.evaluate_white_space_ratio(designs, evaluation_folder)
@@ -20,12 +20,10 @@ class MinimalistEvaluation(HeuristicEvaluationInterface):
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                    print(file_name)
                 white_space_ratio, feedback = minimalist_instance.evaluate_white_space_ratio(data,data['screen_size']['screen_width'],data['screen_size']['screen_height'])
                 
                 # Store elements with their evaluation
                 result_data = {
-                    "design_id": file_name,
                     "screen_size": data["screen_size"],
                     # "elements": data["elements"],  # Keeping all elements in the result file
                     "white_space_ratio": white_space_ratio,
@@ -40,13 +38,6 @@ class MinimalistEvaluation(HeuristicEvaluationInterface):
 
             except (json.JSONDecodeError, KeyError) as e:
                 print(f"Error processing {file_name}: {e}. Skipping file.")
-        self.save_white_space_ratio_evaluation_result(data_to_save,evaluation_folder)
+        self.evaluation_results.save_white_space_ratio_evaluation_result(data_to_save,evaluation_folder, "white_space_evaluation.json")
 
 
-    def save_white_space_ratio_evaluation_result(self, data_to_save, evaluation_folder):
-        """ Saves the evaluation result for each design in a new JSON file """
-        os.makedirs(evaluation_folder, exist_ok=True)  # This will create the directory if it doesn't exist
-
-        output_file_path = os.path.join(evaluation_folder, "white_space_evaluation.json")
-        with open(output_file_path, 'w', encoding='utf-8') as out_file:
-            json.dump(data_to_save, out_file, indent=4, ensure_ascii=False)
