@@ -30,9 +30,9 @@ class Minimalist(HeuristicInterface):
         # Call the white space ratio check
         white_space_ratio = self.calculate_white_space_ratio(elements, screen_width, screen_height)
         if white_space_ratio >= 0.4:
-            return white_space_ratio, "Pass - Minimalist Design"
+            return white_space_ratio, "Minimalist Design"
         else:
-            return white_space_ratio, "Fail - Cluttered Design"
+            return white_space_ratio, "Cluttered Design - Try to increase the white space between elements in your design"
 
     def evaluate_rule(self, clusters_data):
         feedback = []

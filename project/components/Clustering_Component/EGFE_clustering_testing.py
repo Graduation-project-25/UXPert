@@ -9,7 +9,7 @@ from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
 
 class EGFE_ClusteringTesting(ClusteringTestingInterface):
     def __init__(self):
-        self.data_loader = EGFE_LoadData()
+        self.egfe_load_data = EGFE_LoadData()
         # self.egfe_clustering = EGFE_Clustering(self.train_folder,self.output_folder)
 
     # def assign_test_clusters(self, train_folder, X_test, dbscan):
@@ -58,6 +58,8 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
 
         # Compute cluster centers from training data
         unique_clusters = X_train['Cluster'].unique()
+        print(unique_clusters)
+        print(X_test)
         cluster_centers = {
             cluster: X_train_selected[X_train['Cluster'] == cluster].mean(axis=0) 
             for cluster in unique_clusters

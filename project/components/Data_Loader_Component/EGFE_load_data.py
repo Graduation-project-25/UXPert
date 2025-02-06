@@ -43,6 +43,15 @@ class EGFE_LoadData(LoadDataInterface):
         
         return pd.concat(all_data, ignore_index=True)
     
+    def remove_type_null_values(self,data):
+        #Remove null values
+        if data.isnull().any().any():
+            data = data.fillna(0)
+            data = data.astype({col: 'int' for col in data.columns if col.startswith('type_')})
+        return data
+
+
+    
 
     # def get_max_min_file_name(self):
     #     file_names = []

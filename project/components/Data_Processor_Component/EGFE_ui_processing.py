@@ -61,25 +61,4 @@ class EGFE_UiProcessing(UiProcessorInterface):
         else:
             raise ValueError("Input is not a pandas DataFrame.")
 
-    # def convert_json_to_dataframe(self, json_folder):
-    #     """Helper method to convert JSON files to a pandas DataFrame."""
-    #     json_files = [f for f in os.listdir(json_folder) if f.endswith('.json')]
-    #     all_elements = []
 
-    #     for json_file in json_files:
-    #         json_file_path = os.path.join(json_folder, json_file)
-    #         with open(json_file_path, 'r', encoding='utf-8') as f:
-    #             data = json.load(f)
-    #             for element in data.get("elements", []):
-    #                 element_data = {
-    #                     'elements': element.get('name', ''),
-    #                     'position.x': element.get('position', {}).get('x', 0),
-    #                     'position.y': element.get('position', {}).get('y', 0),
-    #                     'width': element.get('size', {}).get('width', 0),
-    #                     'height': element.get('size', {}).get('height', 0)
-    #                 }
-    #                 all_elements.append(element_data)
-
-    #     # Convert the list of dictionaries into a pandas DataFrame
-    #     df = pd.DataFrame(all_elements)
-    #     return df

@@ -184,10 +184,10 @@ def main():
     #         consistency_reports[feature] = consistency_report
 
     # Print the final consistency report for all features
-    print("Cluster Consistency Reports:")
-    for feature, report in consistency_reports.items():
-        print(f"Feature: {feature}")
-        print(report)
+    # print("Cluster Consistency Reports:")
+    # for feature, report in consistency_reports.items():
+    #     print(f"Feature: {feature}")
+    #     print(report)
 
 
 
