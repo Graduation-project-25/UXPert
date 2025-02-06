@@ -58,7 +58,8 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
             selected_features = [col for col in X_train.columns if col.startswith('color_')] + \
                                 [col for col in X_train.columns if col.startswith('type_')]
         elif feature == "size":
-            selected_features = ['width', 'height'] + \
+            selected_features = [col for col in X_train.columns if col.startswith('width')] + \
+                                [col for col in X_train.columns if col.startswith('hight')]+\
                                 [col for col in X_train.columns if col.startswith('type_')]
         elif feature == "position":
             selected_features = ['position.x', 'position.y'] + \
