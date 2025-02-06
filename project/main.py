@@ -132,6 +132,21 @@ def main():
     # for f in feedback:
     #     print(f)
 
+    # base_path = Path(__file__).resolve().parent  # Get current script directory
+    # clusters_data_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
+
+    # with open(clusters_data_path, "r") as file:
+    #     clusters_data = json.load(file)
+
+    # rule = Minimalist()
+    # evaluator = MinimalistEvaluation()
+
+    # # for cluster_id, elements in clusters_data.items():
+    # feedback = rule.evaluate_rule(clusters_data)
+    # # print(f"\n{cluster_id}:")
+    # for message in feedback:
+    #     print(f"  - {message}")
+
 
     
 
