@@ -48,7 +48,8 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
 
         #  Load test data from the folder
         X_test = self.egfe_load_data.load_data(test_folder)
-
+        print("X test:")
+        print(X_test)
         # Keep train data unchanged
         X_train = train_data
 
@@ -67,8 +68,8 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
 
         #  Ensure the selected features exist in X_test
         missing_features = [col for col in selected_features if col not in X_test.columns]
-        if missing_features:
-            raise KeyError(f"Missing features in X_test: {missing_features}")
+        for feature in missing_features:
+            X_test[feature] = 0
 
         #  Extract relevant features for clustering
         X_train_selected = X_train[selected_features]
@@ -95,7 +96,8 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
 
         #  Assign clusters to X_test
         X_test['Assigned_Cluster'] = assigned_clusters
-
+        print("X test after clustering")
+        print(X_test)
         return X_test
 
 
