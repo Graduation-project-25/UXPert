@@ -47,6 +47,19 @@ def process_elements():
             "Feedback": consistency_results.get('Feedback', {})
         }
 
+        # Save result in JSON file
+        output_data = {
+            "user_name": user_name,
+            "design_name": design_name,
+            "elements": elements,
+            "consistency_results": feedback
+        }
+        output_file = "output.json"
+        with open(output_file, "w", encoding="utf-8") as json_file:
+            json.dump(output_data, json_file, ensure_ascii=False, indent=4)
+
+        print(f"Results saved to {output_file}")
+
         return jsonify({
             "message": "Design processed successfully!",
             "status": 200,
