@@ -102,6 +102,9 @@ def main():
     evaluator = MinimalistEvaluation()
     evaluator.evaluate_minimalist(train_folder, evaluation_folder)
 
+    # rule = Minimalist()
+    # rule.evaluate_rule()
+
 
 
 

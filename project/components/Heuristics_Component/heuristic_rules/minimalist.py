@@ -1,11 +1,11 @@
 from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface 
 
-condition = 0
 
 class Minimalist(HeuristicInterface):
     def __init__(self, max_elements=10, min_elements=3):
         self.max_elements = max_elements
         self.min_elements = min_elements
+        self.condition = 0
 
     def calculate_white_space_ratio(self, elements, screen_width, screen_height):
         if screen_width <= 0 or screen_height <= 0:
@@ -26,7 +26,7 @@ class Minimalist(HeuristicInterface):
         # Compute white space ratio
         white_space_ratio = 1 - (total_element_area / screen_area) 
         if white_space_ratio < 0.36:
-            condition = condition + 1 
+            self.condition += 1 
         return max(0, white_space_ratio)  # Ensure it's not negative
 
     def evaluate_white_space_ratio(self, elements, screen_width, screen_height):
@@ -41,7 +41,7 @@ class Minimalist(HeuristicInterface):
         if num_elements > self.max_elements:
             return f"This screen has too many elements ({num_elements}). Consider removing unnecessary elements."
         elif num_elements < self.min_elements:
-            condition = condition + 1
+            self.condition += 1 
             return f"This screen has too few elements ({num_elements}). Consider adding more essential elements."
         return None
 
@@ -59,7 +59,7 @@ class Minimalist(HeuristicInterface):
         feedback = []
 
         # If the white space ratio is low and the number of elements is small consider it minimalistic 
-        if condition != 2:
+        if self.condition != 2:
             # Step 1: Evaluate white space ratio
             white_space_ratio, white_space_feedback = self.evaluate_white_space_ratio(elements, screen_width, screen_height)
             feedback.append(f"White Space Ratio: {white_space_ratio:.2f} - {white_space_feedback}")
