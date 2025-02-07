@@ -37,6 +37,7 @@ def process_elements():
     try:
         # Evaluate consistency
         consistency_evaluator = Consistency()
+         
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
 
         print(f"Consistency evaluation results: {consistency_results}")

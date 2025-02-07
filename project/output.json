@@ -69,15 +69,14 @@
         }
     ],
     "consistency_results": {
-        "ColorConsistency": "Color consistency is 100.0%.",
-        "AlignmentConsistency": "Alignment consistency is 0.0%.",
-        "SizeProportionality": "Size proportionality is 0%.",
-        "TotalConsistency": "Total consistency score is 40.0%.",
+        "ColorConsistency": "Color consistency is 0.0%.",
+        "AlignmentConsistency": "Alignment consistency is 20.0%.",
+        "SizeProportionality": "Size proportionality is 40.0%.",
+        "TotalConsistency": "Total consistency score is 18.0%.",
         "Feedback": {
-            "ColorConsistency": "Colors are consistent across similar-sized elements.",
-            "ColorConsistency": "Colors are consistent across similar-sized elements.",
-            "AlignmentConsistency": "Alignment needs improvement.",
-            "SizeProportionality": "Size proportionality is off, consider adjusting element sizes."
+            "Color": "Color variation detected.",
+            "Alignment": "Alignment issues detected.",
+            "Size": "Size inconsistency detected."
         }
     }
 }
