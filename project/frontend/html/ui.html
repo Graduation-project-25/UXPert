@@ -218,22 +218,43 @@
 
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
-      if (msg && msg.type === 'collective-feedback') {
+
+      if (!msg) return;
+
+      if (msg.type === 'collective-feedback') {
+        console.log("Received feedback:", msg.feedback); // Debugging
+
         document.getElementById('processing-screen').style.display = 'none';
         document.getElementById('feedback-screen').style.display = 'block';
         document.getElementById('feedback-container').innerHTML = '';
+
+        if (!msg.feedback || msg.feedback.length === 0) {
+          document.getElementById('feedback-container').innerHTML = '<p>No feedback received.</p>';
+          return;
+        }
 
         feedbackCards = msg.feedback.map(item => {
           const card = document.createElement('div');
           card.className = 'feedback-card';
 
-          const image = document.createElement('img');
-          image.src = item.screenshot;
-          image.className = 'screenshot';
+          // Ensure the screenshot exists before displaying
+          if (item.screenshot) {
+            const image = document.createElement('img');
+            image.src = item.screenshot;
+            image.className = 'screenshot';
+            card.appendChild(image);
+          }
 
           let feedbackList = '<ul>';
-          for (const [issue, solution] of Object.entries(item.feedback)) {
-            feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
+          if (item.consistencyFeedback) {
+            for (const [issue, solution] of Object.entries(item.consistencyFeedback)) {
+              feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
+            }
+          }
+          if (item.minimalistFeedback) {
+            for (const [issue, solution] of Object.entries(item.minimalistFeedback)) {
+              feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
+            }
           }
           feedbackList += '</ul>';
 
@@ -241,7 +262,6 @@
           content.className = 'feedback-content';
           content.innerHTML = `<h2>${item.frameName}</h2><div class='divider'></div>${feedbackList}`;
 
-          card.appendChild(image);
           card.appendChild(content);
           document.getElementById('feedback-container').appendChild(card);
 
@@ -251,6 +271,7 @@
         showFeedbackCard(0); // Show the first card by default
       }
     };
+
 
     function showFeedbackCard(index) {
       feedbackCards.forEach((card, i) => {

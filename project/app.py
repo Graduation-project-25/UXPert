@@ -65,7 +65,7 @@ def process_elements():
             "AlignmentConsistency": f"Alignment consistency is {consistency_results.get('AlignmentConsistency', 0)}%.",
             "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
             "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
-            "Minimalist": f"Minimalist is {minimalist_evaluator}",
+            "Minimalist": minimalist_evaluator,
             "Feedback": consistency_results.get('Feedback', {})
         }
 

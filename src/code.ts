@@ -3,6 +3,7 @@ interface ConsistencyResult {
     status: number;
     consistency_results: {
         Feedback: Record<string, string>;
+        MinimalistFeedback: Record<string, string>;
     };
 }
 
@@ -80,10 +81,11 @@ figma.ui.onmessage = async (msg) => {
 
                 const result = await processResponse.json() as ConsistencyResult;
 
-                if (result.consistency_results.Feedback) {
+                if (result.consistency_results.Feedback || result.consistency_results.MinimalistFeedback !== undefined) {
                     allFeedback.push({
                         frameName: frame.name,
-                        feedback: result.consistency_results.Feedback,
+                        consistencyFeedback: result.consistency_results.Feedback,           // Consistency feedback
+                        minimalistFeedback: result.consistency_results.MinimalistFeedback, // Minimalist feedback                
                         screenshot: imageDataUrl
                     });
                 }
@@ -98,6 +100,7 @@ figma.ui.onmessage = async (msg) => {
                 type: 'collective-feedback',
                 feedback: allFeedback
             });
+            console.log("Sending feedback:", JSON.stringify(allFeedback, null, 2));  // Debugging
         }
     }
 };
