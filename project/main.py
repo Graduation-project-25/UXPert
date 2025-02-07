@@ -65,7 +65,7 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    clustered_data, clusters = egfe_clustering.dbscan_cluster('size')
+    # clustered_data, clusters = egfe_clustering.dbscan_cluster('size')
     # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
@@ -81,7 +81,7 @@ def main():
     # egfe_visualization.visualize_size_proportionality(clustered_data)
     
     # Step 7: Test Data Clustering
-    clustered_test_data, _ = egfe_clustering.dbscan_cluster(test_folder)
+    # clustered_test_data, _ = egfe_clustering.dbscan_cluster(test_folder)
     # egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
     
     # Step 8: Assign Clusters to Test Data
@@ -98,6 +98,9 @@ def main():
     # element_count, status = minimalist.count_ui_elements(clustered_data)
     # print("Number of elements =", element_count)
     # print("Status of the elements =", status)
+
+    evaluator = MinimalistEvaluation()
+    evaluator.evaluate_minimalist(train_folder, evaluation_folder)
 
 
 
@@ -145,6 +148,9 @@ def main():
 
     # rule = Minimalist()
     # evaluator = MinimalistEvaluation()
+    # evaluator.evaluate_minimalist(train_folder, evaluation_folder)
+
+
 
     # # for cluster_id, elements in clusters_data.items():
     # feedback = rule.evaluate_rule(clusters_data)
@@ -153,15 +159,15 @@ def main():
     #     print(f"  - {message}")
 
 
-    base_path = Path(__file__).resolve().parent  # Get current script directory
-    # evaluation_folder = base_path / "data/raw/EGFE/extractedFeatures/test"
-    # test_data_path = base_path / "data/raw/EGFE/extractedFeatures/test/X-train Clusters based on size and type.json"
-    test_data_path = Path(r'D:\Minna\Graduation project\UXPert\project\data\raw\EGFE\extractedFeatures\test\X-train Clusters based on size and type.json')
+    # base_path = Path(__file__).resolve().parent  # Get current script directory
+    # # evaluation_folder = base_path / "data/raw/EGFE/extractedFeatures/test"
+    # # test_data_path = base_path / "data/raw/EGFE/extractedFeatures/test/X-train Clusters based on size and type.json"
+    # test_data_path = Path(r'D:\Minna\Graduation project\UXPert\project\data\raw\EGFE\extractedFeatures\test\X-train Clusters based on size and type.json')
 
-    with open(test_data_path, "r") as file:
-        test_data = json.load(file)
+    # with open(test_data_path, "r") as file:
+    #     test_data = json.load(file)
     
-    evaluator = MinimalistTesting()
+    # evaluator = MinimalistTesting()
 
     # Load all test JSON files into a dictionary
     # test_clusters = {}  
@@ -177,17 +183,17 @@ def main():
     #     test_clusters.update(data)  # Merge all test files into one dictionary
 
     # Run evaluation with correctly loaded test data
-    print("Running Minimalist Rule Evaluation on Test Data...")
-    evaluator.evaluate_minimalist_test(test_data, evaluation_folder)
+    # print("Running Minimalist Rule Evaluation on Test Data...")
+    # evaluator.evaluate_minimalist_test(test_data, evaluation_folder)
 
-    # Load training results
-    train_json = os.path.join(evaluation_folder, "minimalist_evaluation.json")
+    # # Load training results
+    # train_json = os.path.join(evaluation_folder, "minimalist_evaluation.json")
 
-    # Analyze results for each test file separately
-    for test_file in test_json_files:
-        test_json_path = os.path.join(test_folder, test_file)
-        print(f"\nAnalyzing Results for {test_file}...")
-        evaluator.analyze_results(train_json, test_json_path)
+    # # Analyze results for each test file separately
+    # for test_file in test_json_files:
+    #     test_json_path = os.path.join(test_folder, test_file)
+    #     print(f"\nAnalyzing Results for {test_file}...")
+    #     evaluator.analyze_results(train_json, test_json_path)
 
     
 

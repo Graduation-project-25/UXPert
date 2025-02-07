@@ -9,9 +9,10 @@ class MinimalistEvaluation(HeuristicEvaluationInterface):
         self.evaluation_results = EvaluationResults()
 
     def evaluate_rule(self, designs, evaluation_folder):
-        self.evaluate_white_space_ratio(designs, evaluation_folder)
+        # self.evaluate_white_space_ratio(designs, evaluation_folder)
+        pass
 
-    def evaluate_white_space_ratio(self, train_folder, evaluation_folder):
+    def evaluate_minimalist(self, train_folder, evaluation_folder):
         minimalist_instance = HeuristicFactory.check_rule("minimalist")
         data_to_save = {}
 
@@ -20,13 +21,14 @@ class MinimalistEvaluation(HeuristicEvaluationInterface):
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                white_space_ratio, feedback = minimalist_instance.evaluate_white_space_ratio(data,data['screen_size']['screen_width'],data['screen_size']['screen_height'])
-                
+                # white_space_ratio, feedback = minimalist_instance.evaluate_white_space_ratio(data,data['screen_size']['screen_width'],data['screen_size']['screen_height'])
+                # minimalist_instance.evaluate_elements_count()
+                feedback = minimalist_instance.evaluate_rule(data, data['screen_size']['screen_width'], data['screen_size']['screen_height'])
                 # Store elements with their evaluation
                 result_data = {
                     "screen_size": data["screen_size"],
                     # "elements": data["elements"],  # Keeping all elements in the result file
-                    "white_space_ratio": white_space_ratio,
+                    # "white_space_ratio": white_space_ratio,
                     "evaluation": feedback,
                 }
 
@@ -38,33 +40,7 @@ class MinimalistEvaluation(HeuristicEvaluationInterface):
 
             except (json.JSONDecodeError, KeyError) as e:
                 print(f"Error processing {file_name}: {e}. Skipping file.")
-        self.evaluation_results.save_white_space_ratio_evaluation_result(data_to_save,evaluation_folder, "white_space_evaluation.json")
+        # print(data_to_save)
+        self.evaluation_results.save_evaluation_result(data_to_save, evaluation_folder, "minimalist_evaluation.json")
 
 
-    def evaluate_minimalist(self, clusters_data, evaluation_folder):
-        rule = HeuristicFactory.check_rule("minimalist")
-        data_to_save = {}
-
-        for cluster_id, elements in clusters_data.items():
-            feedback = rule.evaluate_cluster(elements, cluster_id)
-
-            # Save feedback for each cluster
-            result_data = {
-                "cluster_id": cluster_id,
-                "num_elements": len(elements),
-                "evaluation": feedback
-            }
-
-            # Store feedback grouped by cluster
-            if cluster_id not in data_to_save:
-                data_to_save[cluster_id] = []
-            data_to_save[cluster_id].append(result_data)
-
-        self.save_minimalist_evaluation_result(data_to_save, evaluation_folder)
-
-    def save_minimalist_evaluation_result(self, data_to_save, evaluation_folder):
-        os.makedirs(evaluation_folder, exist_ok=True)  
-
-        output_file_path = os.path.join(evaluation_folder, "minimalist_evaluation.json")
-        with open(output_file_path, 'w', encoding='utf-8') as out_file:
-            json.dump(data_to_save, out_file, indent=4, ensure_ascii=False)
