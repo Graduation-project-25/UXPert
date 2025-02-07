@@ -59,7 +59,7 @@ class Minimalist(HeuristicInterface):
         feedback = []
 
         # If the white space ratio is low and the number of elements is small consider it minimalistic 
-        if self.condition != 2:
+        if self.condition < 2:
             # Step 1: Evaluate white space ratio
             white_space_ratio, white_space_feedback = self.evaluate_white_space_ratio(elements, screen_width, screen_height)
             feedback.append(f"White Space Ratio: {white_space_ratio:.2f} - {white_space_feedback}")
@@ -78,6 +78,8 @@ class Minimalist(HeuristicInterface):
         # If no feedback, mention adherence to minimalist rule
         if not feedback:
             feedback.append("Design adheres to the minimalist rule.")
+
+        self.condition = 0
 
         return feedback
         
