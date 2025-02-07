@@ -33,11 +33,11 @@ class Minimalist(HeuristicInterface):
         else:
             return white_space_ratio, "Cluttered Design - Try to increase the white space between elements in your design"
 
-    def evaluate_elements_count(self, num_elements, cluster_id):
+    def evaluate_elements_count(self, num_elements):
         if num_elements > self.max_elements:
-            return f"Cluster {cluster_id}: Too many elements ({num_elements}). Consider removing unnecessary elements."
+            return f"This screen has too many elements ({num_elements}). Consider removing unnecessary elements."
         elif num_elements < self.min_elements:
-            return f"Cluster {cluster_id}: Too few elements ({num_elements}). Consider adding more essential elements."
+            return f"This screen has too few elements ({num_elements}). Consider adding more essential elements."
         return None
 
     def is_irrelevant(self, element):
@@ -59,14 +59,14 @@ class Minimalist(HeuristicInterface):
             num_elements = len(elements)
             
             # check on the number of elements
-            elements_count_feedback = self.evaluate_elements_count(num_elements, cluster_id)
+            elements_count_feedback = self.evaluate_elements_count(num_elements)
             if elements_count_feedback:
                 feedback.append(elements_count_feedback)
 
             # Check for irrelevant elements
             irrelevant_elements = [el for el in elements if self.is_irrelevant(el)]
             if irrelevant_elements:
-                feedback.append(f"Cluster {cluster_id}: Contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
+                feedback.append(f"This design contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
 
             # Check for white space ratio
             # white_space_ratio_feedback = self.evaluate_white_space_ratio(elements, screen_width, screen_height)
