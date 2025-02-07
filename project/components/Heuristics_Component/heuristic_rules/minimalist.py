@@ -33,11 +33,11 @@ class Minimalist(HeuristicInterface):
         else:
             return white_space_ratio, "Cluttered Design - Try to increase the white space between elements in your design"
 
-    def evaluate_elements_count(self, num_elements, cluster_id):
+    def evaluate_elements_count(self, num_elements):
         if num_elements > self.max_elements:
-            return f"Cluster {cluster_id}: Too many elements ({num_elements}). Consider removing unnecessary elements."
+            return f"This screen has too many elements ({num_elements}). Consider removing unnecessary elements."
         elif num_elements < self.min_elements:
-            return f"Cluster {cluster_id}: Too few elements ({num_elements}). Consider adding more essential elements."
+            return f"This screen has too few elements ({num_elements}). Consider adding more essential elements."
         return None
 
     def is_irrelevant(self, element):
@@ -50,31 +50,29 @@ class Minimalist(HeuristicInterface):
             element.get("type_oval", 0) == 0
         )
 
-
-    def evaluate_rule(self, clusters_data):
+    def evaluate_rule(self, elements, screen_width, screen_height):
         feedback = []
 
-        # Use clusters_data passed as argument, not self.clusters_data
-        for cluster_id, elements in clusters_data.items():
-            num_elements = len(elements)
-            
-            # check on the number of elements
-            elements_count_feedback = self.evaluate_elements_count(num_elements, cluster_id)
-            if elements_count_feedback:
-                feedback.append(elements_count_feedback)
+        # Step 1: Evaluate white space ratio
+        white_space_ratio, white_space_feedback = self.evaluate_white_space_ratio(elements, screen_width, screen_height)
+        feedback.append(f"White Space Ratio: {white_space_ratio:.2f} - {white_space_feedback}")
 
-            # Check for irrelevant elements
-            irrelevant_elements = [el for el in elements if self.is_irrelevant(el)]
-            if irrelevant_elements:
-                feedback.append(f"Cluster {cluster_id}: Contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
+        # Step 2: Evaluate element count
+        num_elements = len(elements['elements'])
+        element_count_feedback = self.evaluate_elements_count(num_elements)
+        if element_count_feedback:
+            feedback.append(element_count_feedback)
 
-            # Check for white space ratio
-            # white_space_ratio_feedback = self.evaluate_white_space_ratio(elements, screen_width, screen_height)
-            # if white_space_ratio_feedback:
-                # feedback.append(white_space_ratio_feedback)
-            
-        
-        return feedback if feedback else ["Design adheres to the minimalist rule."]
+        # Step 3: Check for irrelevant elements
+        irrelevant_elements = [el for el in elements['elements'] if self.is_irrelevant(el)]
+        if irrelevant_elements:
+            feedback.append(f"This design contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
+
+        # If no feedback, mention adherence to minimalist rule
+        if not feedback:
+            feedback.append("Design adheres to the minimalist rule.")
+
+        return feedback
         
 
 
