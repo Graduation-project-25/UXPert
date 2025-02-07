@@ -141,6 +141,9 @@ def main():
 
     # rule = Minimalist()
     # evaluator = MinimalistEvaluation()
+    # evaluator.evaluate_minimalist(train_folder, evaluation_folder)
+
+
 
     # # for cluster_id, elements in clusters_data.items():
     # feedback = rule.evaluate_rule(clusters_data)
@@ -167,9 +170,11 @@ def main():
     # Run evaluation with correctly loaded test data
     # print("Running Minimalist Rule Evaluation on Test Data...")
     # evaluator.evaluate_minimalist_test(test_data, evaluation_folder)
+    # print("Running Minimalist Rule Evaluation on Test Data...")
+    # evaluator.evaluate_minimalist_test(test_data, evaluation_folder)
 
-    # Load training results
-    train_json = os.path.join(evaluation_folder, "minimalist_evaluation.json")
+    # # Load training results
+    # train_json = os.path.join(evaluation_folder, "minimalist_evaluation.json")
 
     # Analyze results for each test file separately
     # for test_file in test_json_files:
