@@ -8,11 +8,7 @@ class MinimalistEvaluation(HeuristicEvaluationInterface):
     def __init__(self):
         self.evaluation_results = EvaluationResults()
 
-    def evaluate_rule(self, designs, evaluation_folder):
-        # self.evaluate_white_space_ratio(designs, evaluation_folder)
-        pass
-
-    def evaluate_minimalist(self, train_folder, evaluation_folder):
+    def evaluate_rule(self, train_folder, evaluation_folder):
         minimalist_instance = HeuristicFactory.check_rule("minimalist")
         data_to_save = {}
 

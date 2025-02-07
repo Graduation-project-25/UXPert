@@ -53,7 +53,7 @@ def process_elements():
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
 
         minimalist_evaluator = MinimalistEvaluation()
-        white_space_ratio_evaluator = minimalist_evaluator.evaluate_white_space_ratio(output_folder, evaluation_folder)
+        minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
 
         print(f"Consistency evaluation results: {consistency_results}")
 
@@ -63,6 +63,7 @@ def process_elements():
             "AlignmentConsistency": f"Alignment consistency is {consistency_results.get('AlignmentConsistency', 0)}%.",
             "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
             "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
+            "Minimalist": f"Minimalist is {minimalist_evaluator}",
             "Feedback": consistency_results.get('Feedback', {})
         }
 
