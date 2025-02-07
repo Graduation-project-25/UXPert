@@ -144,7 +144,7 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
             clusters_dict[cluster_id].append(row_data)
 
         # Define the output file path
-        output_file = os.path.join(output_folder, "assigned_clusters.json")
+        output_file = os.path.join(output_folder, "size_test_clusters.json")
         
         # Save the clusters dictionary to the output folder
         with open(output_file, 'w', encoding='utf-8') as f:

@@ -8,7 +8,6 @@ code.js
 out/
 dist/
 
-design_features.json
 
 #Datasets
 RICO/
@@ -27,3 +26,4 @@ csr/
 
 #Data Folders
 output/
+figma_features/

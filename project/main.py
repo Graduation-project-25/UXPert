@@ -25,17 +25,18 @@ from components.Heuristics_Component.heuristics_testing.minimalist_testing impor
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 2000)
 
+dataset_folder = './data/raw/EGFE'
+image_folder = dataset_folder + '/images'
+json_folder = dataset_folder + '/jsons'
+output_folder = dataset_folder + '/extractedFeatures'
+train_folder = output_folder + '/train'
+test_folder = output_folder + '/test'
+evaluation_folder = output_folder + '/evaluation'
+
+os.makedirs(output_folder, exist_ok=True)
+
 def main():
-    dataset_folder = './data/raw/EGFE'
-    image_folder = dataset_folder + '/images'
-    json_folder = dataset_folder + '/jsons'
-    output_folder = dataset_folder + '/extractedFeatures'
-    train_folder = output_folder + '/train'
-    test_folder = output_folder + '/test'
-    evaluation_folder = output_folder + '/evaluation'
-
-    os.makedirs(output_folder, exist_ok=True)
-
+    
     # Initialize components
     egfe_ui_processing = EGFE_UiProcessing()
     egfe_ui_normalizing = EGFE_UiNormalizing()
@@ -64,9 +65,9 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
-    egfe_clustering_evaluation.evaluate_clustering(clustered_data)
+    # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
 
@@ -78,20 +79,16 @@ def main():
     # egfe_visualization.visualize_alignment_consistency(clustered_data)
     # egfe_visualization.visualize_color_consistency(clustered_data)
     # egfe_visualization.visualize_size_proportionality(clustered_data)
-    
-    # Step 7: Test Data Clustering
-    # clustered_test_data, _, _ = egfe_clustering.dbscan_cluster(test_folder)
-    # egfe_clustering_evaluation.evaluate_clustering(clustered_test_data)
-    
-    # Step 8: Assign Clusters to Test Data
-    new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'size')
+        
+    # Step : Assign Clusters to Test Data
+    # new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'size')
     # print(new_x_test)
-    egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder,'position')
+    # egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder,'position')
     # print("clustered data:")
     # print(clustered_data)
     # print("new x test data:")
     # print(new_x_test)
-    egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_data)
+    # egfe_clustering_testing.evaluate_test_clusters(new_x_test, clustered_data)
     
     # Step 9: Minimalist Heuristic Evaluation
     # element_count, status = minimalist.count_ui_elements(clustered_data)
@@ -101,12 +98,12 @@ def main():
 
 
 
-    # minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
-    # minimalist_test_evaluation.evaluate_rule_test(test_folder, evaluation_folder)
-    # white_space_evaluation = evaluation_folder + '/white_space_evaluation.json'
-    # white_space_test_evaluation = evaluation_folder + '/white_space_test_evaluation.json'
-
-    # minimalist_test_evaluation.analyze_results(white_space_evaluation,white_space_test_evaluation)
+    minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
+    minimalist_test_evaluation.evaluate_rule_test(test_folder, evaluation_folder)
+    minimalist_evaluation_json = evaluation_folder + '/minimalist_evaluation.json'
+    minimalist_test_evaluation_json = evaluation_folder + '/minimalist_test_evaluation.json'
+#
+    minimalist_test_evaluation.analyze_test_results(minimalist_evaluation_json,minimalist_test_evaluation_json)
 
 
     ##############################################################################################
@@ -144,6 +141,9 @@ def main():
 
     # rule = Minimalist()
     # evaluator = MinimalistEvaluation()
+    # evaluator.evaluate_minimalist(train_folder, evaluation_folder)
+
+
 
     # # for cluster_id, elements in clusters_data.items():
     # feedback = rule.evaluate_rule(clusters_data)
@@ -152,7 +152,35 @@ def main():
     #     print(f"  - {message}")
 
 
-    
+    base_path = Path(__file__).resolve().parent  # Get current script directory
+# 
+    # Load all test JSON files into a dictionary
+    # test_clusters = {}  
+
+    # test_json_files = [f for f in os.listdir(test_folder) if f.endswith(".json")]
+
+    # for test_file in test_json_files:
+    #     test_json_path = os.path.join(test_folder, test_file)
+
+    #     with open(test_json_path, "r", encoding="utf-8") as f:
+    #         data = json.load(f)  # Load JSON file content as dictionary
+
+    #     test_clusters.update(data)  # Merge all test files into one dictionary
+
+    # Run evaluation with correctly loaded test data
+    # print("Running Minimalist Rule Evaluation on Test Data...")
+    # evaluator.evaluate_minimalist_test(test_data, evaluation_folder)
+    # print("Running Minimalist Rule Evaluation on Test Data...")
+    # evaluator.evaluate_minimalist_test(test_data, evaluation_folder)
+
+    # # Load training results
+    # train_json = os.path.join(evaluation_folder, "minimalist_evaluation.json")
+
+    # Analyze results for each test file separately
+    # for test_file in test_json_files:
+        # test_json_path = os.path.join(test_folder, test_file)
+        # print(f"\nAnalyzing Results for {test_file}...")
+        # evaluator.analyze_results(train_json, test_json_path)
 
     
 

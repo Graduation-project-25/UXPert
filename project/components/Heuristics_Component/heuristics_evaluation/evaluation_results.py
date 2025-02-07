@@ -3,7 +3,7 @@ import os
 
 
 class EvaluationResults():    
-    def save_white_space_ratio_evaluation_result(self, data_to_save, evaluation_folder, file_name):
+    def save_evaluation_result(self, data_to_save, evaluation_folder, file_name):
         """ Saves the evaluation result for each design in a new JSON file """
         os.makedirs(evaluation_folder, exist_ok=True)  # This will create the directory if it doesn't exist
 
