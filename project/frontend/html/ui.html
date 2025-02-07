@@ -183,15 +183,19 @@
       document.getElementById('progress-container').style.display = 'block';
 
       let progress = 0;
+
+      // Start detection in parallel
+      parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+
       const progressInterval = setInterval(() => {
-        progress += 10; // Increment progress by 10%
+        progress += 7; // Increment progress by 10%
         document.getElementById('progress-bar').value = progress;
         document.getElementById('progress-text').innerText = `${progress}%`;
 
         if (progress >= 100) {
           clearInterval(progressInterval);
           // After progress completes, trigger the feedback collection
-          parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+          // parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
         }
       }, 1000);
     };
