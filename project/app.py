@@ -57,6 +57,7 @@ def process_elements():
         minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
 
         print(f"Consistency evaluation results: {consistency_results}")
+        print(f"Consistency evaluation results: {minimalist_evaluator}")
 
         # Prepare human-readable feedback
         feedback = {

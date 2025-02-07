@@ -39,4 +39,6 @@ class MinimalistEvaluation(HeuristicEvaluationInterface):
         # print(data_to_save)
         self.evaluation_results.save_evaluation_result(data_to_save, evaluation_folder, "minimalist_evaluation.json")
 
+        return data_to_save
+
 
