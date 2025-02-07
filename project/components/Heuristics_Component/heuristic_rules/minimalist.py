@@ -3,7 +3,7 @@ from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicI
 class Minimalist(HeuristicInterface):
     def __init__(self, max_elements=10, min_elements=3):
         self.max_elements = max_elements
-        self.min_elements = min_elements
+        self.min_elements = min_elements 
 
     def calculate_white_space_ratio(self, elements, screen_width, screen_height):
         if screen_width <= 0 or screen_height <= 0:
@@ -29,7 +29,7 @@ class Minimalist(HeuristicInterface):
         # Call the white space ratio check
         white_space_ratio = self.calculate_white_space_ratio(elements, screen_width, screen_height)
         if white_space_ratio >= 0.35:
-            return white_space_ratio, "Minimalist Design"
+            return white_space_ratio, "Good White space Ratio"
         else:
             return white_space_ratio, "Cluttered Design - Try to increase the white space between elements in your design"
 

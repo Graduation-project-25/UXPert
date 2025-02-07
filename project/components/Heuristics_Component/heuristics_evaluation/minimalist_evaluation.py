@@ -38,7 +38,7 @@ class MinimalistEvaluation(HeuristicEvaluationInterface):
 
             except (json.JSONDecodeError, KeyError) as e:
                 print(f"Error processing {file_name}: {e}. Skipping file.")
-        self.evaluation_results.save_white_space_ratio_evaluation_result(data_to_save,evaluation_folder, "white_space_evaluation.json")
+        self.evaluation_results.save_evaluation_result(data_to_save,evaluation_folder, "minimalist_evaluation.json")
 
 
     def evaluate_minimalist(self, clusters_data, evaluation_folder):
@@ -60,7 +60,7 @@ class MinimalistEvaluation(HeuristicEvaluationInterface):
                 data_to_save[cluster_id] = []
             data_to_save[cluster_id].append(result_data)
 
-        self.save_minimalist_evaluation_result(data_to_save, evaluation_folder)
+        # self.save_minimalist_evaluation_result(data_to_save, evaluation_folder)
 
     def save_minimalist_evaluation_result(self, data_to_save, evaluation_folder):
         os.makedirs(evaluation_folder, exist_ok=True)  
