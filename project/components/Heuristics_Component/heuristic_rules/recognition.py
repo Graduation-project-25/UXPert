@@ -8,7 +8,6 @@ class Recognition(HeuristicInterface):
 
     def minimized_memory_load(self, elements):
         #  Are interactive elements visible instead of hidden?
-        # visibility_status = []
         feedback = []
 
         for _, element in elements.iterrows():
@@ -22,34 +21,25 @@ class Recognition(HeuristicInterface):
 
             element_type = element["type"]
 
+            print(f"Checking {element_type} at ({x}, {y}), Size: {width}x{height}")  # Debugging
+
             # Only check interactive elements
             if element_type not in ["button", "input", "dropdown", "checkbox", "link"]:
-                # visibility_status.append("Not Interactive")
-                # Ignore them
-                continue
+                continue    # Ignore non-interactive elements
 
             # Check if the element is off-screen
             if x + width <= 0 or y + height <= 0 or x >= screen_width or y >= screen_height:
-                # visibility_status.append("Off-screen")
-                feedback += f"The {element_type} at ({x}, {y}) is off-screen and should be repositioned.\n"
+                feedback.append(f"The {element_type} at ({x}, {y}) is off-screen and should be repositioned.\n")
                 continue
 
             # Check if the element is too small (example: width or height < 10 pixels)
             if width < 10 or height < 10:
-                # visibility_status.append("Too Small")
-                feedback += f"The {element_type} at ({x}, {y}) is too small ({width}px × {height}px). Consider increasing its size.\n"
+                feedback.append(f"The {element_type} at ({x}, {y}) is too small ({width}px × {height}px). Consider increasing its size.\n")
                 continue
-
-            # If no issues found, mark as "Visible"
-            # visibility_status.append("Visible")
-
-            # Add results to the dataframe
-            # cluster_data["visibility_status"] = visibility_status
-            # return df
 
             # If no issues found, return a positive message
             if not feedback:
-                return "All interactive elements are visible and properly sized."
+                feedback.append("All interactive elements are visible and properly sized.")
 
             return feedback
 
