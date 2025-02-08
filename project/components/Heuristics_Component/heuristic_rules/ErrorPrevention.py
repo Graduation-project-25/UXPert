@@ -1,18 +1,18 @@
 import pandas as pd
 
 class ErrorPrevention:
-    def __init__(self, extracted_ui_data):
+    def __init__(self, ui_data):
         """
-        extracted_ui_data: DataFrame containing UI elements with columns:
+        ui_data: DataFrame containing UI elements with columns:
         ['element_type', 'text', 'position_x', 'position_y', 'width', 'height', 'color_r', 'color_g', 'color_b']
         """
-        self.ui_data = extracted_ui_data
+        self.ui_data = ui_data
 
     def check_input_validation(self):
         """Checks if input fields have validation messages or required indicators."""
         input_fields = self.ui_data[self.ui_data['element_type'] == 'input']
         validation_errors = []
-        
+
         for _, row in input_fields.iterrows():
             # Check if there's a nearby validation message
             nearby_validations = self.ui_data[
@@ -21,7 +21,7 @@ class ErrorPrevention:
             ]
             if nearby_validations.empty:
                 validation_errors.append(f"Missing validation for input at ({row['position_x']}, {row['position_y']})")
-        
+
         return validation_errors
 
     def check_confirmation_for_dangerous_actions(self):
@@ -43,19 +43,17 @@ class ErrorPrevention:
 
         return confirmation_warnings
 
-    def evaluate_error_prevention(self):
-        """Evaluates error prevention based on validation and confirmation presence."""
+    def generate_error_prevention_report(self):
+        """Generates a summary report of error prevention issues."""
         validation_issues = self.check_input_validation()
         confirmation_issues = self.check_confirmation_for_dangerous_actions()
 
         total_issues = len(validation_issues) + len(confirmation_issues)
         prevention_score = max(0, 100 - (total_issues * 10))  # Reduce score for each issue
 
-        feedback = {
+        return {
             "ErrorPreventionScore": prevention_score,
             "ValidationIssues": validation_issues,
             "ConfirmationIssues": confirmation_issues,
-            "Feedback": "Good error prevention" if prevention_score > 80 else "Missing validation or confirmation detected."
+            "Feedback": "Good error prevention" if prevention_score > 80 else "Needs improvement."
         }
-
-        return feedback
