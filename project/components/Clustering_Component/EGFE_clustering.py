@@ -29,9 +29,6 @@ class EGFE_Clustering(ClusteringInterface):
                 clustered_data, clusters = self.dbscan_cluster_based_on_position_and_type()
             elif feature == "size":
                 clustered_data, clusters = self.dbscan_cluster_based_on_size_and_type() 
-            # elif feature == 'screen_size':
-    #         # clustered_data, clusters = self.dbscan_cluster_based_on_screen_size()
-    #         # return clustered_data, data_to_evaluate, clusters
             elif feature == 'screen_size_and_type':
                 clustered_data, clusters = self.dbscan_cluster_based_on_screen_size_and_type()
 
@@ -68,7 +65,7 @@ class EGFE_Clustering(ClusteringInterface):
         #save cluster in json
         cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors and type.json")      
         self.save_cluster_as_json(clustered_data,cluster_json_path,'Cluster')
-        print('Number of instances in each cluster\n',clustered_data[['Cluster']].value_counts())  # View the number of instances in each cluster
+        print('Number of instances in each cluster\n',clustered_data[['Cluster']].value_counts())  
         clusters = np.unique(clustering.labels_)
         return clustered_data, clusters 
     
