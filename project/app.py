@@ -76,26 +76,29 @@ def process_elements():
         }
 
        
-        output_data = {
-            # "user_name": user_name,
-            # "design_name": design_name,
-            "screen_size": frame_info,  
-            "elements": elements,
-            "consistency_results": feedback 
+        error_feedback = {
+            "ErrorPreventionScore": f"Error Prevention Score: {error_prevention_results.get('ErrorPreventionScore', 0)}%.",
+            "ValidationIssues": error_prevention_results.get("ValidationIssues", []),
+            "ConfirmationIssues": error_prevention_results.get("ConfirmationIssues", []),
+            "Feedback": error_prevention_results.get("Feedback", "")
         }
 
-        output_file = get_new_filename() # Save in folder
-        # count+=1
-        # print(count)
-        print("*********************************************************************************************")
+        output_data = {
+            "screen_size": frame_info,  
+            "elements": elements,
+            "consistency_results": feedback,
+            "error_prevention_results": error_feedback
+        }
 
+        output_file = get_new_filename()
         with open(output_file, "w", encoding="utf-8") as json_file:
             json.dump(output_data, json_file, indent=4, ensure_ascii=False)
 
         return jsonify({
             "message": "Design processed successfully!",
             "status": 200,
-            "consistency_results": feedback
+            "consistency_results": feedback,
+            "error_prevention_results": error_feedback
         }), 200
 
     except Exception as e:
