@@ -69,11 +69,16 @@ class Minimalist(HeuristicInterface):
             element_count_feedback = self.evaluate_elements_count(num_elements)
             if element_count_feedback:
                 feedback.append(element_count_feedback)
+        else:
+            feedback.append(f"White Space Ratio follows minimalistic rule")
+            feedback.append(f"Number of elements follows minimalistic rule")
 
         # Step 3: Check for irrelevant elements
         irrelevant_elements = [el for el in elements['elements'] if self.is_irrelevant(el)]
         if irrelevant_elements:
             feedback.append(f"This design contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
+        else:
+            feedback.append(f"No irrelevant elements. Elements follow minimalistic rule")
 
         # If no feedback, mention adherence to minimalist rule
         if not feedback:
