@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from components.Heuristics_Component.heuristic_rules import ErrorPrevention
+from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
@@ -62,6 +62,7 @@ def process_elements():
         # minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
 
         print(f"Consistency evaluation results: {consistency_results}")
+        print(f"Error Prevention Results:{error_prevention_results}")
         # print(f"Consistency evaluation results: {minimalist_evaluator}")
 
         # Prepare human-readable feedback
@@ -71,6 +72,7 @@ def process_elements():
             "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
             "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
             "Feedback": consistency_results.get('Feedback', {})
+            
         }
 
        

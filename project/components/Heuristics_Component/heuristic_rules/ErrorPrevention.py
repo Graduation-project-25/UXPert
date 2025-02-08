@@ -1,6 +1,8 @@
 import pandas as pd
 
-class ErrorPrevention:
+from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
+
+class ErrorPrevention(HeuristicInterface):
     def __init__(self, ui_data):
         """
         ui_data: DataFrame containing UI elements with columns:
