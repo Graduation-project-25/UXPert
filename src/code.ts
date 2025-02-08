@@ -5,6 +5,12 @@ interface ConsistencyResult {
         Feedback: Record<string, string>;
         MinimalistFeedback: Record<string, string>;
     };
+    error_prevention_results: {
+        ErrorPreventionScore: string;
+        ValidationIssues: string[];
+        ConfirmationIssues: string[];
+        Feedback: string;
+    };
 }
 
 // Show the initial UI with the start button
@@ -85,7 +91,9 @@ figma.ui.onmessage = async (msg) => {
                     allFeedback.push({
                         frameName: frame.name,
                         consistencyFeedback: result.consistency_results.Feedback,           // Consistency feedback
-                        minimalistFeedback: result.consistency_results.MinimalistFeedback, // Minimalist feedback                
+                        minimalistFeedback: result.consistency_results.MinimalistFeedback, // Minimalist feedback
+                        errorPreventionFeedback: result.error_prevention_results.Feedback, // Error Prevention feedback
+                        errorPreventionScore: result.error_prevention_results.ErrorPreventionScore,
                         screenshot: imageDataUrl
                     });
                 }
