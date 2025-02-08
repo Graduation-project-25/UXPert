@@ -35,7 +35,7 @@ class Minimalist(HeuristicInterface):
         if white_space_ratio >= 0.35:
             return white_space_ratio, "Good White space Ratio"
         else:
-            return white_space_ratio, "Cluttered Design - Try to increase the white space between elements in your design"
+            return white_space_ratio, "Cluttered Design - Try increasing the white space between elements in your design"
 
     def evaluate_elements_count(self, num_elements):
         if num_elements > self.max_elements:
@@ -89,27 +89,3 @@ class Minimalist(HeuristicInterface):
         return feedback
         
 
-
-
-    # def identify_irrelevant_elements(self, cluster_data):
-    #     # Count occurrences of each element type
-    #     element_counts = cluster_data["type"].value_counts()
-
-    #     # Define thresholds for rare and frequent elements (adjustable)
-    #     min_threshold = 2  # Elements appearing less than this might be rare
-    #     max_threshold = 50  # Elements appearing more than this might be clutter
-
-    #     # Detect rare and frequent elements
-    #     rare_elements = element_counts[element_counts < min_threshold].index.tolist()
-    #     frequent_elements = element_counts[element_counts > max_threshold].index.tolist()
-
-    #     feedback = {}
-    #     if rare_elements:
-    #         feedback["rare_elements"] = f"These element types appear too infrequently: {rare_elements}. Consider reviewing their necessity."
-    #     if frequent_elements:
-    #         feedback["frequent_elements"] = f"These element types appear too frequently: {frequent_elements}. Consider reducing repetition."
-
-    #     if not feedback:
-    #         return "No irrelevant elements detected based on frequency."
-
-    #     return feedback
