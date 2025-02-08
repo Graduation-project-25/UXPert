@@ -1,3 +1,4 @@
+from components.Heuristics_Component.heuristic_rules import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
 from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist
@@ -29,6 +30,8 @@ class HeuristicFactory:
                 return Recognition()
             case "ClusteringConsistency":
                 return ClusteringConsistency(df)
+            case "ErrorPrevention":
+                return ErrorPrevention()
             case _:
                 raise ValueError(f"Missing required dataset for heuristic: {rule_type}")
 
