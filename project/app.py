@@ -46,17 +46,19 @@ def process_elements():
 
     # Convert elements to DataFrame
     elements_df = pd.DataFrame(elements)
+    print(elements_df)
 
     try:
         # Evaluate consistency
-        consistency_evaluator = HeuristicFactory.check_rule("consistency")
-         
+        # Evaluate consistency
+        consistency_evaluator = Consistency()
+
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
 
-        minimalist_evaluator = MinimalistEvaluation()
-        minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
+        # minimalist_evaluator = MinimalistEvaluation()
+        # minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
 
-        # print(f"Consistency evaluation results: {consistency_results}")
+        print(f"Consistency evaluation results: {consistency_results}")
         # print(f"Consistency evaluation results: {minimalist_evaluator}")
 
         # Prepare human-readable feedback
@@ -65,7 +67,6 @@ def process_elements():
             "AlignmentConsistency": f"Alignment consistency is {consistency_results.get('AlignmentConsistency', 0)}%.",
             "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
             "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
-            "Minimalist": minimalist_evaluator,
             "Feedback": consistency_results.get('Feedback', {})
         }
 
