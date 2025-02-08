@@ -20,6 +20,7 @@ from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitt
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Heuristics_Component.heuristics_testing.minimalist_testing import MinimalistTesting
+from components.Heuristics_Component.heuristic_rules.recognition import Recognition
 
 
 pd.set_option('display.max_columns', None)
@@ -98,12 +99,36 @@ def main():
 
 
 
-    minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
-    minimalist_test_evaluation.evaluate_rule_test(test_folder, evaluation_folder)
-    minimalist_evaluation_json = evaluation_folder + '/minimalist_evaluation.json'
-    minimalist_test_evaluation_json = evaluation_folder + '/minimalist_test_evaluation.json'
-#
-    minimalist_test_evaluation.analyze_test_results(minimalist_evaluation_json,minimalist_test_evaluation_json)
+#     minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
+#     minimalist_test_evaluation.evaluate_rule_test(test_folder, evaluation_folder)
+#     minimalist_evaluation_json = evaluation_folder + '/minimalist_evaluation.json'
+#     minimalist_test_evaluation_json = evaluation_folder + '/minimalist_test_evaluation.json'
+# #
+#     minimalist_test_evaluation.analyze_test_results(minimalist_evaluation_json,minimalist_test_evaluation_json)
+
+
+    # Recognition
+    recognize = Recognition()
+    # Example dataset
+    data = {
+        "color": ["#FF0000", "#00FF00", "#0000FF"],
+        "type": ["button", "input", "label"],  # Only button & input are interactive
+        "position.x": [50, -20, 300],  # One element is off-screen
+        "position.y": [100, 200, 400],
+        "width": [80, 5, 100],  # One element is too small
+        "height": [40, 20, 50],
+        "screen_width": [500, 500, 500],
+        "screen_height": [800, 800, 800],
+    }
+
+    # Convert to DataFrame
+    df = pd.DataFrame(data)
+
+    # Run visibility check
+    df_result = recognize.minimized_memory_load(df)
+
+    # Print results
+    print(df_result)
 
 
     ##############################################################################################
