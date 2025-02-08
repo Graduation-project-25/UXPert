@@ -7,7 +7,7 @@ class Recognition(HeuristicInterface):
         pass
 
     def minimized_memory_load(self, elements):
-        #  Are interactive elements visible instead of hidden?
+        # Are interactive elements visible instead of hidden?
         feedback = []
 
         for _, element in elements.iterrows():
@@ -25,23 +25,25 @@ class Recognition(HeuristicInterface):
 
             # Only check interactive elements
             if element_type not in ["button", "input", "dropdown", "checkbox", "link"]:
-                continue    # Ignore non-interactive elements
+                continue  # Ignore non-interactive elements
 
             # Check if the element is off-screen
             if x + width <= 0 or y + height <= 0 or x >= screen_width or y >= screen_height:
-                feedback.append(f"The {element_type} at ({x}, {y}) is off-screen and should be repositioned.\n")
-                continue
+                feedback.append(f"The {element_type} at ({x}, {y}) is off-screen and should be repositioned.")
+            else:
+                feedback.append(f"The {element_type} at ({x}, {y}) is perfectly positioned.")
 
             # Check if the element is too small (example: width or height < 10 pixels)
             if width < 10 or height < 10:
-                feedback.append(f"The {element_type} at ({x}, {y}) is too small ({width}px × {height}px). Consider increasing its size.\n")
-                continue
+                feedback.append(f"The {element_type} at ({x}, {y}) is too small ({width}px * {height}px). Consider increasing its size.")
+            else:
+                feedback.append(f"The {element_type} at ({x}, {y}) is perfectly sized ({width}px * {height}px)")
 
-            # If no issues found, return a positive message
-            if not feedback:
-                feedback.append("All interactive elements are visible and properly sized.")
+        # Only add this message if no issues were found
+        if not feedback:
+            feedback.append("All interactive elements are visible and properly sized.")
 
-            return feedback
+        return feedback  # Return after checking all elements
 
 
 

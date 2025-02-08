@@ -108,27 +108,27 @@ def main():
 
 
     # Recognition
-    recognize = Recognition()
-    # Example dataset
-    data = {
-        "color": ["#FF0000", "#00FF00", "#0000FF"],
-        "type": ["button", "input", "label"],  # Only button & input are interactive
-        "position.x": [50, -20, 300],  # One element is off-screen
-        "position.y": [100, 200, 400],
-        "width": [80, 5, 100],  # One element is too small
-        "height": [40, 20, 50],
-        "screen_width": [500, 500, 500],
-        "screen_height": [800, 800, 800],
-    }
+    # recognize = Recognition()
+    # # Example dataset
+    # data = {
+    #     "color": ["#FF0000", "#00FF00", "#0000FF"],
+    #     "type": ["button", "input", "label"],  # Only button & input are interactive
+    #     "position.x": [50, -20, 300],  # One element is off-screen
+    #     "position.y": [100, 200, 400],
+    #     "width": [80, 5, 100],  # One element is too small
+    #     "height": [40, 20, 50],
+    #     "screen_width": [500, 500, 500],
+    #     "screen_height": [800, 800, 800],
+    # }
 
-    # Convert to DataFrame
-    df = pd.DataFrame(data)
+    # # Convert to DataFrame
+    # df = pd.DataFrame(data)
 
-    # Run visibility check
-    df_result = recognize.minimized_memory_load(df)
+    # # Run visibility check
+    # df_result = recognize.minimized_memory_load(df)
 
-    # Print results
-    print(df_result)
+    # # Print results
+    # print(df_result)
 
 
     ##############################################################################################
