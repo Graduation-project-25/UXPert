@@ -52,9 +52,46 @@ class Recognition(HeuristicInterface):
         if not feedback:
             feedback.append("All interactive elements are visible and properly sized.")
 
-        return feedback  # Return after checking all elements
+        return feedback 
 
-    # def visible_instructions(self):
+    def visible_instructions(self, elements_data):
+        # Does the UI provide tooltips, placeholders, or labels?
+        feedback = []
+
+        for group_id, elements in elements_data.items():
+            for element in elements:
+                if not isinstance(element, dict): 
+                    continue 
+                element_type = None
+
+                # Identify the element type based on type_* keys
+                for key, value in element.items():
+                    if key.startswith("type_") and value == 1:
+                        element_type = key.replace("type_", "")
+
+                if not element_type:
+                    continue  # Skip if no valid type is found
+
+                # Simulating placeholders, tooltips, or labels (if available)
+                tooltip = element.get("tooltip", None)
+                placeholder = element.get("placeholder", None)
+                label = element.get("label", None)
+
+                print(f"Checking {element_type} for instructions...")  # Debugging
+
+                # Only check interactive elements
+                if element_type not in ["oval", "rectangle", "text", "symbolInstance"]:
+                    continue  # Ignore non-interactive elements
+
+                # Check if any instruction is provided
+                if not tooltip and not placeholder and not label:
+                    feedback.append(f"The {element_type} element is missing instructions (tooltip, placeholder, or label). Consider adding one.")
+
+        # If all elements have instructions, return a success message
+        if not feedback:
+            feedback.append("All interactive elements have visible instructions.")
+
+        return feedback
 
     def evaluate_rule(self, cluster_data):
         pass

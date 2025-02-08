@@ -66,7 +66,7 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
@@ -111,10 +111,13 @@ def main():
     recognize = Recognition()
 
     # Run visibility check
-    df_result = recognize.minimized_memory_load(clustered_data)
+    result = recognize.minimized_memory_load(clustered_data)
+    print(result)
 
-    # Print results
-    print(df_result)
+    feedback = recognize.visible_instructions(clustered_data)
+    print(feedback)
+
+
 
 
     ##############################################################################################
