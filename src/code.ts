@@ -94,6 +94,7 @@ figma.ui.onmessage = async (msg) => {
 };
 
 // 🔹 Function to extract elements recursively inside Frames and Groups
+// 🔹 Function to extract elements recursively inside Frames, Groups, and Instances
 function extractElements(node: SceneNode): any[] {
     const extractedNodes: any[] = [];
 
@@ -149,8 +150,8 @@ function extractElements(node: SceneNode): any[] {
             isImageRectangle 
         });
 
-        // 🔹 Recursively process child nodes if the node is a Frame or Group
-        if ('children' in node && (node.type === "FRAME" || node.type === "GROUP")) {
+        //  Recursively process child nodes if the node is a Frame, Group, or Instance
+        if ('children' in node && (node.type === "FRAME" || node.type === "GROUP" || node.type === "INSTANCE")) {
             for (const child of node.children) {
                 processNode(child as SceneNode);
             }
