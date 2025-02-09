@@ -93,5 +93,39 @@ class Recognition(HeuristicInterface):
 
         return feedback
 
+    def consistent_navigation(self, elements_data):
+        # Consistency in Navigation
+        navigation_elements = ["type_symbolInstance", "type_rectangle", "type_text", "type_triangle", "type_group"]       
+        screen_nav_elements = {}  # Store element types per screen/group
+        feedback = []
+
+        for group_id, elements in elements_data.items():
+            if not isinstance(elements, list):  # Skip invalid groups
+                continue
+            
+            screen_nav_elements[group_id] = set()  # Track elements for this group
+
+            for element in elements:
+                if not isinstance(element, dict):  # Ensure valid data
+                    continue
+
+                for key, value in element.items():
+                    if key.startswith("type_") and value == 1:
+                        element_type = key.replace("type_", "")
+                        if element_type in navigation_elements:
+                            screen_nav_elements[group_id].add(element_type)
+
+        # Compare navigation elements across screens
+        reference_screen = next(iter(screen_nav_elements.values()), set())  # Get the first screen as reference
+
+        for screen_id, elements in screen_nav_elements.items():
+            if elements != reference_screen:
+                feedback.append(f"Inconsistent navigation elements in screen {screen_id}. Expected: {reference_screen}, Found: {elements}")
+
+        if not feedback:
+            feedback.append("Navigation elements are consistent across screens.")
+
+        return feedback
+
     def evaluate_rule(self, cluster_data):
         pass

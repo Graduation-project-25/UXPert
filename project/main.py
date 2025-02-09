@@ -67,6 +67,7 @@ def main():
     
     # Step 5: DBSCAN Clustering Based on selected feature
     clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    # print(clustered_data)
     # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
@@ -116,6 +117,9 @@ def main():
 
     feedback = recognize.visible_instructions(clustered_data)
     print(feedback)
+
+    trial = recognize.consistent_navigation(clustered_data)
+    print(trial)
 
 
 
