@@ -48,7 +48,7 @@ figma.ui.onmessage = async (msg) => {
                     if (firstFill.type === "SOLID" && firstFill.color) {
                         color = firstFill.color;
                     } else if (firstFill.type === "IMAGE") {
-                        isImageRectangle = true; // هذا المستطيل يحتوي على صورة
+                        isImageRectangle = true; 
                     }
                 }
             
@@ -63,7 +63,7 @@ figma.ui.onmessage = async (msg) => {
                     color_r: color.r,  
                     color_g: color.g,  
                     color_b: color.b,  
-                    isImageRectangle // تحديد ما إذا كان المستطيل يحتوي على صورة
+                    isImageRectangle 
                 };
             });
             
