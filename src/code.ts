@@ -40,10 +40,15 @@ figma.ui.onmessage = async (msg) => {
             const childNodes = frame.children.filter(node => node.visible);
             const serializedNodes = childNodes.map(node => {
                 let color = { r: 0, g: 0, b: 0 };
+                let isImageRectangle = false;
+            
                 if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
                     const firstFill = node.fills[0];
+            
                     if (firstFill.type === "SOLID" && firstFill.color) {
                         color = firstFill.color;
+                    } else if (firstFill.type === "IMAGE") {
+                        isImageRectangle = true; 
                     }
                 }
             
@@ -80,10 +85,11 @@ figma.ui.onmessage = async (msg) => {
                     hasClickInteraction,
                     hasHoverInteraction,
                     hasDragInteraction,
+                    isImageRectangle 
                 };
             });
             
-
+            
             console.log(`Frame: ${frame.name}`);
             console.log(`Screen Width: ${screenWidth}, Screen Height: ${screenHeight}`);
             console.log("Extracted Features:", serializedNodes); // Print extracted features in console
