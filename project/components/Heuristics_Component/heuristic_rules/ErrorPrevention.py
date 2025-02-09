@@ -1,10 +1,10 @@
 import pandas as pd
-
 from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
 
 class ErrorPrevention(HeuristicInterface):
     
     def detect_button_or_input(self, ui_data):
+        print(ui_data.head())
         """Detects buttons or input fields based on attributes such as name, borders, size, and shadow."""
         buttons_and_inputs = []
         
@@ -38,12 +38,10 @@ class ErrorPrevention(HeuristicInterface):
         for field in input_fields:
             # Check for validation indicators like error messages or required indicators
             # Look for nearby 'TEXT' elements (e.g., error messages) near the input fields
-            nearby_validations = ui_data[
-                (ui_data['type'] == 'TEXT') &  # Ensure we're checking for TEXT type
-                (abs(ui_data['position.y'] - ui_data.row['position.y']) < 20)  # Close proximity to input field
-            ]
-            
-            if nearby_validations.empty:
+            for _, row in ui_data.iterrows():
+                if row['type'] == 'TEXT' and abs(row['position.y'] - ui_data[ui_data['name'] == field]['position.y'].values[0]) < 20:
+                    break
+            else:
                 validation_errors.append(f"Missing validation for input at {field}")
         
         return validation_errors
@@ -55,12 +53,10 @@ class ErrorPrevention(HeuristicInterface):
         
         for button in dangerous_buttons:
             # Look for confirmation messages nearby (e.g., 'Are you sure?')
-            nearby_confirmations = ui_data[
-                (ui_data['type'] == 'TEXT') &  # Ensure the confirmation is a TEXT element
-                (abs(ui_data['position.y'] - ui_data.row['position.y']) < 50)  # Close proximity to the button
-            ]
-            
-            if nearby_confirmations.empty:
+            for _, row in ui_data.iterrows():
+                if row['type'] == 'TEXT' and abs(row['position.y'] - ui_data[ui_data['name'] == button]['position.y'].values[0]) < 50:
+                    break
+            else:
                 confirmation_warnings.append(f"No confirmation for dangerous button {button}")
         
         return confirmation_warnings
