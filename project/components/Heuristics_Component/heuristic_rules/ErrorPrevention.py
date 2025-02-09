@@ -4,9 +4,10 @@ from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicI
 class ErrorPrevention(HeuristicInterface):
 
     CONFIRMATION_KEYWORDS = ["confirm", "are you sure", "proceed", "continue", "ok", "yes", "no"]
+    DANGEROUS_ACTION_KEYWORDS = ["delete", "remove", "discard", "erase", "reset", "clear", "cancel", "terminate"]
 
     def detect_buttons(self, ui_data):
-        """Detects buttons based on click interactions."""
+        """Detects buttons and identifies if they perform dangerous actions."""
         buttons = []
 
         if ui_data.empty:
@@ -14,18 +15,25 @@ class ErrorPrevention(HeuristicInterface):
 
         for _, row in ui_data.iterrows():
             if row.get('hasClickInteraction') or row.get('hasHoverInteraction'):
-                buttons.append({"name": row.get('name', 'Unnamed'), "position.y": row.get("position.y")})
+                button_name = row.get('name', '').lower()
+                is_dangerous = any(keyword in button_name for keyword in self.DANGEROUS_ACTION_KEYWORDS)
+
+                buttons.append({
+                    "name": row.get('name', 'Unnamed'),
+                    "position.y": row.get("position.y"),
+                    "is_dangerous": is_dangerous
+                })
         
         return buttons
 
     def check_confirmation_messages(self, ui_data):
-        """Checks if confirmation messages are present near buttons."""
+        """Checks if confirmation messages are present near dangerous buttons."""
         buttons = self.detect_buttons(ui_data)
         confirmation_issues = []
-        total_buttons = len(buttons)
+        dangerous_buttons = [b for b in buttons if b["is_dangerous"]]
         confirmed_buttons = 0
 
-        for button in buttons:
+        for button in dangerous_buttons:
             button_name = button["name"]
             button_y = button["position.y"]
             has_confirmation = False
@@ -39,10 +47,11 @@ class ErrorPrevention(HeuristicInterface):
                         break
 
             if not has_confirmation:
-                confirmation_issues.append(f"No confirmation for button: {button_name}")
+                confirmation_issues.append(f"No confirmation for dangerous button: {button_name}")
 
-        # Calculate confirmation percentage
-        confirmation_percentage = (confirmed_buttons / total_buttons * 100) if total_buttons > 0 else 100
+        # Calculate confirmation percentage only for dangerous buttons
+        total_dangerous_buttons = len(dangerous_buttons)
+        confirmation_percentage = (confirmed_buttons / total_dangerous_buttons * 100) if total_dangerous_buttons > 0 else 100
 
         return confirmation_issues, confirmation_percentage
 
@@ -76,8 +85,8 @@ class ErrorPrevention(HeuristicInterface):
         prevention_score = max(0, 100 - (total_issues * 10))
 
         # Adjust score based on confirmation percentage
-        if confirmation_percentage < 20:
-            prevention_score -= 20  # Penalize if confirmation messages are below 50%
+        if confirmation_percentage < 50:
+            prevention_score -= 20  # Penalize if confirmation messages are below 50% for dangerous actions
 
         feedback = {
             "ErrorPreventionScore": max(prevention_score, 0),
