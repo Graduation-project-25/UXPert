@@ -9,11 +9,11 @@ from components.Heuristics_Component.heuristic_rules.recognition import Recognit
 class HeuristicFactory:
    def check_rule(rule_type: str, df=None) -> HeuristicInterface:
         # heuristics = {
-        #     "consistency": Consistency,
-        #     "minimalist": Minimalist,
-        #     "recognition": Recognition,
-        #     "ClusteringConsistency": lambda: ClusteringConsistency(df) if df is not None else None  # Pass df safely
-        # }
+        # #     "consistency": Consistency,
+        # #     "minimalist": Minimalist,
+        # #     "recognition": Recognition,
+        # #     "ClusteringConsistency": lambda: ClusteringConsistency(df) if df is not None else None  # Pass df safely
+        # # }
 
         # if rule_type in heuristics:
         #     heuristic_instance = heuristics[rule_type]()
@@ -35,7 +35,7 @@ class HeuristicFactory:
             case _:
                 raise ValueError(f"Missing required dataset for heuristic: {rule_type}")
 
-
+        
         
 
     

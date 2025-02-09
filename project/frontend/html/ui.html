@@ -61,7 +61,7 @@
       margin-bottom: 30px;
     }
 
-    #processing-screen p {
+    #processing-screen p, #feedback-screen p {
       font-size: 18px;
       color: #555;
     }
@@ -192,7 +192,6 @@
       <button id="next" disabled>Next</button>
     </div>
     <button id="close">Close</button>
-    
     <button id="suggest-enhancements" class="button">Suggest Enhancements</button>
   </div>
 
@@ -222,8 +221,7 @@
       </li>
     </ul>
     <button id="back-to-feedback" class="suggestion-button">Back to Feedback</button>
-</div>
-
+  </div>
 
   <script>
     let currentFeedbackIndex = 0;
@@ -308,12 +306,21 @@
 
           let feedbackList = '<ul>';
           if (item.consistencyFeedback) {
+            feedbackList += '<h3>Consistency Feedback:</h3>';
             for (const [issue, solution] of Object.entries(item.consistencyFeedback)) {
               feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
             }
           }
           if (item.minimalistFeedback) {
+            feedbackList += '<h3>Minimalist Feedback:</h3>';
             for (const [issue, solution] of Object.entries(item.minimalistFeedback)) {
+              feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
+            }
+          }
+          // New error feedback section
+          if (item.errorFeedback) {
+            feedbackList += '<h3>Error Feedback:</h3>';  // Optional heading for clarity
+            for (const [issue, solution] of Object.entries(item.errorFeedback)) {
               feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
             }
           }
@@ -332,7 +339,6 @@
         showFeedbackCard(0); // Show the first card by default
       }
     };
-
 
     function showFeedbackCard(index) {
       feedbackCards.forEach((card, i) => {
