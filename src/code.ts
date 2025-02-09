@@ -14,7 +14,7 @@ interface ConsistencyResult {
 }
 
 // Show the initial UI with the start button
-figma.showUI(__html__, { width: 1024, height: 3024 }); 
+figma.showUI(__html__, { width: 1024, height: 3024 });
 
 figma.ui.onmessage = async (msg) => {
     if (msg.type === 'start-detection') {
@@ -46,6 +46,26 @@ figma.ui.onmessage = async (msg) => {
                         color = firstFill.color;
                     }
                 }
+            
+                // Extract interactions from 'reactions' property
+                const interactions = 'reactions' in node ? node.reactions : [];
+            
+                let hasClickInteraction = false;
+                let hasHoverInteraction = false;
+                let hasDragInteraction = false;
+            
+                interactions.forEach(interaction => {
+                    if (interaction.trigger && interaction.trigger.type) {  // Fix added here
+                        if (interaction.trigger.type === 'ON_CLICK') {
+                            hasClickInteraction = true;
+                        } else if (interaction.trigger.type === 'ON_HOVER') {
+                            hasHoverInteraction = true;
+                        } else if (interaction.trigger.type === 'ON_DRAG') {
+                            hasDragInteraction = true;
+                        }
+                    }
+                });
+            
                 return {
                     name: node.name,
                     type: node.type,
@@ -54,11 +74,15 @@ figma.ui.onmessage = async (msg) => {
                     "position.x": 'x' in node ? node.x : null,
                     "position.y": 'y' in node ? node.y : null,
                     rotation: 'rotation' in node ? node.rotation : null,
-                    color_r: color.r,  
-                    color_g: color.g,  
-                    color_b: color.b,  
+                    color_r: color.r,
+                    color_g: color.g,
+                    color_b: color.b,
+                    hasClickInteraction,
+                    hasHoverInteraction,
+                    hasDragInteraction,
                 };
             });
+            
 
             console.log(`Frame: ${frame.name}`);
             console.log(`Screen Width: ${screenWidth}, Screen Height: ${screenHeight}`);
