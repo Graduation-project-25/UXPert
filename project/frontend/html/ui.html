@@ -277,52 +277,22 @@
 
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
-
-      if (!msg) return;
-
-      if (msg.type === 'collective-feedback') {
-        console.log("Received feedback:", msg.feedback); // Debugging
-
+      if (msg && msg.type === 'collective-feedback') {
         document.getElementById('processing-screen').style.display = 'none';
         document.getElementById('feedback-screen').style.display = 'block';
         document.getElementById('feedback-container').innerHTML = '';
-
-        if (!msg.feedback || msg.feedback.length === 0) {
-          document.getElementById('feedback-container').innerHTML = '<p>No feedback received.</p>';
-          return;
-        }
 
         feedbackCards = msg.feedback.map(item => {
           const card = document.createElement('div');
           card.className = 'feedback-card';
 
-          // Ensure the screenshot exists before displaying
-          if (item.screenshot) {
-            const image = document.createElement('img');
-            image.src = item.screenshot;
-            image.className = 'screenshot';
-            card.appendChild(image);
-          }
+          const image = document.createElement('img');
+          image.src = item.screenshot;
+          image.className = 'screenshot';
 
           let feedbackList = '<ul>';
-          if (item.consistencyFeedback) {
-            feedbackList += '<h3>Consistency Feedback:</h3>';
-            for (const [issue, solution] of Object.entries(item.consistencyFeedback)) {
-              feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
-            }
-          }
-          if (item.minimalistFeedback) {
-            feedbackList += '<h3>Minimalist Feedback:</h3>';
-            for (const [issue, solution] of Object.entries(item.minimalistFeedback)) {
-              feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
-            }
-          }
-          // New error feedback section
-          if (item.errorFeedback) {
-            feedbackList += '<h3>Error Feedback:</h3>';  // Optional heading for clarity
-            for (const [issue, solution] of Object.entries(item.errorFeedback)) {
-              feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
-            }
+          for (const [issue, solution] of Object.entries(item.consistencyFeedback)) {
+            feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
           }
           feedbackList += '</ul>';
 
@@ -330,6 +300,7 @@
           content.className = 'feedback-content';
           content.innerHTML = `<h2>${item.frameName}</h2><div class='divider'></div>${feedbackList}`;
 
+          card.appendChild(image);
           card.appendChild(content);
           document.getElementById('feedback-container').appendChild(card);
 
