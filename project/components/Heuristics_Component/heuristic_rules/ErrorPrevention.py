@@ -32,28 +32,48 @@ class ErrorPrevention(HeuristicInterface):
         confirmation_issues = []
         dangerous_buttons = [b for b in buttons if b["is_dangerous"]]
         confirmed_buttons = 0
+        total_dangerous_buttons = len(dangerous_buttons)
+
+        if total_dangerous_buttons == 0:
+            return confirmation_issues, 100  # No dangerous buttons → No confirmation needed
 
         for button in dangerous_buttons:
             button_name = button["name"]
             button_y = button["position.y"]
             has_confirmation = False
 
-            for _, row in ui_data.iterrows():
-                if row['type'] == 'TEXT' and abs(row['position.y'] - button_y) < 50:
-                    text_content = row.get("name", "").lower()
-                    if any(keyword in text_content for keyword in self.CONFIRMATION_KEYWORDS):
-                        has_confirmation = True
-                        confirmed_buttons += 1
-                        break
+            # Check if the button has a click destination
+            click_destination = ui_data.loc[ui_data['name'] == button_name, 'clickDestination'].values
+            if click_destination and click_destination[0]:  
+                destination_id = click_destination[0]
+                destination_elements = ui_data[ui_data['id'] == destination_id]  
+
+                # Search for confirmation text in the destination
+                for _, row in destination_elements.iterrows():
+                    if row['type'] == 'TEXT':
+                        text_content = row.get("name", "").lower()
+                        if any(keyword in text_content for keyword in self.CONFIRMATION_KEYWORDS):
+                            has_confirmation = True
+                            confirmed_buttons += 1
+                            break
+            else:
+                # If no clickDestination, check the same page
+                for _, row in ui_data.iterrows():
+                    if row['type'] == 'TEXT' and abs(row['position.y'] - button_y) < 50:
+                        text_content = row.get("name", "").lower()
+                        if any(keyword in text_content for keyword in self.CONFIRMATION_KEYWORDS):
+                            has_confirmation = True
+                            confirmed_buttons += 1
+                            break
 
             if not has_confirmation:
                 confirmation_issues.append(f"No confirmation for dangerous button: {button_name}")
 
-        # Calculate confirmation percentage only for dangerous buttons
-        total_dangerous_buttons = len(dangerous_buttons)
-        confirmation_percentage = (confirmed_buttons / total_dangerous_buttons * 100) if total_dangerous_buttons > 0 else 100
+        # Calculate confirmation percentage
+        confirmation_percentage = (confirmed_buttons / total_dangerous_buttons * 100)
 
         return confirmation_issues, confirmation_percentage
+
 
     def check_input_validation(self, ui_data):
         """Checks if input fields have validation messages or required indicators."""

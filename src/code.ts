@@ -17,84 +17,79 @@ interface ConsistencyResult {
 figma.showUI(__html__, { width: 1024, height: 3024 });
 
 figma.ui.onmessage = async (msg) => {
-    if (msg.type === 'start-detection') {
-        const frames = figma.currentPage.children.filter(node => node.type === "FRAME") as FrameNode[];
+    if (msg.type !== 'start-detection') return;
 
-        if (frames.length === 0) {
-            figma.notify('No frames found on the current page.');
-            return;
-        }
+    const frames = figma.currentPage.children.filter(node => node.type === "FRAME") as FrameNode[];
 
-        const allFeedback = [];
+    if (frames.length === 0) {
+        figma.notify('No frames found on the current page.');
+        return;
+    }
 
-        for (const frame of frames) {
-            if (!frame.visible) continue;
+    const allFeedback = [];
 
-            const imageBytes = await frame.exportAsync({ format: "PNG" });
-            const imageBase64 = figma.base64Encode(imageBytes);
-            const imageDataUrl = `data:image/png;base64,${imageBase64}`;
+    for (const frame of frames) {
+        if (!frame.visible) continue;
 
-            const screenWidth = frame.width;
-            const screenHeight = frame.height;
+        const imageBytes = await frame.exportAsync({ format: "PNG" });
+        const imageBase64 = figma.base64Encode(imageBytes);
+        const imageDataUrl = `data:image/png;base64,${imageBase64}`;
 
-            // 🔹 Use extractElements() to get all nested elements
-            const serializedNodes = extractElements(frame);
+        const serializedNodes = extractElements(frame);
 
-            console.log(`Frame: ${frame.name}`);
-            console.log(`Screen Width: ${screenWidth}, Screen Height: ${screenHeight}`);
-            console.log("Extracted Features:", serializedNodes); // Print extracted features in console
+        console.log(`Frame: ${frame.name}`);
+        console.log(`Screen Dimensions: ${frame.width}x${frame.height}`);
+        console.log("Extracted Features:", serializedNodes); // Debugging
 
-            const user_name = figma.currentUser ? figma.currentUser.name : "Unknown User";
-            const design_name = figma.root.name ?? "Untitled Design";
+        const user_name = figma.currentUser?.name ?? "Unknown User";
+        const design_name = figma.root.name ?? "Untitled Design";
 
-            try {
-                const processResponse = await fetch("http://localhost:3000/process", {
-                    method: "POST",
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_name,
-                        design_name,
-                        frame: {
-                            frameName: frame.name,
-                            screen_width: screenWidth,
-                            screen_height: screenHeight
-                        },
-                        elements: serializedNodes
-                    }),
-                });
-
-                if (!processResponse.ok) throw new Error(`HTTP error! Status: ${processResponse.status}`);
-
-                const result = await processResponse.json() as ConsistencyResult;
-
-                if (result.consistency_results.Feedback || result.consistency_results.MinimalistFeedback !== undefined) {
-                    allFeedback.push({
+        try {
+            const processResponse = await fetch("http://localhost:3000/process", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_name,
+                    design_name,
+                    frame: {
                         frameName: frame.name,
-                        consistencyFeedback: result.consistency_results.Feedback,           
-                        minimalistFeedback: result.consistency_results.MinimalistFeedback, 
-                        errorPreventionFeedback: result.error_prevention_results.Feedback, 
-                        errorPreventionScore: result.error_prevention_results.ErrorPreventionScore,
-                        screenshot: imageDataUrl
-                    });
-                }
-            } catch (error) {
-                console.error("Error during fetch:", error);
-                figma.notify(`Failed to send elements from ${frame.name} to backend.`);
-            }
-        }
-
-        if (allFeedback.length > 0) {
-            figma.ui.postMessage({
-                type: 'collective-feedback',
-                feedback: allFeedback
+                        screen_width: frame.width,
+                        screen_height: frame.height
+                    },
+                    elements: serializedNodes
+                }),
             });
-            console.log("Sending feedback:", JSON.stringify(allFeedback, null, 2));  // Debugging
+
+            if (!processResponse.ok) throw new Error(`HTTP error! Status: ${processResponse.status}`);
+
+            const result = await processResponse.json() as ConsistencyResult;
+
+            if (result.consistency_results.Feedback || result.consistency_results.MinimalistFeedback) {
+                allFeedback.push({
+                    frameName: frame.name,
+                    consistencyFeedback: result.consistency_results.Feedback,
+                    minimalistFeedback: result.consistency_results.MinimalistFeedback,
+                    errorPreventionFeedback: result.error_prevention_results.Feedback,
+                    errorPreventionScore: result.error_prevention_results.ErrorPreventionScore,
+                    screenshot: imageDataUrl
+                });
+            }
+        } catch (error) {
+            console.error("Error during fetch:", error);
+            figma.notify(`Failed to send elements from ${frame.name} to backend.`);
         }
+    }
+
+    if (allFeedback.length > 0) {
+        figma.ui.postMessage({
+            type: 'collective-feedback',
+            feedback: allFeedback
+        });
+        console.log("Sending feedback:", JSON.stringify(allFeedback, null, 2)); // Debugging
     }
 };
 
-// 🔹 Function to extract elements recursively inside Frames and Groups
-// 🔹 Function to extract elements recursively inside Frames, Groups, and Instances
+// Function to extract elements recursively inside Frames, Groups, and Instances
 function extractElements(node: SceneNode): any[] {
     const extractedNodes: any[] = [];
 
@@ -117,21 +112,9 @@ function extractElements(node: SceneNode): any[] {
         // Extract interactions from 'reactions' property
         const interactions = 'reactions' in node ? node.reactions : [];
 
-        let hasClickInteraction = false;
-        let hasHoverInteraction = false;
-        let hasDragInteraction = false;
-
-        interactions.forEach(interaction => {
-            if (interaction.trigger && interaction.trigger.type) {
-                if (interaction.trigger.type === 'ON_CLICK') {
-                    hasClickInteraction = true;
-                } else if (interaction.trigger.type === 'ON_HOVER') {
-                    hasHoverInteraction = true;
-                } else if (interaction.trigger.type === 'ON_DRAG') {
-                    hasDragInteraction = true;
-                }
-            }
-        });
+        const hasClickInteraction = interactions.some(interaction => interaction.trigger?.type === 'ON_CLICK');
+        const hasHoverInteraction = interactions.some(interaction => interaction.trigger?.type === 'ON_HOVER');
+        const hasDragInteraction = interactions.some(interaction => interaction.trigger?.type === 'ON_DRAG');
 
         extractedNodes.push({
             name: node.name,
@@ -147,11 +130,11 @@ function extractElements(node: SceneNode): any[] {
             hasClickInteraction,
             hasHoverInteraction,
             hasDragInteraction,
-            isImageRectangle 
+            isImageRectangle
         });
 
-        //  Recursively process child nodes if the node is a Frame, Group, or Instance
-        if ('children' in node && (node.type === "FRAME" || node.type === "GROUP" || node.type === "INSTANCE")) {
+        // Recursively process child nodes if the node is a Frame, Group, or Instance
+        if ('children' in node && ["FRAME", "GROUP", "INSTANCE"].includes(node.type)) {
             for (const child of node.children) {
                 processNode(child as SceneNode);
             }
