@@ -14,17 +14,19 @@ class ErrorPrevention(HeuristicInterface):
             return buttons  
 
         for _, row in ui_data.iterrows():
-            if row.get('hasClickInteraction') or row.get('hasHoverInteraction'):
-                button_name = row.get('name', '').lower()
-                is_dangerous = any(keyword in button_name for keyword in self.DANGEROUS_ACTION_KEYWORDS)
+            if row.get('hasClickInteraction'):
+                button_text = row.get('textContent', '').lower()  # Use textContent instead of name
+                is_dangerous = any(keyword in button_text for keyword in self.DANGEROUS_ACTION_KEYWORDS)
 
                 buttons.append({
                     "name": row.get('name', 'Unnamed'),
+                    "text": button_text,
                     "position.y": row.get("position.y"),
                     "is_dangerous": is_dangerous
                 })
-        
+
         return buttons
+
 
     def check_confirmation_messages(self, ui_data):
         """Checks if confirmation messages are present near dangerous buttons."""
@@ -43,7 +45,10 @@ class ErrorPrevention(HeuristicInterface):
             has_confirmation = False
 
             # Check if the button has a click destination
-            click_destination = ui_data.loc[ui_data['name'] == button_name, 'clickDestination'].values
+            if 'clickDestination' in ui_data.columns:
+                    click_destination = ui_data.loc[ui_data['name'] == button_name, 'clickDestination'].values
+            else:
+                    click_destination = None
             if click_destination and click_destination[0]:  
                 destination_id = click_destination[0]
                 destination_elements = ui_data[ui_data['id'] == destination_id]  

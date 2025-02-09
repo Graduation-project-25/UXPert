@@ -98,6 +98,7 @@ function extractElements(node: SceneNode): any[] {
 
         let color = { r: 0, g: 0, b: 0 };
         let isImageRectangle = false;
+        let buttonText = "";
 
         if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
             const firstFill = node.fills[0];
@@ -109,16 +110,22 @@ function extractElements(node: SceneNode): any[] {
             }
         }
 
-        // Extract interactions from 'reactions' property
+        // Extract interactions
         const interactions = 'reactions' in node ? node.reactions : [];
-
         const hasClickInteraction = interactions.some(interaction => interaction.trigger?.type === 'ON_CLICK');
-        const hasHoverInteraction = interactions.some(interaction => interaction.trigger?.type === 'ON_HOVER');
-        const hasDragInteraction = interactions.some(interaction => interaction.trigger?.type === 'ON_DRAG');
+
+        // Extract text inside buttons (Frames, Groups, Instances)
+        if (["FRAME", "GROUP", "INSTANCE","VECTOR"].includes(node.type) && 'children' in node) {
+            const textChildren = node.children.filter(child => child.type === "TEXT") as TextNode[];
+            if (textChildren.length > 0) {
+                buttonText = textChildren.map(textNode => textNode.characters).join(" ");
+            }
+        }
 
         extractedNodes.push({
-            name: node.name,
+            name: node.name, 
             type: node.type,
+            textContent: buttonText || node.name, // Use extracted text if available
             width: 'width' in node ? node.width : null,
             height: 'height' in node ? node.height : null,
             "position.x": 'x' in node ? node.x : null,
@@ -128,13 +135,10 @@ function extractElements(node: SceneNode): any[] {
             color_g: color.g,
             color_b: color.b,
             hasClickInteraction,
-            hasHoverInteraction,
-            hasDragInteraction,
             isImageRectangle
         });
 
-        // Recursively process child nodes if the node is a Frame, Group, or Instance
-        if ('children' in node && ["FRAME", "GROUP", "INSTANCE"].includes(node.type)) {
+        if ('children' in node && ["FRAME", "GROUP", "INSTANCE","VECTOR"].includes(node.type)) {
             for (const child of node.children) {
                 processNode(child as SceneNode);
             }
