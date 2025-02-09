@@ -50,6 +50,7 @@ def process_elements():
     print(elements_df)
 
     try:
+        
         # Evaluate consistency
         # Evaluate consistency
         consistency_evaluator = Consistency()

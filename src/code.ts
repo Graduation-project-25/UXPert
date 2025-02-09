@@ -37,59 +37,9 @@ figma.ui.onmessage = async (msg) => {
             const screenWidth = frame.width;
             const screenHeight = frame.height;
 
-            const childNodes = frame.children.filter(node => node.visible);
-            const serializedNodes = childNodes.map(node => {
-                let color = { r: 0, g: 0, b: 0 };
-                let isImageRectangle = false;
-            
-                if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
-                    const firstFill = node.fills[0];
-            
-                    if (firstFill.type === "SOLID" && firstFill.color) {
-                        color = firstFill.color;
-                    } else if (firstFill.type === "IMAGE") {
-                        isImageRectangle = true; 
-                    }
-                }
-            
-                // Extract interactions from 'reactions' property
-                const interactions = 'reactions' in node ? node.reactions : [];
-            
-                let hasClickInteraction = false;
-                let hasHoverInteraction = false;
-                let hasDragInteraction = false;
-            
-                interactions.forEach(interaction => {
-                    if (interaction.trigger && interaction.trigger.type) {  // Fix added here
-                        if (interaction.trigger.type === 'ON_CLICK') {
-                            hasClickInteraction = true;
-                        } else if (interaction.trigger.type === 'ON_HOVER') {
-                            hasHoverInteraction = true;
-                        } else if (interaction.trigger.type === 'ON_DRAG') {
-                            hasDragInteraction = true;
-                        }
-                    }
-                });
-            
-                return {
-                    name: node.name,
-                    type: node.type,
-                    width: 'width' in node ? node.width : null,
-                    height: 'height' in node ? node.height : null,
-                    "position.x": 'x' in node ? node.x : null,
-                    "position.y": 'y' in node ? node.y : null,
-                    rotation: 'rotation' in node ? node.rotation : null,
-                    color_r: color.r,
-                    color_g: color.g,
-                    color_b: color.b,
-                    hasClickInteraction,
-                    hasHoverInteraction,
-                    hasDragInteraction,
-                    isImageRectangle 
-                };
-            });
-            
-            
+            // 🔹 Use extractElements() to get all nested elements
+            const serializedNodes = extractElements(frame);
+
             console.log(`Frame: ${frame.name}`);
             console.log(`Screen Width: ${screenWidth}, Screen Height: ${screenHeight}`);
             console.log("Extracted Features:", serializedNodes); // Print extracted features in console
@@ -120,9 +70,9 @@ figma.ui.onmessage = async (msg) => {
                 if (result.consistency_results.Feedback || result.consistency_results.MinimalistFeedback !== undefined) {
                     allFeedback.push({
                         frameName: frame.name,
-                        consistencyFeedback: result.consistency_results.Feedback,           // Consistency feedback
-                        minimalistFeedback: result.consistency_results.MinimalistFeedback, // Minimalist feedback
-                        errorPreventionFeedback: result.error_prevention_results.Feedback, // Error Prevention feedback
+                        consistencyFeedback: result.consistency_results.Feedback,           
+                        minimalistFeedback: result.consistency_results.MinimalistFeedback, 
+                        errorPreventionFeedback: result.error_prevention_results.Feedback, 
                         errorPreventionScore: result.error_prevention_results.ErrorPreventionScore,
                         screenshot: imageDataUrl
                     });
@@ -142,3 +92,71 @@ figma.ui.onmessage = async (msg) => {
         }
     }
 };
+
+// 🔹 Function to extract elements recursively inside Frames and Groups
+function extractElements(node: SceneNode): any[] {
+    const extractedNodes: any[] = [];
+
+    function processNode(node: SceneNode) {
+        if (!node.visible) return;
+
+        let color = { r: 0, g: 0, b: 0 };
+        let isImageRectangle = false;
+
+        if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
+            const firstFill = node.fills[0];
+
+            if (firstFill.type === "SOLID" && firstFill.color) {
+                color = firstFill.color;
+            } else if (firstFill.type === "IMAGE") {
+                isImageRectangle = true;
+            }
+        }
+
+        // Extract interactions from 'reactions' property
+        const interactions = 'reactions' in node ? node.reactions : [];
+
+        let hasClickInteraction = false;
+        let hasHoverInteraction = false;
+        let hasDragInteraction = false;
+
+        interactions.forEach(interaction => {
+            if (interaction.trigger && interaction.trigger.type) {
+                if (interaction.trigger.type === 'ON_CLICK') {
+                    hasClickInteraction = true;
+                } else if (interaction.trigger.type === 'ON_HOVER') {
+                    hasHoverInteraction = true;
+                } else if (interaction.trigger.type === 'ON_DRAG') {
+                    hasDragInteraction = true;
+                }
+            }
+        });
+
+        extractedNodes.push({
+            name: node.name,
+            type: node.type,
+            width: 'width' in node ? node.width : null,
+            height: 'height' in node ? node.height : null,
+            "position.x": 'x' in node ? node.x : null,
+            "position.y": 'y' in node ? node.y : null,
+            rotation: 'rotation' in node ? node.rotation : null,
+            color_r: color.r,
+            color_g: color.g,
+            color_b: color.b,
+            hasClickInteraction,
+            hasHoverInteraction,
+            hasDragInteraction,
+            isImageRectangle 
+        });
+
+        // 🔹 Recursively process child nodes if the node is a Frame or Group
+        if ('children' in node && (node.type === "FRAME" || node.type === "GROUP")) {
+            for (const child of node.children) {
+                processNode(child as SceneNode);
+            }
+        }
+    }
+
+    processNode(node);
+    return extractedNodes;
+}
