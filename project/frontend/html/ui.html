@@ -1,181 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Figma Plugin</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-      background: linear-gradient(to right, #a8c0ff, #3f94f8); /* Gradient background */
-    }
-
-    #initial-screen {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    h1 {
-      font-size: 36px;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 20px;
-      text-transform: uppercase; /* More modern heading */
-    }
-
-    button {
-      padding: 15px 30px;
-      font-size: 20px;
-      cursor: pointer;
-      border: none;
-      background: linear-gradient(45deg, #008CBA, #00c6ff); /* Gradient button */
-      color: white;
-      border-radius: 50px; /* Rounded button */
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease-in-out;
-      transform-origin: center;
-    }
-
-    button:hover {
-      background: linear-gradient(45deg, #00c6ff, #008CBA);
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-      transform: scale(1.1); /* Slightly enlarge button on hover */
-    }
-
-    button:active {
-      transform: scale(1); /* Button presses back to normal size */
-    }
-
-    #processing-screen, #feedback-screen, #enhancement-screen {
-      display: none;
-    }
-
-    #processing-screen h1, #feedback-screen h1, #enhancement-screen h1 {
-      font-size: 28px;
-      color: #333;
-      margin-bottom: 30px;
-    }
-
-    #processing-screen p, #feedback-screen p {
-      font-size: 18px;
-      color: #555;
-    }
-
-    #progress-container {
-      margin-top: 20px;
-    }
-
-    progress {
-      width: 100%;
-      height: 20px;
-      border-radius: 10px;
-      background-color: #e0e0e0; /* Light grey background for the progress bar */
-    }
-    
-    progress::-webkit-progress-bar {
-      background-color: #0b55a9;
-    }
-    
-    progress::-webkit-progress-value {
-      background-color: #fff; 
-    }
-    
-    progress::-moz-progress-bar {
-      background-color: #fff;
-    }
-
-    #feedback-container {
-      margin-top: 30px;
-    }
-
-    .feedback-card {
-      display: none;
-      align-items: flex-start;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-      margin: 15px;
-      padding: 15px;
-      text-align: left;
-      transition: transform 0.3s ease;
-    }
-
-    .screenshot {
-      max-width: 150px;
-      border-radius: 5px;
-      margin-right: 15px;
-      transition: transform 0.2s;
-    }
-
-    .screenshot:hover {
-      transform: scale(1.2);
-    }
-
-    .feedback-content {
-      flex: 1;
-      text-align: left;
-    }
-
-    .feedback-content ul {
-      padding-left: 20px;
-    }
-
-    .feedback-content li {
-      margin-bottom: 5px;
-    }
-
-    .divider {
-      height: 1px;
-      background-color: #e0e0e0;
-      margin: 10px 0;
-    }
-
-    #nav-buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-    }
-
-    #nav-buttons button {
-      font-size: 16px;
-      padding: 8px 20px;
-    }
-
-    #enhancement-screen {
-      display: none;
-      text-align: left;
-      padding: 20px;
-    }
-
-    .suggestion-button {
-      margin: 20px 0;
-      padding: 10px 20px;
-      font-size: 18px;
-      cursor: pointer;
-      border: none;
-      background: #4CAF50; /* Green background */
-      color: white;
-      border-radius: 5px;
-      transition: background 0.3s;
-    }
-
-    .suggestion-button:hover {
-      background: #6392e4; /* Darker green on hover */
-    }
-  </style>
+  <title>UXPert - Figma Plugin</title>
+  <link rel="stylesheet" href="../css/styles.css"> <!-- Link to the CSS file -->
 </head>
 <body>
-  <div id="initial-screen">
+
+  
+    <div id="splash-screen">
+      <h1>
+        <span class="letter">U</span>
+        <span class="letter">X</span>
+        <span class="letter">P</span>
+        <span class="letter">e</span>
+        <span class="letter">r</span>
+        <span class="letter">t</span>
+      </h1>
+    </div>
+  
+  <!-- Initial Screen -->
+  <div id="initial-screen" style="display: none;">
     <h1>Start Detection</h1>
     <button id="start">Start</button>
   </div>
 
-  <div id="processing-screen">
+  <!-- Processing Screen -->
+  <div id="processing-screen" style="display: none;">
     <h1>Processing...</h1>
     <p>Please wait while the design is being evaluated.</p>
     <div id="progress-container">
@@ -184,7 +36,8 @@
     </div>
   </div>
 
-  <div id="feedback-screen">
+  <!-- Feedback Screen -->
+  <div id="feedback-screen" style="display: none;">
     <h1>Feedback</h1>
     <div id="feedback-container"></div>
     <div id="nav-buttons">
@@ -195,29 +48,30 @@
     <button id="suggest-enhancements" class="button">Suggest Enhancements</button>
   </div>
 
-  <div id="enhancement-screen">
+  <!-- Enhancement Suggestions -->
+  <div id="enhancement-screen" style="display: none;">
     <h1>Suggestions</h1>
     <p>Here are specific actions you can take to improve your heuristic rules, enhance design consistency, and usability:</p>
     <ul>
       <li>
         <strong>Adopt a Consistent Color Palette:</strong>
-        <p>Choose a color palette that reflects your brand identity and use it consistently across all frames. Tools like Adobe Color or Coolors can help you create harmonious color schemes.</p>
+        <p>Choose a color palette that reflects your brand identity and use it consistently across all frames. Tools like Adobe Color or Coolors can help.</p>
       </li>
       <li>
         <strong>Align Elements for Better Visual Hierarchy:</strong>
-        <p>Use guides and grids to align your elements. Make sure that the spacing between items is uniform to create a clean and structured layout.</p>
+        <p>Use guides and grids to align elements. Ensure uniform spacing between items for a clean layout.</p>
       </li>
       <li>
         <strong>Adjust Sizes for Proportional Relationships:</strong>
-        <p>Maintain scale consistency between different UI components. For example, if buttons are 40px high, ensure all buttons across different frames are the same height to establish unity in design.</p>
+        <p>Maintain scale consistency between UI components to establish unity in design.</p>
       </li>
       <li>
         <strong>Incorporate Whitespace Effectively:</strong>
-        <p>Increase whitespace around text and images to reduce cognitive load. A good rule of thumb is to ensure that at least 20% of your layout is whitespace.</p>
+        <p>Increase whitespace around text and images to reduce cognitive load. Ensure at least 20% of your layout is whitespace.</p>
       </li>
       <li>
         <strong>Ensure Accessibility Compliance:</strong>
-        <p>Use contrast checkers like WebAIM to verify that your color combinations meet accessibility standards. Aim for at least a 4.5:1 contrast ratio for body text.</p>
+        <p>Use contrast checkers like WebAIM to verify color contrast. Aim for at least a 4.5:1 ratio for body text.</p>
       </li>
     </ul>
     <button id="back-to-feedback" class="suggestion-button">Back to Feedback</button>
@@ -227,24 +81,27 @@
     let currentFeedbackIndex = 0;
     let feedbackCards = [];
 
+    // Splash screen disappears after 2 seconds
+    setTimeout(() => {
+      document.getElementById('splash-screen').style.display = 'none';
+      document.getElementById('initial-screen').style.display = 'block';
+    }, 2000);
+
     document.getElementById('start').onclick = () => {
       document.getElementById('initial-screen').style.display = 'none';
       document.getElementById('processing-screen').style.display = 'block';
       document.getElementById('progress-container').style.display = 'block';
 
       let progress = 0;
-
-      // Start detection in parallel
       parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
 
       const progressInterval = setInterval(() => {
-        progress += 7; // Increment progress by 7%
+        progress += 7;
         document.getElementById('progress-bar').value = progress;
         document.getElementById('progress-text').innerText = `${progress}%`;
 
         if (progress >= 100) {
           clearInterval(progressInterval);
-          // After progress completes, trigger the feedback collection
         }
       }, 1000);
     };
@@ -307,7 +164,7 @@
           return card;
         });
 
-        showFeedbackCard(0); // Show the first card by default
+        showFeedbackCard(0);
       }
     };
 
@@ -328,6 +185,220 @@
         document.getElementById('next').click();
       }
     });
+    setTimeout(() => {
+      document.getElementById('splash-screen').style.display = 'none';
+      document.getElementById('initial-screen').style.display = 'block';
+    }, 2000);
   </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(to right, #a8c0ff, #3f94f8); /* Gradient background */
+    }
+    
+    #initial-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    
+    h1 {
+      font-size: 36px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+      text-transform: uppercase; /* More modern heading */
+    }
+    
+    button {
+      padding: 15px 30px;
+      font-size: 20px;
+      cursor: pointer;
+      border: none;
+      background: linear-gradient(45deg, #008CBA, #00c6ff); /* Gradient button */
+      color: white;
+      border-radius: 50px; /* Rounded button */
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease-in-out;
+      transform-origin: center;
+    }
+    
+    button:hover {
+      background: linear-gradient(45deg, #00c6ff, #008CBA);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      transform: scale(1.1); /* Slightly enlarge button on hover */
+    }
+    
+    button:active {
+      transform: scale(1); /* Button presses back to normal size */
+    }
+    
+    #processing-screen,
+    #feedback-screen,
+    #enhancement-screen {
+      display: none;
+    }
+    
+    #processing-screen h1,
+    #feedback-screen h1,
+    #enhancement-screen h1 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 30px;
+    }
+    
+    #processing-screen p,
+    #feedback-screen p {
+      font-size: 18px;
+      color: #555;
+    }
+    
+    #progress-container {
+      margin-top: 20px;
+    }
+    
+    progress {
+      width: 100%;
+      height: 20px;
+      border-radius: 10px;
+      background-color: #e0e0e0; /* Light grey background for the progress bar */
+    }
+    
+    progress::-webkit-progress-bar {
+      background-color: #0b55a9;
+    }
+    
+    progress::-webkit-progress-value {
+      background-color: #fff;
+    }
+    
+    progress::-moz-progress-bar {
+      background-color: #fff;
+    }
+    
+    #feedback-container {
+      margin-top: 30px;
+    }
+    
+    .feedback-card {
+      display: none;
+      align-items: flex-start;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+      margin: 15px;
+      padding: 15px;
+      text-align: left;
+      transition: transform 0.3s ease;
+    }
+    
+    .screenshot {
+      max-width: 150px;
+      border-radius: 5px;
+      margin-right: 15px;
+      transition: transform 0.2s;
+    }
+    
+    .screenshot:hover {
+      transform: scale(1.2);
+    }
+    
+    .feedback-content {
+      flex: 1;
+      text-align: left;
+    }
+    
+    .feedback-content ul {
+      padding-left: 20px;
+    }
+    
+    .feedback-content li {
+      margin-bottom: 5px;
+    }
+    
+    .divider {
+      height: 1px;
+      background-color: #e0e0e0;
+      margin: 10px 0;
+    }
+    
+    #nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    
+    #nav-buttons button {
+      font-size: 16px;
+      padding: 8px 20px;
+    }
+    
+    #enhancement-screen {
+      display: none;
+      text-align: left;
+      padding: 20px;
+    }
+    
+    .suggestion-button {
+      margin: 20px 0;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      border: none;
+      background: #6392e4; /* Green background */
+      color: white;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+    
+    .suggestion-button:hover {
+      background: #6392e4; /* Darker green on hover */
+    }
+    
+
+    #splash-screen {
+      position: static  ;
+      width: 100%;
+      height: 100%;
+      background: #2c3e50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3em;
+      font-weight: bold;
+      z-index: 1000;
+      animation: fadeOut 3s ease-out forwards 4s; 
+    }
+    
+    .letter {
+      opacity: 0.2;
+      animation: colorFade 0.5s forwards;
+    }
+    
+    .letter:nth-child(1) { animation-delay: 0.1s; }
+    .letter:nth-child(2) { animation-delay: 0.3s; }
+    .letter:nth-child(3) { animation-delay: 0.5s; }
+    .letter:nth-child(4) { animation-delay: 0.7s; }
+    .letter:nth-child(5) { animation-delay: 0.9s; }
+    .letter:nth-child(6) { animation-delay: 1.1s; }
+    
+    @keyframes colorFade {
+      0% { opacity: 0.2; color: #ffffff; }
+      100% { opacity: 1; color: #ffeb00; }
+    }
+    
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+    
+    
+  </style>
 </body>
 </html>
