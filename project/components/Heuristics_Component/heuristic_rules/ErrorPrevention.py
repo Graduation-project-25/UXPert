@@ -3,89 +3,87 @@ from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicI
 
 class ErrorPrevention(HeuristicInterface):
 
-    def detect_button_or_input(self, ui_data):
-        print(ui_data.head())
+    CONFIRMATION_KEYWORDS = ["confirm", "are you sure", "proceed", "continue", "ok", "yes", "no"]
 
-        buttons_and_inputs = []
+    def detect_buttons(self, ui_data):
+        """Detects buttons based on click interactions."""
+        buttons = []
 
         if ui_data.empty:
-            return buttons_and_inputs  
+            return buttons  
 
         for _, row in ui_data.iterrows():
-            is_button = False
-            is_input = False
-
-            # Detect buttons based on interaction triggers
             if row.get('hasClickInteraction') or row.get('hasHoverInteraction'):
-                is_button = True  # Clickable elements are likely buttons
+                buttons.append({"name": row.get('name', 'Unnamed'), "position.y": row.get("position.y")})
+        
+        return buttons
 
-            # Detect input fields
-            if not is_button:
-                if row.get('name') and ('input' in row['name'].lower() or 'textfield' in row['name'].lower()):
-                    is_input = True
+    def check_confirmation_messages(self, ui_data):
+        """Checks if confirmation messages are present near buttons."""
+        buttons = self.detect_buttons(ui_data)
+        confirmation_issues = []
+        total_buttons = len(buttons)
+        confirmed_buttons = 0
 
-            # Add detected button or input to the list
-            if is_button:
-                buttons_and_inputs.append(f"Button: {row.get('name', 'Unnamed')}")
-            elif is_input:
-                buttons_and_inputs.append(f"Input: {row.get('name', 'Unnamed')}")
+        for button in buttons:
+            button_name = button["name"]
+            button_y = button["position.y"]
+            has_confirmation = False
 
-        return buttons_and_inputs
+            for _, row in ui_data.iterrows():
+                if row['type'] == 'TEXT' and abs(row['position.y'] - button_y) < 50:
+                    text_content = row.get("name", "").lower()
+                    if any(keyword in text_content for keyword in self.CONFIRMATION_KEYWORDS):
+                        has_confirmation = True
+                        confirmed_buttons += 1
+                        break
+
+            if not has_confirmation:
+                confirmation_issues.append(f"No confirmation for button: {button_name}")
+
+        # Calculate confirmation percentage
+        confirmation_percentage = (confirmed_buttons / total_buttons * 100) if total_buttons > 0 else 100
+
+        return confirmation_issues, confirmation_percentage
 
     def check_input_validation(self, ui_data):
         """Checks if input fields have validation messages or required indicators."""
-        input_fields = self.detect_button_or_input(ui_data)  # Detect buttons and inputs based on attributes
-        validation_errors = []
+        input_fields = [row for _, row in ui_data.iterrows() if "input" in row.get('name', '').lower()]
+        validation_issues = []
 
         for field in input_fields:
-            if 'Input' in field:
-                # Check for validation indicators like error messages or required indicators
-                filtered_ui_data = ui_data[ui_data['name'] == field]
+            field_name = field["name"]
+            field_y = field["position.y"]
+            has_validation = False
 
-                if filtered_ui_data.empty:
-                    continue  # Skip if no matching input field found
+            for _, row in ui_data.iterrows():
+                if row['type'] == 'TEXT' and abs(row['position.y'] - field_y) < 20:
+                    has_validation = True
+                    break
 
-                for _, row in ui_data.iterrows():
-                    if row['type'] == 'TEXT' and abs(row['position.y'] - filtered_ui_data['position.y'].values[0]) < 20:
-                        break
-                else:
-                    validation_errors.append(f"Missing validation for input at {field}")
+            if not has_validation:
+                validation_issues.append(f"Missing validation for input field: {field_name}")
 
-        return validation_errors
-
-    def check_confirmation_for_dangerous_actions(self, ui_data):
-        """Detects buttons for critical actions and checks if confirmation exists."""
-        dangerous_buttons = self.detect_button_or_input(ui_data)  # Detect buttons
-        confirmation_warnings = []
-
-        for button in dangerous_buttons:
-            if 'Button' in button:
-                # Look for confirmation messages nearby (e.g., 'Are you sure?')
-                filtered_ui_data = ui_data[ui_data['name'] == button]
-
-                if filtered_ui_data.empty:
-                    continue  # Skip if no matching button found
-
-                for _, row in ui_data.iterrows():
-                    if row['type'] == 'TEXT' and abs(row['position.y'] - filtered_ui_data['position.y'].values[0]) < 50:
-                        break
-                else:
-                    confirmation_warnings.append(f"No confirmation for dangerous button {button}")
-
-        return confirmation_warnings
+        return validation_issues
 
     def evaluate_rule(self, ui_data):
         """Generates a summary report of error prevention issues."""
         validation_issues = self.check_input_validation(ui_data)
-        confirmation_issues = self.check_confirmation_for_dangerous_actions(ui_data)
+        confirmation_issues, confirmation_percentage = self.check_confirmation_messages(ui_data)
 
+        # Score calculation
         total_issues = len(validation_issues) + len(confirmation_issues)
-        prevention_score = max(0, 100 - (total_issues * 10))  # Reduce score for each issue
+        prevention_score = max(0, 100 - (total_issues * 10))
+
+        # Adjust score based on confirmation percentage
+        if confirmation_percentage < 20:
+            prevention_score -= 20  # Penalize if confirmation messages are below 50%
 
         feedback = {
-            "ErrorPreventionScore": prevention_score,
+            "ErrorPreventionScore": max(prevention_score, 0),
             "ValidationIssues": validation_issues,
             "ConfirmationIssues": confirmation_issues,
             "Feedback": "Good error prevention" if prevention_score > 80 else "Needs improvement."
         }
+
         return feedback
