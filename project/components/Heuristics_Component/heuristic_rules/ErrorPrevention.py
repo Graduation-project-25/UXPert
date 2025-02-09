@@ -27,25 +27,26 @@ class ErrorPrevention(HeuristicInterface):
                 validation_errors.append(f"Missing validation for input at ({row['position.x']}, {row['position.y']})")
 
         return validation_errors
+    
 
     def check_confirmation_for_dangerous_actions(self, ui_data):
         """Detects buttons for critical actions and checks if confirmation exists."""
         # Filter for buttons with 'delete', 'reset', or 'remove' as part of their text
         dangerous_buttons = ui_data[
-            (ui_data['type'] == 'button') &  # Look for button type
+            (ui_data['type'] == 'TEXT') &  # Look for button type
             (ui_data['name'].str.lower().isin(['delete', 'reset', 'remove']))  # Look for matching names
         ]
         confirmation_warnings = []
 
-        for _, row in dangerous_buttons.iterrows():
-            # Look for 'TEXT' elements (confirmation messages) near the dangerous button
-            nearby_confirmations = ui_data[
-                (ui_data['type'] == 'TEXT') &  # Ensure the confirmation is a TEXT element
-                (abs(ui_data['position.y'] - row['position.y']) < 50)  # Close proximity to the button
-            ]
+        # for _, row in dangerous_buttons.iterrows():
+        #     # Look for 'TEXT' elements (confirmation messages) near the dangerous button
+        #     nearby_confirmations = ui_data[
+        #         (ui_data['type'] == 'TEXT') &  # Ensure the confirmation is a TEXT element
+        #         (abs(ui_data['position.y'] - row['position.y']) < 50)  # Close proximity to the button
+        #     ]
             
-            if nearby_confirmations.empty:
-                confirmation_warnings.append(f"No confirmation for {row['name']} button at ({row['position.x']}, {row['position.y']})")
+        if dangerous_buttons.empty:
+                confirmation_warnings.append(f"No confirmation messages in the design")
 
         return confirmation_warnings
 
