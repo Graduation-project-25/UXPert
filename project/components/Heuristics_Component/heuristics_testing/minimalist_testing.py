@@ -1,13 +1,15 @@
 import json
 import os
-from components.Heuristics_Component.heuristics_evaluation.evaluation_results import EvaluationResults
-from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
-from components.Heuristics_Component.heuristics_testing.heuristic_testing import HeuristicTestingInterface
+from ..heuristics_evaluation.evaluation_results import EvaluationResults
+from ..heuristic_rules.heuristic_factory import HeuristicFactory
+from ..heuristics_testing.heuristic_testing import HeuristicTestingInterface
+from ..heuristic_rules.minimalist import Minimalist
 
 class MinimalistTesting(HeuristicTestingInterface):    
     def __init__(self):
         self.evaluation_results = EvaluationResults()
         self.minimalist_instance = HeuristicFactory.check_rule("minimalist")
+        self.rule = Minimalist()
 
     def evaluate_rule_test(self, test_folder, evaluation_folder):
         data_to_save = {}
@@ -18,7 +20,10 @@ class MinimalistTesting(HeuristicTestingInterface):
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                feedback = self.minimalist_instance.evaluate_rule(
+                # feedback = self.minimalist_instance.evaluate_rule(
+                #     data, data['screen_size']['screen_width'], data['screen_size']['screen_height']
+                # )
+                feedback = self.rule.evaluate_rule(
                     data, data['screen_size']['screen_width'], data['screen_size']['screen_height']
                 )
                 # Store evaluation results for test data
@@ -37,25 +42,33 @@ class MinimalistTesting(HeuristicTestingInterface):
         # Save the results for both training and test data
         self.evaluation_results.save_evaluation_result(data_to_save, evaluation_folder,"minimalist_test_evaluation.json")
 
-    def analyze_test_results(self, train_json, test_json):
-        try:
-            with open(train_json, 'r', encoding='utf-8') as f:
-                training_data = json.load(f)
-        except (json.JSONDecodeError, KeyError) as e:
-            print(f"Error processing training data: {e}. Skipping file.")
-            return
+    def analyze_test_results(self, train_folder, test_folder):
+        train_files = [os.path.join(train_folder, f) for f in os.listdir(train_folder) if f.endswith('.json')]
+        test_files = [os.path.join(test_folder, f) for f in os.listdir(test_folder) if f.endswith('.json')]
 
-        try:
-            with open(test_json, 'r', encoding='utf-8') as f:
-                test_data = json.load(f)
-        except (json.JSONDecodeError, KeyError) as e:
-            print(f"Error processing test data: {e}. Skipping file.")
-            return
+        training_data = {}
+        test_data = {}
+
+        # Load training data
+        for train_file in train_files:
+            try:
+                with open(train_file, 'r', encoding='utf-8') as f:
+                    training_data.update(json.load(f))
+            except (json.JSONDecodeError, KeyError, FileNotFoundError) as e:
+                print(f"Error processing {train_file}: {e}. Skipping file.")
+
+        # Load test data
+        for test_file in test_files:
+            try:
+                with open(test_file, 'r', encoding='utf-8') as f:
+                    test_data.update(json.load(f))
+            except (json.JSONDecodeError, KeyError, FileNotFoundError) as e:
+                print(f"Error processing {test_file}: {e}. Skipping file.")
 
         TP = 0  # True Positive
         FP = 0  # False Positive
-        FN = 0  # False Negative
         TN = 0  # True Negative
+        FN = 0  # False Negative
 
         total_samples = 0  # Count total test samples
         pass_threshold = 70  # Define threshold for passing
@@ -63,8 +76,9 @@ class MinimalistTesting(HeuristicTestingInterface):
         # Process test data
         for test_design_id, test_designs in test_data.items():
             for test in test_designs:
-                feedback, score = self.evaluate_rule(test['elements'], test['screen_width'], test['screen_height'])
-                predicted_pass = score >= pass_threshold
+                feedback, score = self.rule.evaluate_rule(test['elements'], test['screen_width'], test['screen_height'])
+                print("Score: ", score)
+                predicted_pass = (score >= pass_threshold)
 
                 # Extract ground truth from the test data (modify as needed)
                 actual_pass = test.get('ground_truth', 0) >= pass_threshold  # Default to "Fail" if missing
