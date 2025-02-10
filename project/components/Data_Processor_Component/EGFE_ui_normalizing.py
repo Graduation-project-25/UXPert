@@ -1,9 +1,5 @@
-import json
 import os
 import pandas as pd
-# from sklearn.calibration import LabelEncoder
-from sklearn.preprocessing import LabelEncoder
-
 from sklearn.preprocessing import MinMaxScaler
 
 from components.Data_Processor_Component.ui_normalizer import UiNormalizerInterface
@@ -19,8 +15,8 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
         df = pd.json_normalize(elements)
 
         # Scaling width, height, position.x, position.y
-        X = df[['width', 'height', 'position.x', 'position.y']]
-        df[['width', 'height', 'position.x', 'position.y']] = self.scale.fit_transform(X)
+        dimensions = df[['width', 'height', 'position.x', 'position.y']]
+        df[['width', 'height', 'position.x', 'position.y']] = self.scale.fit_transform(dimensions)
         
         # Extract RGBA values and one-hot encode the 'type' column
         if "color" in df.columns:
@@ -30,6 +26,12 @@ class EGFE_UiNormalizing(UiNormalizerInterface):
         if "type" in df.columns:
             df = pd.get_dummies(df, columns=['type'], prefix='type')  # One-hot encode the 'type' column
             df = df.astype({col: 'int' for col in df.columns if col.startswith('type_')})  # Convert Boolean columns to 0 and 1 
+
+        if "labeled" in df.columns:
+            labeled = df[['labeled']]
+            df ['labeled'] = df['labeled'].astype(int)
+
+        
         return df 
     
     def normalize_file_name(self, file_name):

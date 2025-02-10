@@ -29,8 +29,13 @@ class EGFE_Clustering(ClusteringInterface):
                 clustered_data, clusters = self.dbscan_cluster_based_on_position_and_type()
             elif feature == "size":
                 clustered_data, clusters = self.dbscan_cluster_based_on_size_and_type() 
-            elif feature == 'screen_size_and_type':
-                clustered_data, clusters = self.dbscan_cluster_based_on_screen_size_and_type()
+            elif feature == "label":
+                clustered_data, clusters = self.dbscan_cluster_based_on_type_and_label() 
+            # elif feature == 'screen_size':
+    #         # clustered_data, clusters = self.dbscan_cluster_based_on_screen_size()
+    #         # return clustered_data, data_to_evaluate, clusters
+            # elif feature == 'screen_size_and_type':
+                # clustered_data, clusters = self.dbscan_cluster_based_on_screen_size_and_type()
 
             # If clustering fails, raise an error
             if clustered_data is None or clusters is None:
@@ -138,6 +143,33 @@ class EGFE_Clustering(ClusteringInterface):
         clusters = np.unique(clustering.labels_)
 
         return clustered_data, clusters 
+    
+    def dbscan_cluster_based_on_type_and_label(self):
+        X_train = self.egfe_load_data.load_data(self.train_folder)
+
+        type_features =  [col for col in X_train.columns if col.startswith('type_')]
+        label_feature =  ['labeled']
+        X_train_selected = X_train[type_features+label_feature]  
+
+        #Remove null values
+        if X_train_selected.isnull().any().any():
+            X_train_selected = X_train_selected.fillna(0)
+            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+
+        # Apply DBSCAN
+        clustering = DBSCAN(eps=0.2, min_samples=5).fit(X_train_selected)
+
+        # Prepare the dataset with clusters
+        clustered_data = X_train_selected.copy()
+        clustered_data.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
+        
+        #save cluster in json
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on label and type.json")      
+        self.save_cluster_as_json(clustered_data,cluster_json_path,'Cluster')
+        print('Number of instances in each cluster\n',clustered_data[['Cluster']].value_counts())  # View the number of instances in each cluster
+        clusters = np.unique(clustering.labels_)
+        return clustered_data, clusters 
+
 
     # def dbscan_cluster_based_on_screen_size(self):
         # X_train = self.egfe_load_data.load_data(self.train_folder)
@@ -176,29 +208,29 @@ class EGFE_Clustering(ClusteringInterface):
     #     # clusters = np.unique(clustering.labels_)
     #     # return clustered_data, X_train_selected, clusters 
     
-    def dbscan_cluster_based_on_screen_size_and_type(self):
-        X_train = self.egfe_load_data.load_data(self.train_folder)
-        screen_size = ['screen_width', 'screen_height']
-        type_features =  [col for col in X_train.columns if col.startswith('type_')]
-        X_train_selected = X_train[screen_size + type_features]
+    # def dbscan_cluster_based_on_screen_size_and_type(self):
+    #     X_train = self.egfe_load_data.load_data(self.train_folder)
+    #     screen_size = ['screen_width', 'screen_height']
+    #     type_features =  [col for col in X_train.columns if col.startswith('type_')]
+    #     X_train_selected = X_train[screen_size + type_features]
  
-        #Remove null values
-        if X_train_selected.isnull().any().any():
-            X_train_selected = X_train_selected.fillna(0)
-            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+    #     #Remove null values
+    #     if X_train_selected.isnull().any().any():
+    #         X_train_selected = X_train_selected.fillna(0)
+    #         X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
 
-        # Apply DBSCAN
-        clustering = DBSCAN(eps=0.2, min_samples=10).fit(X_train_selected)
+    #     # Apply DBSCAN
+    #     clustering = DBSCAN(eps=0.2, min_samples=10).fit(X_train_selected)
 
-        # Prepare the dataset with clusters
-        DBSCAN_dataset = X_train_selected.copy()
-        DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
-        #save cluster in json
-        # cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on screen size and type.json")      
-        # self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
-        print('Number of instances in each cluster\n',DBSCAN_dataset[['Cluster']].value_counts())  # View the number of instances in each cluster
-        clusters = np.unique(clustering.labels_)
-        return DBSCAN_dataset, clusters 
+    #     # Prepare the dataset with clusters
+    #     DBSCAN_dataset = X_train_selected.copy()
+    #     DBSCAN_dataset.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
+    #     #save cluster in json
+    #     # cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on screen size and type.json")      
+    #     # self.save_cluster_as_json(DBSCAN_dataset,cluster_json_path,'Cluster')
+    #     print('Number of instances in each cluster\n',DBSCAN_dataset[['Cluster']].value_counts())  # View the number of instances in each cluster
+    #     clusters = np.unique(clustering.labels_)
+    #     return DBSCAN_dataset, clusters 
     
     def save_cluster_as_json(self, clusters, cluster_json_path, group_by):
         clusters_dict = clusters.groupby(group_by).apply(lambda df: df.to_dict(orient='records'), include_groups=False).to_dict()
@@ -211,49 +243,8 @@ class EGFE_Clustering(ClusteringInterface):
         export_to_csv(X_train, cluster_csv)
         export_to_csv(outliers, outliers_csv)
 
-
-#######################################################################################################
-    # def analyze_clusters(self, df):
-    #     consistency_instance = HeuristicFactory.check_rule("consistency")
-    #     cluster_groups = df.groupby('Cluster')
-    #     cluster_analysis = []
-        
-    #     for cluster_id, group in cluster_groups:    
-    #         num_elements = len(group)
-    #         avg_width = group['width'].mean()
-    #         avg_height = group['height'].mean()
-            
-    #         print(group.columns)
-    #         # Prevent division by zero in density calculation
-    #         bbox_width = group['position.x'].max() - group['position.x'].min()
-    #         bbox_height = group['position.y'].max() - group['position.y'].min()
-    #         area = bbox_width * bbox_height if bbox_width > 0 and bbox_height > 0 else 1
-    #         avg_density = num_elements / area  # Now safe from division by zero
-
-    #         # Compute alignment consistency and heuristic consistency score
-    #         alignment_consistency = consistency_instance.calculate_alignment_consistency(group)
-    #         consistency_scores = consistency_instance.evaluate_rule(group)
-    #         print("Factory pattern Testing, Consistency:", consistency_scores)
-            
-    #         # Store analysis
-    #         cluster_analysis.append({
-    #             "Cluster": cluster_id,
-    #             "NumElements": num_elements,
-    #             "AvgWidth": avg_width,
-    #             "AvgHeight": avg_height,
-    #             "AvgDensity": avg_density,
-    #             "AlignmentConsistency": alignment_consistency,
-    #             "TotalConsistency": consistency_scores,
-    #         })
-        
-    # #     return cluster_analysis
-
-
-
-
     def analyze_clusters(self):
         report = {}
-
         # Define which features need consistency checking
         features_to_check = ['color', 'position', 'size', 'screen_size']
 
@@ -269,13 +260,13 @@ class EGFE_Clustering(ClusteringInterface):
     
 
 
-    def calculate_nearest_neighbours(X_train_selected, percentile, n_neighbors=5):
-        nearest_neighbors = NearestNeighbors(n_neighbors=5)
-        nearest_neighbors.fit(X_train_selected)
-        distances, indices = nearest_neighbors.kneighbors(X_train_selected)
-        distances = np.sort(distances[:, -1])        # Sort distances 
+    # def calculate_nearest_neighbours(X_train_selected, percentile, n_neighbors=5):
+    #     nearest_neighbors = NearestNeighbors(n_neighbors=5)
+    #     nearest_neighbors.fit(X_train_selected)
+    #     distances, indices = nearest_neighbors.kneighbors(X_train_selected)
+    #     distances = np.sort(distances[:, -1])        # Sort distances 
 
-        # # Fit the DBSCAN model
-        optimal_eps = distances[int(len(distances) * percentile)] 
-        return  optimal_eps
+    #     # # Fit the DBSCAN model
+    #     optimal_eps = distances[int(len(distances) * percentile)] 
+    #     return  optimal_eps
     

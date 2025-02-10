@@ -1,3 +1,6 @@
+import json
+import math
+import os
 from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface 
 
 
@@ -127,5 +130,29 @@ class Recognition(HeuristicInterface):
 
         return feedback
 
+
+    def evaluate_icon_abeling(self, is_icon_labeled):
+        if is_icon_labeled:
+            return "Your icons are labeled - Good Recognition"
+        else: return "Your icons are not labeled - Try Labeling your icons for a better recognition"
+    
+    def evaluate_icon_size(self, elements):
+        icons = [element for element in elements if element['type'] == 'symbolInstance']
+        for icon in icons:
+            # Check if icon is too small (threshold: 24px width/height)
+            if icon.get('width', 0) < 24 or icon.get('height', 0) < 24:
+                return "Your icons too small - Try increasing your icon size"
+            elif icon.get('width', 0) > 32 or icon.get('height', 0) > 32:
+                return "Your icons too large - Try decreasing your icon size"
+
+
+
+
+
+
+
+
+
     def evaluate_rule(self, cluster_data):
         pass
+
