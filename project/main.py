@@ -5,6 +5,7 @@ import pandas as pd
 from pathlib import Path
 
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
@@ -18,9 +19,10 @@ from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNorma
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
-from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 from components.Heuristics_Component.heuristics_testing.minimalist_testing import MinimalistTesting
 from components.Heuristics_Component.heuristic_rules.recognition import Recognition
+from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
+from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 
 
 pd.set_option('display.max_columns', None)
@@ -50,7 +52,9 @@ def main():
     egfe_load_data = EGFE_LoadData()
     minimalist_evaluation = MinimalistEvaluation()
     minimalist_test_evaluation = MinimalistTesting()
+    minimalist_test_evaluation = MinimalistTesting()
 
+    recognition_instance = HeuristicFactory.check_rule("recognition")
 
 
     # Step 1: Save json in extracted features folder
@@ -60,15 +64,26 @@ def main():
     # splitter.save_split_files(train_folder, test_folder)
     
     # Step 3: Load Normalized train data
-    # train_data = egfe_load_data.load_train_data()
+    # train_data = egfe_load_data.load_data(train_folder)
+    # print(train_data)
     
     # Step 4: Visualize UI Elements (Scatter Plot)
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
-    # clustered_data, clusters = egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
-    # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('label')
+    print (clustered_data)
+    # egfe_clustering.handle_outliers(clustered_data, "Label Clustering", "Label Clustering Outliers")
+    egfe_clustering_evaluation.evaluate_clustering(clustered_data)
+
+
+
+
+
+
+    # print(data)
+    # recognition = Recognition()
+    # isIconLabeled = recognition.is_icon_labeled(train_folder)
 
 
 
@@ -81,7 +96,7 @@ def main():
     # egfe_visualization.visualize_color_consistency(clustered_data)
     # egfe_visualization.visualize_size_proportionality(clustered_data)
         
-    # Step : Assign Clusters to Test Data
+    # Step 7: Assign Clusters to Test Data
     # new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'size')
     # print(new_x_test)
     # egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder,'position')
@@ -99,7 +114,7 @@ def main():
 
 
 
-#     minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
+    # minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
 #     minimalist_test_evaluation.evaluate_rule_test(test_folder, evaluation_folder)
 #     minimalist_evaluation_json = evaluation_folder + '/minimalist_evaluation.json'
 #     minimalist_test_evaluation_json = evaluation_folder + '/minimalist_test_evaluation.json'
@@ -108,27 +123,27 @@ def main():
 
 
     # Recognition
-    recognize = Recognition()
-    # Example dataset
-    data = {
-        "color": ["#FF0000", "#00FF00", "#0000FF"],
-        "type": ["button", "input", "label"],  # Only button & input are interactive
-        "position.x": [50, -20, 300],  # One element is off-screen
-        "position.y": [100, 200, 400],
-        "width": [80, 5, 100],  # One element is too small
-        "height": [40, 20, 50],
-        "screen_width": [500, 500, 500],
-        "screen_height": [800, 800, 800],
-    }
+    # recognize = Recognition()
+    # # Example dataset
+    # data = {
+    #     "color": ["#FF0000", "#00FF00", "#0000FF"],
+    #     "type": ["button", "input", "label"],  # Only button & input are interactive
+    #     "position.x": [50, -20, 300],  # One element is off-screen
+    #     "position.y": [100, 200, 400],
+    #     "width": [80, 5, 100],  # One element is too small
+    #     "height": [40, 20, 50],
+    #     "screen_width": [500, 500, 500],
+    #     "screen_height": [800, 800, 800],
+    # }
 
     # Convert to DataFrame
-    df = pd.DataFrame(data)
+    # df = pd.DataFrame(data)
 
-    # Run visibility check
-    df_result = recognize.minimized_memory_load(df)
+    # # Run visibility check
+    # df_result = recognize.minimized_memory_load(df)
 
-    # Print results
-    print(df_result)
+    # # Print results
+    # print(df_result)
 
 
     ##############################################################################################
@@ -144,14 +159,13 @@ def main():
     # evaluator.evaluate_minimalist()
     # print(evaluator.evaluate_minimalist())
 
-    # clusters_data = "project/data/raw/EGFE/extractedFeatures/X- train clusters.json"
 
     # clusters_data_path = "project/data/raw/EGFE/extractedFeatures/X-train clusters.json"
     # base_path = Path(__file__).resolve().parent  # Get current script directory
     # clusters_data_path = base_path / "data/raw/EGFE/extractedFeatures/X-train clusters.json"
-
+# 
     # with open(clusters_data_path, "r") as file:
-    #     clusters_data = json.load(file)
+        # clusters_data = json.load(file)
 
     # minimalist_checker = Minimalist()
     # feedback = minimalist_checker.evaluate_rule(clusters_data)
@@ -177,8 +191,8 @@ def main():
     #     print(f"  - {message}")
 
 
-    base_path = Path(__file__).resolve().parent  # Get current script directory
-# 
+    # base_path = Path(__file__).resolve().parent  # Get current script directory
+ 
     # Load all test JSON files into a dictionary
     # test_clusters = {}  
 
@@ -227,8 +241,6 @@ def main():
 
     # print(f"Analyzing consistency for {feature} clusters...")
     # clustering_instance.analyze_clusters()
-        
-
 
     # data = {
     #     'Cluster': ['Cluster_1', 'Cluster_1', 'Cluster_2', 'Cluster_2', 'Cluster_3', 'Cluster_3'],
@@ -257,7 +269,7 @@ def main():
     #     # Get the clustered data and clusters based on the feature
     #     clustered_data, clusters = clustering_instance.dbscan_cluster(feature)
     #     print(clustered_data.columns)
-        
+
     #     # Check if the clustered data is not empty and generate consistency report
     #     if clustered_data is not None and not clustered_data.empty:
     #         consistency_instance = ClusteringConsistency(clustered_data)
