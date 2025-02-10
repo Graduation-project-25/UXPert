@@ -131,57 +131,57 @@
       document.getElementById('enhancement-screen').style.display = 'none';
       document.getElementById('feedback-screen').style.display = 'block';
     };
-
+    
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
       if (msg && msg.type === 'collective-feedback') {
         document.getElementById('processing-screen').style.display = 'none';
         document.getElementById('feedback-screen').style.display = 'block';
         document.getElementById('feedback-container').innerHTML = '';
-  
-        feedbackCards = msg.feedback.map(item => {
-          const card = document.createElement('div');
-          card.className = 'feedback-card';
-  
-          const image = document.createElement('img');
-          image.src = item.screenshot;
-          image.className = 'screenshot';
-  
-          let feedbackList = '<ul>';
-  
-          // Display Error Prevention Feedback
-          if (item.errorPreventionFeedback) {
-            feedbackList += `<li><strong>error-Prevention Issues:</strong></li>`;
-            for (const [issue, solution] of Object.entries(item.errorPreventionFeedback)) {
+        
+        feedbackCards = msg.feedback.flatMap(item => {
+          const cards = [];
+          
+          function createCard(title, feedbackData) {
+            if (!feedbackData || Object.keys(feedbackData).length === 0) return null;
+            
+            const card = document.createElement('div');
+            card.className = 'feedback-card';
+            
+            const image = document.createElement('img');
+            image.src = item.screenshot;
+            image.className = 'screenshot';
+            
+            let feedbackList = '<ul>';
+            for (const [issue, solution] of Object.entries(feedbackData)) {
               feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
             }
+            feedbackList += '</ul>';
+            
+            const content = document.createElement('div');
+            content.className = 'feedback-content';
+            content.innerHTML = `<h2>${item.frameName} - ${title}</h2><div class='divider'></div>${feedbackList}`;
+            
+            card.appendChild(image);
+            card.appendChild(content);
+            document.getElementById('feedback-container').appendChild(card);
+            
+            return card;
           }
-  
-          // Display Consistency Feedback
-          if (item.consistencyFeedback) {
-            feedbackList += `<li><strong>Consistency Issues:</strong></li>`;
-            for (const [issue, solution] of Object.entries(item.consistencyFeedback)) {
-              feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
-            }
-          }
-  
-          feedbackList += '</ul>';
-  
-          const content = document.createElement('div');
-          content.className = 'feedback-content';
-          content.innerHTML = `<h2>${item.frameName}</h2><div class='divider'></div>${feedbackList}`;
-  
-          card.appendChild(image);
-          card.appendChild(content);
-          document.getElementById('feedback-container').appendChild(card);
-  
-          return card;
+          
+          const errorCard = createCard('Error Prevention Issues', item.errorPreventionFeedback);
+          if (errorCard) cards.push(errorCard);
+          
+          const consistencyCard = createCard('Consistency Issues', item.consistencyFeedback);
+          if (consistencyCard) cards.push(consistencyCard);
+          
+          return cards;
         });
-  
+        
         showFeedbackCard(0);
       }
     };
-
+    
     function showFeedbackCard(index) {
       feedbackCards.forEach((card, i) => {
         card.style.display = i === index ? 'flex' : 'none';
@@ -204,6 +204,7 @@
       document.getElementById('initial-screen').style.display = 'block';
     }, 2000);
   </script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -413,6 +414,5 @@
     
     
     </style>
-
 </body>
 </html>
