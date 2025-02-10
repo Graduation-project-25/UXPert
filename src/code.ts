@@ -8,6 +8,9 @@ interface ConsistencyResult {
     error_prevention_results: {
         Feedback:Record<string, string>;
     };
+    error_handling_results: {
+        Feedback: Record<string, string>;
+    };
 }
 
 // Show the initial UI with the start button
@@ -67,6 +70,7 @@ figma.ui.onmessage = async (msg) => {
                     consistencyFeedback: result.consistency_results.Feedback,
                     // minimalistFeedback: result.consistency_results.MinimalistFeedback,
                     errorPreventionFeedback: result.error_prevention_results.Feedback,
+                    errorHandlingFeedback: result.error_handling_results.Feedback,
                     screenshot: imageDataUrl
                 });
             }
