@@ -146,22 +146,31 @@ class EGFE_Clustering(ClusteringInterface):
     
     def dbscan_cluster_based_on_type_and_label(self):
         X_train = self.egfe_load_data.load_data(self.train_folder)
+        X_original = self.egfe_load_data.load_unnormalized_data(self.train_folder)
+        df_exploded = X_original.explode('elements')  # Flatten the list of elements
+
+        # Extract 'type' from each dictionary inside 'elements'
+        df_exploded['width'] = df_exploded['elements'].apply(lambda x: x.get('width') if isinstance(x, dict) else None)
+        df_exploded['height'] = df_exploded['elements'].apply(lambda x: x.get('height') if isinstance(x, dict) else None)
 
         type_features =  [col for col in X_train.columns if col.startswith('type_')]
         label_feature =  ['labeled']
-        size_features =  ['width','height']
-        X_train_selected = X_train[type_features + label_feature].fillna(0) 
+        size_features =  ['width' ,'height']
+        
+        X_train_selected = X_train[type_features + label_feature].fillna(0)
         X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
 
         # Apply DBSCAN
         clustering = DBSCAN(eps=0.2, min_samples=5).fit(X_train_selected)
 
         # Prepare the dataset with clusters
-        selected_columns = type_features + label_feature + size_features
+        selected_columns = type_features + label_feature 
+
         clustered_data = X_train[selected_columns].copy().fillna(0)  # Keep only required columns
-        # clustered_data = X_train_selected.copy()
         clustered_data = clustered_data.astype({col: 'int' for col in clustered_data.columns if col.startswith('type_')})
 
+        # Add extracted size features
+        clustered_data[size_features] = df_exploded[size_features].reset_index(drop=True)
         clustered_data.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
         
         #save cluster in json
@@ -170,6 +179,16 @@ class EGFE_Clustering(ClusteringInterface):
         print('Number of instances in each cluster\n',clustered_data[['Cluster']].value_counts())  # View the number of instances in each cluster
         clusters = np.unique(clustering.labels_)
         return clustered_data, clusters 
+
+
+
+
+
+
+
+
+
+
 
 
     # def dbscan_cluster_based_on_screen_size(self):

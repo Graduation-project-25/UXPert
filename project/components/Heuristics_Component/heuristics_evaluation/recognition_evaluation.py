@@ -15,24 +15,35 @@ class RecognitionEvaluation(HeuristicEvaluationInterface):
         try:
             with open(clustered_data, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+                # print(data)
+
+            feedback = recognition_instance.evaluate_rule(data)
+            # print(feedback)
 
             for key, elements in data.items():
-                for element in elements:  
-                    icons = element.get('type_symbolInstance', None)
-                    icon_width = element.get('width', None)
-                    icon_height = element.get('height', None)
-                    labeled = element.get('labeled', None)
+                for element in elements:
+                    # if feedback
+                        # feedback = recognition_instance.evaluate_rule(data)
 
-                    if icons:
-                        if labeled:
-                            is_icon_labeled = True
-                        else: is_icon_labeled = False
-                        feedback = recognition_instance.evaluate_rule(is_icon_labeled,icon_width,icon_height)
+                    # print(element)
+                    # print(feedback)
+                    # icons = element.get('type_symbolInstance', None)
+                    # icon_width = element.get('width', None)
+                    # icon_height = element.get('height', None)
+                    # labeled = element.get('labeled', None)
 
-                    else: break
+                    # if icons:
+                    #     if labeled:
+                    #         is_icon_labeled = True
+                    #     else: is_icon_labeled = False
+                    #     # feedback = recognition_instance.evaluate_rule(data,is_icon_labeled,icon_width,icon_height)
+
+                    # else: break
 
                     # Save the updated element with feedback
-                    element["evaluation"] = feedback  
+                    element["evaluation"] = feedback
+                    # element["evaluation"] = feedback2 
+                    # element["evaluation2"] = feedback2
 
                 # Store results per cluster
                 data_to_save[key] = elements  

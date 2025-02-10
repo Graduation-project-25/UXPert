@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
 # Define output folder
-data_folder = "project/data/figma_features"
+data_folder = "data/figma_features"
 output_folder = data_folder + "/extracted"
 evaluation_folder = data_folder + "/evaluation"
 os.makedirs(data_folder, exist_ok=True)  # Ensure the folder exists
@@ -60,44 +60,43 @@ def process_elements():
     try:
         
         # Evaluate consistency
-        # Evaluate consistency
         consistency_evaluator = Consistency() 
-        consistency_evaluator = HeuristicFactory.check_rule("consistency")
-
-
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
+        
         error_prevention = ErrorPrevention()
         error_prevention_results = error_prevention.evaluate_rule(elements_df)
+        
+        minimalist_evaluator = MinimalistEvaluation()
+        minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
 
-        # minimalist_evaluator = MinimalistEvaluation()
-        # minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
+
+        
 
         print(f"Consistency evaluation results: {consistency_results}")
         print(f"Error Prevention Results:{error_prevention_results}")
-        # print(f"Consistency evaluation results: {minimalist_evaluator}")
+        # print(f"minimalist evaluation results: {minimalist_evaluator}")
 
         # Prepare human-readable feedback
-        feedback = {
+        consistency_feedback = {
             "ColorConsistency": f"Color consistency is {consistency_results.get('ColorConsistency', 0)}%.",
             "AlignmentConsistency": f"Alignment consistency is {consistency_results.get('AlignmentConsistency', 0)}%.",
             "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
             "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
             "Feedback": consistency_results.get('Feedback', {})
             
+            
         }
-
-       
         error_feedback = {
             "ErrorPreventionScore": f"Error Prevention Score: {error_prevention_results.get('ErrorPreventionScore', 0)}%.",
             "ValidationIssues": error_prevention_results.get("ValidationIssues", []),
             "ConfirmationIssues": error_prevention_results.get("ConfirmationIssues", []),
-            "Feedback": error_prevention_results.get("Feedback", "")
+            "Feedback": error_prevention_results.get("Feedback", {})
         }
 
         output_data = {
             "screen_size": frame_info,  
             "elements": elements,
-            "consistency_results": feedback,
+            "consistency_results": consistency_feedback,
             "error_prevention_results": error_feedback
         }
 
@@ -108,9 +107,10 @@ def process_elements():
         return jsonify({
             "message": "Design processed successfully!",
             "status": 200,
-            "consistency_results": feedback,
+            "consistency_results": consistency_feedback,
             "error_prevention_results": error_feedback
         }), 200
+    
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")

@@ -52,44 +52,44 @@ class MinimalistTesting(HeuristicTestingInterface):
             print(f"Error processing test data: {e}. Skipping file.")
             return
 
-        training_results = {"Pass": 0, "Fail": 0}
-        test_results = {"Pass": 0, "Fail": 0}
+        TP = 0  # True Positive
+        FP = 0  # False Positive
+        FN = 0  # False Negative
+        TN = 0  # True Negative
 
-        pass_message = "minimalist"
-
-        # Process training data
-        for train_design_id, train_designs in training_data.items():
-            for train in train_designs:
-                if self.is_minimalist_pass(train['evaluation'],pass_message):  # Check inside the list
-                    training_results["Pass"] += 1
-                else:
-                    training_results["Fail"] += 1
+        total_samples = 0  # Count total test samples
+        pass_threshold = 70  # Define threshold for passing
 
         # Process test data
         for test_design_id, test_designs in test_data.items():
             for test in test_designs:
-                if self.is_minimalist_pass(test['evaluation'],pass_message):  # Check inside the list
-                    test_results["Pass"] += 1
+                feedback, score = self.evaluate_rule(test['elements'], test['screen_width'], test['screen_height'])
+                predicted_pass = score >= pass_threshold
+
+                # Extract ground truth from the test data (modify as needed)
+                actual_pass = test.get('ground_truth', 0) >= pass_threshold  # Default to "Fail" if missing
+
+                if predicted_pass and actual_pass:
+                    TP += 1  # True Positive
+                elif predicted_pass and not actual_pass:
+                    FP += 1  # False Positive
+                elif not predicted_pass and actual_pass:
+                    FN += 1  # False Negative
                 else:
-                    test_results["Fail"] += 1
+                    TN += 1  # True Negative
 
-        train_pass_result = training_results['Pass']
-        train_fail_result = training_results['Fail']
-        test_pass_result = test_results['Pass']
-        test_fail_result = test_results['Fail']
+                total_samples += 1
 
-        total_train = train_pass_result + train_fail_result
-        total_test = test_pass_result + test_fail_result
+        # Compute Accuracy, Precision, Recall, and F1-Score
+        accuracy = (TP + TN) / total_samples if total_samples > 0 else 0
+        precision = TP / (TP + FP) if (TP + FP) > 0 else 0
+        recall = TP / (TP + FN) if (TP + FN) > 0 else 0
+        f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
-        accuracy_train = (train_pass_result / total_train) * 100 if total_train > 0 else 0
-        accuracy_test = (test_pass_result / total_test) * 100 if total_test > 0 else 0
-
-        print("Elements")
-
-        print(f"Training Pass/Fail: {training_results}")
-        print(f"Test Pass/Fail: {test_results}")
-        print(f"Training Accuracy: {accuracy_train:.2f}%")
-        print(f"Test Accuracy: {accuracy_test:.2f}%")
+        print(f"Accuracy: {accuracy:.2f}")
+        print(f"Precision: {precision:.2f}")
+        print(f"Recall: {recall:.2f}")
+        print(f"F1 Score: {f1_score:.2f}")
 
 
     # Helper function to check if "minimalist" exists in the evaluation list
