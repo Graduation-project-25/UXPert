@@ -90,18 +90,18 @@ figma.ui.onmessage = async (msg) => {
 };
 
 // Function to extract elements recursively inside Frames, Groups, and Instances
-function extractElements(node: SceneNode): any[] {
+async function extractElements(node: SceneNode): Promise<any[]> {
     const extractedNodes: any[] = [];
 
-    function processNode(node: SceneNode) {
+    async function processNode(node: SceneNode) {
         if (!node.visible) return;
 
         let color = { r: 0, g: 0, b: 0 };
         let isImageRectangle = false;
+        let imageBase64 = "";
         let buttonText = "";
-        let clickDestination: string = "None";  // Default to "None" (string)
+        let clickDestination: string = "None"; 
 
-        // Check for solid color fills or image rectangles
         if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
             const firstFill = node.fills[0];
 
@@ -109,6 +109,12 @@ function extractElements(node: SceneNode): any[] {
                 color = firstFill.color;
             } else if (firstFill.type === "IMAGE") {
                 isImageRectangle = true;
+                try {
+                    const imageBytes = await node.exportAsync({ format: "PNG" });
+                    imageBase64 = figma.base64Encode(imageBytes);
+                } catch (error) {
+                    console.error("Error exporting image:", error);
+                }
             }
         }
 
@@ -116,46 +122,13 @@ function extractElements(node: SceneNode): any[] {
         const interactions = 'reactions' in node ? node.reactions : [];
         const hasClickInteraction = interactions.some(interaction => interaction.trigger?.type === 'ON_CLICK');
 
-          
-
-          // Default to "None"
-
-        //   function logToTerminal(message: any) {
-        //     fetch("http://localhost:3000/logs", {
-        //         method: "POST",
-        //         headers: { "Content-Type": "application/json" },
-        //         body: JSON.stringify({ message }),
-        //     }).catch((err) => console.error("Failed to send log:", err));
-        // }
-        
         if (hasClickInteraction) {
-            // logToTerminal(`Node: ${node.name}`);
-        
-            // Extract the action from the first ON_CLICK interaction
             const action = interactions.find(interaction => interaction.trigger?.type === 'ON_CLICK')?.action;
-        
-            // logToTerminal(`Raw action value: ${JSON.stringify(action)}`);
-            // logToTerminal(`Type of action: ${typeof action}`);
-        
             if (action && typeof action === 'object' && "destinationId" in action) {
-                // logToTerminal(`Action has a destinationId: ${JSON.stringify(action.destinationId)}`);
-                // logToTerminal(`Type of destinationId: ${typeof action.destinationId}`);
-        
-                if (action.destinationId && typeof action.destinationId === 'string') {
-                    clickDestination = action.destinationId;
-                } else {
-                    clickDestination = "Unknown destination";
-                }
-            } 
-            // else {
-            //     logToTerminal(`Action has NO destinationId.`);
-            // }
-        
-            // logToTerminal(`Final assigned clickDestination: ${clickDestination}`);
+                clickDestination = action.destinationId || "Unknown destination";
+            }
         }
-        
-        
-        // Identify buttons and icons
+
         const isIcon = node.type === 'VECTOR' || (node.type === 'INSTANCE' && node.name.toLowerCase().includes('icon'));
 
         if (["FRAME", "GROUP", "INSTANCE", "VECTOR"].includes(node.type) && 'children' in node) {
@@ -180,17 +153,18 @@ function extractElements(node: SceneNode): any[] {
             color_b: color.b,
             hasClickInteraction,
             isImageRectangle,
-            clickDestination,  // Destination added here
-            isIcon,  // Detect icons
+            imageBase64, // Add extracted image data
+            clickDestination,
+            isIcon,
         });
 
         if ('children' in node && ["FRAME", "GROUP", "INSTANCE", "VECTOR"].includes(node.type)) {
             for (const child of node.children) {
-                processNode(child as SceneNode);
+                await processNode(child as SceneNode);
             }
         }
     }
 
-    processNode(node);
+    await processNode(node);
     return extractedNodes;
 }
