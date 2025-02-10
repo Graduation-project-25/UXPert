@@ -96,7 +96,7 @@
       parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
 
       const progressInterval = setInterval(() => {
-        progress += 7;
+        progress += 5;
         document.getElementById('progress-bar').value = progress;
         document.getElementById('progress-text').innerText = `${progress}%`;
 
