@@ -34,7 +34,7 @@ class Recognition(HeuristicInterface):
                 if not element_type:
                     continue  # Skip if no type is found
 
-                print(f"Checking {element_type} at ({x}, {y}), Size: {width}x{height}")  # Debugging
+                # print(f"Checking {element_type} at ({x}, {y}), Size: {width}x{height}")  # Debugging
 
                 # Only check interactive elements
                 if element_type not in ["button", "input", "dropdown", "checkbox", "link"]:
@@ -77,7 +77,7 @@ class Recognition(HeuristicInterface):
                 placeholder = element.get("placeholder", None)
                 label = element.get("label", None)
 
-                print(f"Checking {element_type} for instructions...")  # Debugging
+                # print(f"Checking {element_type} for instructions...")  # Debugging
 
                 # Only check interactive elements
                 if element_type not in ["oval", "rectangle", "text", "symbolInstance"]:
