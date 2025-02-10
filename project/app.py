@@ -60,14 +60,16 @@ def process_elements():
     try:
         
         # Evaluate consistency
-        # consistency_evaluator = Consistency() 
-        consistency_evaluator = HeuristicFactory.check_rule("consistency")
-
-
+        consistency_evaluator = Consistency() 
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
         
         error_prevention = ErrorPrevention()
         error_prevention_results = error_prevention.evaluate_rule(elements_df, frame_name)
+        
+        minimalist_evaluator = MinimalistEvaluation()
+        minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
+
+        
 
         print(f"Consistency evaluation results: {consistency_results}")
         print(f"Error Prevention Results:{error_prevention_results}")
@@ -101,9 +103,6 @@ def process_elements():
         with open(output_file, "w", encoding="utf-8") as json_file:
             json.dump(output_data, json_file, indent=4, ensure_ascii=False)
 
-        minimalist_evaluator = MinimalistEvaluation()
-        minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
-        print(minimalist_evaluator)
         
 
 
