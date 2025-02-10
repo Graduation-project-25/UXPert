@@ -1,4 +1,4 @@
-from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface 
+from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
 
 
 class Minimalist(HeuristicInterface):
@@ -57,6 +57,12 @@ class Minimalist(HeuristicInterface):
             element.get("type_oval", 0) == 0
         )
 
+    def evaluate_irrelevant_elements(self, elements):
+        irrelevant_elements = [el for el in elements['elements'] if self.is_irrelevant(el)]
+        if irrelevant_elements:
+            return f"This design contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.", True
+        return "No irrelevant elements. Elements follow minimalistic rule", False
+
     def evaluate_rule(self, elements, screen_width, screen_height):
         feedback = []
         score = 100     # Start with full score
@@ -81,17 +87,10 @@ class Minimalist(HeuristicInterface):
             feedback.append(f"White Space Ratio follows minimalistic rule")
             feedback.append(f"Number of elements follows minimalistic rule")
 
-        # Step 3: Check for irrelevant elements
-        irrelevant_elements = [el for el in elements['elements'] if self.is_irrelevant(el)]
-        if irrelevant_elements:
-            feedback.append(f"This design contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
+        irrelevant_feedback, irrelevant_failed = self.evaluate_irrelevant_elements(elements)
+        feedback.append(irrelevant_feedback)
+        if irrelevant_failed:
             failed_rules += 1
-        else:
-            feedback.append(f"No irrelevant elements. Elements follow minimalistic rule")
-
-        # If no feedback, mention adherence to minimalist rule
-        # if not feedback:
-        #     feedback.append("Design adheres to the minimalist rule.")
 
         # Calculate final score (100% - (failed_rules * 33.33%))
         score = max(0, 100 - ((failed_rules / self.total_rules) * 100))
