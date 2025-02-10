@@ -60,12 +60,9 @@ def process_elements():
     try:
         
         # Evaluate consistency
-        # Evaluate consistency
         consistency_evaluator = Consistency() 
-        consistency_evaluator = HeuristicFactory.check_rule("consistency")
-
-
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
+        
         error_prevention = ErrorPrevention()
         error_prevention_results = error_prevention.evaluate_rule(elements_df, frame_name)
 
@@ -74,7 +71,7 @@ def process_elements():
 
         print(f"Consistency evaluation results: {consistency_results}")
         print(f"Error Prevention Results:{error_prevention_results}")
-        # print(f"Consistency evaluation results: {minimalist_evaluator}")
+        print(f"minimalist evaluation results: {minimalist_evaluator}")
 
         # Prepare human-readable feedback
         consistency_feedback = {
