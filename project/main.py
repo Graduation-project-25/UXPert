@@ -114,8 +114,19 @@ def main():
     # rule = Minimalist()
     # feedback = rule.evaluate_rule()
 
-    minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
+    # minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
 
+    # Define file paths
+    # train_json_path = os.path.join(train_folder, 'train_data.json')  # Adjust filename as needed
+    # test_json_path = os.path.join(test_folder, 'test_data.json')  # Adjust filename as needed
+
+    # # Ensure the files exist before calling the function
+    # if os.path.exists(train_json_path) and os.path.exists(test_json_path):
+    #     minimalist_test_evaluation.analyze_test_results(train_json_path, test_json_path)
+    # else:
+    #     print("Train or test JSON file is missing!")
+
+    minimalist_test_evaluation.analyze_test_results(train_folder, test_folder)
 
 
     # minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
