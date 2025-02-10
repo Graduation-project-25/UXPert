@@ -65,7 +65,7 @@ def main():
     # splitter.save_split_files(train_folder, test_folder)
     
     # Step 3: Load Normalized train data
-    # train_data = egfe_load_data.load_data(train_folder)
+    # train_data = egfe_load_data.load_unnormalized_data(train_folder)
     # print(train_data)
     
     # Step 4: Visualize UI Elements (Scatter Plot)

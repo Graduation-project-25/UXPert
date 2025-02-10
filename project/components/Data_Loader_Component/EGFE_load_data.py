@@ -49,9 +49,37 @@ class EGFE_LoadData(LoadDataInterface):
             data = data.fillna(0)
             data = data.astype({col: 'int' for col in data.columns if col.startswith('type_')})
         return data
-
-
     
+    def load_unnormalized_data(self, data_folder):        
+        all_data = []        
+        for file_name in os.listdir(data_folder):
+            if file_name.endswith(".json"):
+                file_path = os.path.join(data_folder, file_name)
+
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+
+                    if isinstance(data, list):  # Ensure data is in a list format
+                        df = pd.DataFrame(data)  
+                    else:  
+                        df = pd.DataFrame([data])  # Convert single JSON object to DataFrame
+                    
+                    all_data.append(df)  # Store DataFrame instead of raw JSON
+
+                except (json.JSONDecodeError, KeyError) as e:
+                    print(f"Error processing {file_name}: {e}. Skipping file.")
+
+        if not all_data:
+            raise ValueError("No valid JSON files found in the data folder.")
+        
+        return pd.concat(all_data, ignore_index=True)  # Concatenate all DataFrames
+
+
+
+
+
+
 
     # def get_max_min_file_name(self):
     #     file_names = []
