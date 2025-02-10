@@ -120,13 +120,13 @@ function extractElements(node: SceneNode): any[] {
 
           // Default to "None"
 
-          function logToTerminal(message: any) {
-            fetch("http://localhost:3000/logs", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message }),
-            }).catch((err) => console.error("Failed to send log:", err));
-        }
+        //   function logToTerminal(message: any) {
+        //     fetch("http://localhost:3000/logs", {
+        //         method: "POST",
+        //         headers: { "Content-Type": "application/json" },
+        //         body: JSON.stringify({ message }),
+        //     }).catch((err) => console.error("Failed to send log:", err));
+        // }
         
         if (hasClickInteraction) {
             // logToTerminal(`Node: ${node.name}`);
