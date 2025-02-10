@@ -51,7 +51,9 @@ def process_elements():
     try:
         # Evaluate consistency
         # Evaluate consistency
-        consistency_evaluator = Consistency()
+        # consistency_evaluator = Consistency() 
+        consistency_evaluator = HeuristicFactory.check_rule("consistency")
+
 
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
 

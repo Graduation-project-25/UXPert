@@ -43,7 +43,7 @@ class EGFE_SizeEstimation(SizeEstimatorInterface):
             return 1920, 1080  # Default fallback resolution
 
 
-    def estimate_screen_size(self, image_name,elements):
+    def estimate_screen_size(self, image_name, elements):
         estimated_screen_width, estimated_screen_height = self.get_image_size(image_name)
         for element in elements:
             element_width = element['width']
