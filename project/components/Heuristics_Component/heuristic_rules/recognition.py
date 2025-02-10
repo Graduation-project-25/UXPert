@@ -1,6 +1,3 @@
-import json
-import math
-import os
 from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface 
 
 
@@ -37,7 +34,7 @@ class Recognition(HeuristicInterface):
                 if not element_type:
                     continue  # Skip if no type is found
 
-                print(f"Checking {element_type} at ({x}, {y}), Size: {width}x{height}")  # Debugging
+                # print(f"Checking {element_type} at ({x}, {y}), Size: {width}x{height}")  # Debugging
 
                 # Only check interactive elements
                 if element_type not in ["button", "input", "dropdown", "checkbox", "link"]:
@@ -59,7 +56,7 @@ class Recognition(HeuristicInterface):
 
     def visible_instructions(self, elements_data):
         # Does the UI provide tooltips, placeholders, or labels?
-        feedback = []
+        has_missing_instructions = False
 
         for group_id, elements in elements_data.items():
             for element in elements:
@@ -80,7 +77,7 @@ class Recognition(HeuristicInterface):
                 placeholder = element.get("placeholder", None)
                 label = element.get("label", None)
 
-                print(f"Checking {element_type} for instructions...")  # Debugging
+                # print(f"Checking {element_type} for instructions...")  # Debugging
 
                 # Only check interactive elements
                 if element_type not in ["oval", "rectangle", "text", "symbolInstance"]:
@@ -88,13 +85,14 @@ class Recognition(HeuristicInterface):
 
                 # Check if any instruction is provided
                 if not tooltip and not placeholder and not label:
-                    feedback.append(f"The {element_type} element is missing instructions (tooltip, placeholder, or label). Consider adding one.")
+                    has_missing_instructions = True  # Mark issue found
+                    break  # Stop checking further elements after finding one issue
 
-        # If all elements have instructions, return a success message
-        if not feedback:
-            feedback.append("All interactive elements have visible instructions.")
-
-        return feedback
+        # Provide a single feedback message
+        if has_missing_instructions:
+            return ["Some interactive elements are missing instructions (tooltip, placeholder, or label). Consider adding them."]
+        
+        return ["All interactive elements have visible instructions."]
 
     def consistent_navigation(self, elements_data):
         # Consistency in Navigation
@@ -130,55 +128,29 @@ class Recognition(HeuristicInterface):
 
         return feedback
 
-    def evaluate_icon_visibility(self,elements_data):
-        # feedback = []
-        for key, elements in elements_data.items():
-            for element in elements:  
-                icons = element.get('type_symbolInstance', None)
-                icon_width = element.get('width', None)
-                icon_height = element.get('height', None)
-                labeled = element.get('labeled', None)
-
-                if icons:
-                    if labeled:
-                        is_icon_labeled = True
-                    else: is_icon_labeled = False
-                    icon_labeling_feedback = self.evaluate_icon_labeling(is_icon_labeled)
-                    # print(element)
-                    # print(feedback)
-                    icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
-                # else: break
-        return icon_labeling_feedback,icon_size_feedback
-
-
     def evaluate_icon_labeling(self, is_icon_labeled):
         if is_icon_labeled:
             return "Your icons are labeled - Good Recognition"
         else: return "Your icons are not labeled - Try Labeling your icons for a better recognition"
     
     def evaluate_icon_size(self, icon_width, icon_height):
+        # icons = [element for element in elements if element['type'] == 'symbolInstance']
+        # Check if icon is too small (threshold: 24px width/height)
         if icon_width < 24 or icon_height < 24:
             return "Your icons too small - Try increasing your icon size"
         elif icon_width > 32 or icon_height > 32:
             return "Your icons too large - Try decreasing your icon size"
 
-
-    def evaluate_rule(self, elements):
+    def evaluate_rule(self, is_icon_labeled, icon_width, icon_height):
         feedback = []
 
-        icon_labeling_feedback,icon_size_feedback = self.evaluate_icon_visibility(elements)
-
         # Step 1: Evaluate labeled icons
-        # icon_labeling_feedback = self.evaluate_icon_labeling(is_icon_labeled)
+        icon_labeling_feedback = self.evaluate_icon_labeling(is_icon_labeled)
         feedback.append(f"Icon Labeling: {icon_labeling_feedback}")
 
         # Step 2: Evaluate icons size
-        # icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
+        icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
         feedback.append(f"Icon Size: {icon_size_feedback}")
-
-        # Step 2: Evaluate icons size
-        # consistent_navigation_feedback = self.consistent_navigation(elements)
-        # feedback.append(f"consistent_navigation_feedback Size: {consistent_navigation_feedback}")
 
         #     # Step 2: Evaluate element count
         #     num_elements = len(elements['elements'])
@@ -205,7 +177,3 @@ class Recognition(HeuristicInterface):
 
         return feedback
         
-
-        
-        
-
