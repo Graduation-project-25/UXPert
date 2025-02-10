@@ -6,10 +6,7 @@ interface ConsistencyResult {
         MinimalistFeedback: Record<string, string>;
     };
     error_prevention_results: {
-        ErrorPreventionScore: string;
-        ValidationIssues: string[];
-        ConfirmationIssues: string[];
-        Feedback: string;
+        Feedback:Record<string, string>;
     };
 }
 
@@ -70,7 +67,6 @@ figma.ui.onmessage = async (msg) => {
                     consistencyFeedback: result.consistency_results.Feedback,
                     minimalistFeedback: result.consistency_results.MinimalistFeedback,
                     errorPreventionFeedback: result.error_prevention_results.Feedback,
-                    errorPreventionScore: result.error_prevention_results.ErrorPreventionScore,
                     screenshot: imageDataUrl
                 });
             }
@@ -120,13 +116,13 @@ function extractElements(node: SceneNode): any[] {
 
           // Default to "None"
 
-          function logToTerminal(message: any) {
-            fetch("http://localhost:3000/logs", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message }),
-            }).catch((err) => console.error("Failed to send log:", err));
-        }
+        //   function logToTerminal(message: any) {
+        //     fetch("http://localhost:3000/logs", {
+        //         method: "POST",
+        //         headers: { "Content-Type": "application/json" },
+        //         body: JSON.stringify({ message }),
+        //     }).catch((err) => console.error("Failed to send log:", err));
+        // }
         
         if (hasClickInteraction) {
             // logToTerminal(`Node: ${node.name}`);

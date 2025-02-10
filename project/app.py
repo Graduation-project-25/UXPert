@@ -60,41 +60,40 @@ def process_elements():
     try:
         
         # Evaluate consistency
-        # Evaluate consistency
         # consistency_evaluator = Consistency() 
         consistency_evaluator = HeuristicFactory.check_rule("consistency")
 
 
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
+        
         error_prevention = ErrorPrevention()
         error_prevention_results = error_prevention.evaluate_rule(elements_df, frame_name)
 
         print(f"Consistency evaluation results: {consistency_results}")
         print(f"Error Prevention Results:{error_prevention_results}")
-        # print(f"Consistency evaluation results: {minimalist_evaluator}")
+        print(f"minimalist evaluation results: {minimalist_evaluator}")
 
         # Prepare human-readable feedback
-        feedback = {
+        consistency_feedback = {
             "ColorConsistency": f"Color consistency is {consistency_results.get('ColorConsistency', 0)}%.",
             "AlignmentConsistency": f"Alignment consistency is {consistency_results.get('AlignmentConsistency', 0)}%.",
             "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
             "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
             "Feedback": consistency_results.get('Feedback', {})
             
+            
         }
-
-       
         error_feedback = {
             "ErrorPreventionScore": f"Error Prevention Score: {error_prevention_results.get('ErrorPreventionScore', 0)}%.",
             "ValidationIssues": error_prevention_results.get("ValidationIssues", []),
             "ConfirmationIssues": error_prevention_results.get("ConfirmationIssues", []),
-            "Feedback": error_prevention_results.get("Feedback", "")
+            "Feedback": error_prevention_results.get("Feedback", {})
         }
 
         output_data = {
             "screen_size": frame_info,  
             "elements": elements,
-            "consistency_results": feedback,
+            "consistency_results": consistency_feedback,
             "error_prevention_results": error_feedback
         }
 
@@ -111,7 +110,7 @@ def process_elements():
         return jsonify({
             "message": "Design processed successfully!",
             "status": 200,
-            "consistency_results": feedback,
+            "consistency_results": consistency_feedback,
             "error_prevention_results": error_feedback
         }), 200
     
