@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from components.Heuristics_Component.heuristic_rules.ErrorHandling import ErrorHandling
 from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
@@ -66,14 +67,16 @@ def process_elements():
         error_prevention = ErrorPrevention()
         error_prevention_results = error_prevention.evaluate_rule(elements_df)
         
-        minimalist_evaluator = MinimalistEvaluation()
-        minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
+        # minimalist_evaluator = MinimalistEvaluation()
+        # minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
 
 
-        
+        error_handling = ErrorHandling()
+        error_handling_results = error_handling.evaluate_rule(elements_df)
 
         print(f"Consistency evaluation results: {consistency_results}")
         print(f"Error Prevention Results:{error_prevention_results}")
+        print(f"Error handlying results: {error_handling_results}")
         # print(f"minimalist evaluation results: {minimalist_evaluator}")
 
         # Prepare human-readable feedback
@@ -92,12 +95,20 @@ def process_elements():
             "ConfirmationIssues": error_prevention_results.get("ConfirmationIssues", []),
             "Feedback": error_prevention_results.get("Feedback", {})
         }
+        
+        error_handling_feedback = {
+            "ErrorHandlingScore": f"Error Handling Score: {error_handling_results.get('ErrorHandlingScore', 0)}%.",
+            "ErrorIssues": error_handling_results.get("ErrorIssues", []),
+            "RecoveryIssues": error_handling_results.get("RecoveryIssues", []),
+            "Feedback": error_handling_results.get("Feedback", {})
+        }
 
         output_data = {
             "screen_size": frame_info,  
             "elements": elements,
             "consistency_results": consistency_feedback,
-            "error_prevention_results": error_feedback
+            "error_prevention_results": error_feedback,
+            "error_handling_results": error_handling_feedback
         }
 
         output_file = get_new_filename()
@@ -108,7 +119,8 @@ def process_elements():
             "message": "Design processed successfully!",
             "status": 200,
             "consistency_results": consistency_feedback,
-            "error_prevention_results": error_feedback
+            "error_prevention_results": error_feedback,
+            "error_handling_results": error_handling_feedback
         }), 200
     
 
