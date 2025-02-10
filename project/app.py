@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
@@ -49,6 +50,7 @@ def process_elements():
     print(elements_df)
 
     try:
+        
         # Evaluate consistency
         # Evaluate consistency
         # consistency_evaluator = Consistency() 
@@ -56,11 +58,14 @@ def process_elements():
 
 
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
+        error_prevention = ErrorPrevention()
+        error_prevention_results = error_prevention.evaluate_rule(elements_df)
 
         # minimalist_evaluator = MinimalistEvaluation()
         # minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
 
         print(f"Consistency evaluation results: {consistency_results}")
+        print(f"Error Prevention Results:{error_prevention_results}")
         # print(f"Consistency evaluation results: {minimalist_evaluator}")
 
         # Prepare human-readable feedback
@@ -70,29 +75,33 @@ def process_elements():
             "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
             "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
             "Feedback": consistency_results.get('Feedback', {})
+            
         }
 
        
-        output_data = {
-            # "user_name": user_name,
-            # "design_name": design_name,
-            "screen_size": frame_info,  
-            "elements": elements,
-            "consistency_results": feedback 
+        error_feedback = {
+            "ErrorPreventionScore": f"Error Prevention Score: {error_prevention_results.get('ErrorPreventionScore', 0)}%.",
+            "ValidationIssues": error_prevention_results.get("ValidationIssues", []),
+            "ConfirmationIssues": error_prevention_results.get("ConfirmationIssues", []),
+            "Feedback": error_prevention_results.get("Feedback", "")
         }
 
-        output_file = get_new_filename() # Save in folder
-        # count+=1
-        # print(count)
-        print("*********************************************************************************************")
+        output_data = {
+            "screen_size": frame_info,  
+            "elements": elements,
+            "consistency_results": feedback,
+            "error_prevention_results": error_feedback
+        }
 
+        output_file = get_new_filename()
         with open(output_file, "w", encoding="utf-8") as json_file:
             json.dump(output_data, json_file, indent=4, ensure_ascii=False)
 
         return jsonify({
             "message": "Design processed successfully!",
             "status": 200,
-            "consistency_results": feedback
+            "consistency_results": feedback,
+            "error_prevention_results": error_feedback
         }), 200
 
     except Exception as e:

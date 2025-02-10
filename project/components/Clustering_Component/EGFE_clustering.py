@@ -70,7 +70,7 @@ class EGFE_Clustering(ClusteringInterface):
         #save cluster in json
         cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors and type.json")      
         self.save_cluster_as_json(clustered_data,cluster_json_path,'Cluster')
-        print('Number of instances in each cluster\n',clustered_data[['Cluster']].value_counts())  # View the number of instances in each cluster
+        print('Number of instances in each cluster\n',clustered_data[['Cluster']].value_counts())  
         clusters = np.unique(clustering.labels_)
         return clustered_data, clusters 
     

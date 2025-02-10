@@ -9,52 +9,126 @@ class Recognition(HeuristicInterface):
     def __init__(self):
         pass
 
-    def minimized_memory_load(self, elements):
-        #  Are interactive elements visible instead of hidden?
-        # visibility_status = []
+    def minimized_memory_load(self, elements_data):
         feedback = []
 
-        for _, element in elements.iterrows():
-            x = element["position.x"]
-            y = element["position.y"]
-            width = element["width"]
-            height = element["height"]
+        # Extract the elements from the JSON structure
+        for key, elements in elements_data.items():
+            for element in elements:
+                if not isinstance(element, dict):  # Skip if it's not a dictionary
+                    continue  
 
-            screen_width = element["screen_width"]
-            screen_height = element["screen_height"]
+                x = element.get("position.x", 0)
+                y = element.get("position.y", 0)
+                width = element.get("width", 0)
+                height = element.get("height", 0)
 
-            element_type = element["type"]
+                # Prevent division by zero
+                screen_width = element.get("screen_width", 1920)  
+                screen_height = element.get("screen_height", 1080)
 
-            # Only check interactive elements
-            if element_type not in ["button", "input", "dropdown", "checkbox", "link"]:
-                # visibility_status.append("Not Interactive")
-                # Ignore them
+                # Determine element type from type_* fields
+                element_type = None
+                for k, v in element.items():
+                    if k.startswith("type_") and v == 1:
+                        element_type = k.replace("type_", "")
+                        break  # Found the element type
+
+                if not element_type:
+                    continue  # Skip if no type is found
+
+                print(f"Checking {element_type} at ({x}, {y}), Size: {width}x{height}")  # Debugging
+
+                # Only check interactive elements
+                if element_type not in ["button", "input", "dropdown", "checkbox", "link"]:
+                    continue  # Ignore non-interactive elements
+
+                # Check if the element is off-screen
+                if x + width <= 0 or y + height <= 0 or x >= screen_width or y >= screen_height:
+                    feedback.append(f"The {element_type} at ({x}, {y}) is off-screen and should be repositioned.")
+
+                # Check if the element is too small (example: width or height < 10% of screen width)
+                if width < 0.1 * screen_width or height < 0.1 * screen_height:
+                    feedback.append(f"The {element_type} at ({x}, {y}) is too small ({width}px × {height}px). Consider increasing its size.")
+
+        # Only add this message if no issues were found
+        if not feedback:
+            feedback.append("All interactive elements are visible and properly sized.")
+
+        return feedback 
+
+    def visible_instructions(self, elements_data):
+        # Does the UI provide tooltips, placeholders, or labels?
+        feedback = []
+
+        for group_id, elements in elements_data.items():
+            for element in elements:
+                if not isinstance(element, dict): 
+                    continue 
+                element_type = None
+
+                # Identify the element type based on type_* keys
+                for key, value in element.items():
+                    if key.startswith("type_") and value == 1:
+                        element_type = key.replace("type_", "")
+
+                if not element_type:
+                    continue  # Skip if no valid type is found
+
+                # Simulating placeholders, tooltips, or labels (if available)
+                tooltip = element.get("tooltip", None)
+                placeholder = element.get("placeholder", None)
+                label = element.get("label", None)
+
+                print(f"Checking {element_type} for instructions...")  # Debugging
+
+                # Only check interactive elements
+                if element_type not in ["oval", "rectangle", "text", "symbolInstance"]:
+                    continue  # Ignore non-interactive elements
+
+                # Check if any instruction is provided
+                if not tooltip and not placeholder and not label:
+                    feedback.append(f"The {element_type} element is missing instructions (tooltip, placeholder, or label). Consider adding one.")
+
+        # If all elements have instructions, return a success message
+        if not feedback:
+            feedback.append("All interactive elements have visible instructions.")
+
+        return feedback
+
+    def consistent_navigation(self, elements_data):
+        # Consistency in Navigation
+        navigation_elements = ["type_symbolInstance", "type_rectangle", "type_text", "type_triangle", "type_group"]       
+        screen_nav_elements = {}  # Store element types per screen/group
+        feedback = []
+
+        for group_id, elements in elements_data.items():
+            if not isinstance(elements, list):  # Skip invalid groups
                 continue
+            
+            screen_nav_elements[group_id] = set()  # Track elements for this group
 
-            # Check if the element is off-screen
-            if x + width <= 0 or y + height <= 0 or x >= screen_width or y >= screen_height:
-                # visibility_status.append("Off-screen")
-                feedback += f"The {element_type} at ({x}, {y}) is off-screen and should be repositioned.\n"
-                continue
+            for element in elements:
+                if not isinstance(element, dict):  # Ensure valid data
+                    continue
 
-            # Check if the element is too small (example: width or height < 10 pixels)
-            if width < 10 or height < 10:
-                # visibility_status.append("Too Small")
-                feedback += f"The {element_type} at ({x}, {y}) is too small ({width}px × {height}px). Consider increasing its size.\n"
-                continue
+                for key, value in element.items():
+                    if key.startswith("type_") and value == 1:
+                        element_type = key.replace("type_", "")
+                        if element_type in navigation_elements:
+                            screen_nav_elements[group_id].add(element_type)
 
-            # If no issues found, mark as "Visible"
-            # visibility_status.append("Visible")
+        # Compare navigation elements across screens
+        reference_screen = next(iter(screen_nav_elements.values()), set())  # Get the first screen as reference
 
-            # Add results to the dataframe
-            # cluster_data["visibility_status"] = visibility_status
-            # return df
+        for screen_id, elements in screen_nav_elements.items():
+            if elements != reference_screen:
+                feedback.append(f"Inconsistent navigation elements in screen {screen_id}. Expected: {reference_screen}, Found: {elements}")
 
-            # If no issues found, return a positive message
-            if not feedback:
-                return "All interactive elements are visible and properly sized."
+        if not feedback:
+            feedback.append("Navigation elements are consistent across screens.")
 
-            return feedback
+        return feedback
 
 
     def evaluate_icon_abeling(self, is_icon_labeled):
