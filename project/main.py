@@ -81,9 +81,9 @@ def main():
 
 
     # print(data)
-    clustered_data_json = output_folder+ '/X-train Clusters based on label and type.json'
-    recognition = RecognitionEvaluation()
-    recognition.evaluate_rule(clustered_data_json,evaluation_folder)
+    # clustered_data_json = output_folder+ '/X-train Clusters based on label and type.json'
+    # recognition = RecognitionEvaluation()
+    # recognition.evaluate_rule(clustered_data_json,evaluation_folder)
 
 
 
@@ -111,6 +111,10 @@ def main():
     # print("Number of elements =", element_count)
     # print("Status of the elements =", status)
 
+    # rule = Minimalist()
+    # feedback = rule.evaluate_rule()
+
+    minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
 
 
 

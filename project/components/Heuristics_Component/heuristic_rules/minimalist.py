@@ -6,6 +6,7 @@ class Minimalist(HeuristicInterface):
         self.max_elements = max_elements
         self.min_elements = min_elements
         self.condition = 0
+        self.total_rules = 3    # We have 3 rules to evaluate
 
     def calculate_white_space_ratio(self, elements, screen_width, screen_height):
         if screen_width <= 0 or screen_height <= 0:
@@ -23,6 +24,7 @@ class Minimalist(HeuristicInterface):
             # Exclude backgrounds
             if element_area < screen_area:  
                 total_element_area += element_area 
+
         # Compute white space ratio
         white_space_ratio = 1 - (total_element_area / screen_area) 
         if white_space_ratio < 0.36:
@@ -33,17 +35,17 @@ class Minimalist(HeuristicInterface):
         # Call the white space ratio check
         white_space_ratio = self.calculate_white_space_ratio(elements, screen_width, screen_height)
         if white_space_ratio >= 0.35:
-            return white_space_ratio, "Good White space Ratio"
+            return white_space_ratio, "Good White space Ratio", False      # Rule satisfied - no deduction in the score
         else:
-            return white_space_ratio, "Cluttered Design - Try increasing the white space between elements in your design"
+            return white_space_ratio, "Cluttered Design - Try increasing the white space between elements in your design", True     # Rule violation
 
     def evaluate_elements_count(self, num_elements):
         if num_elements > self.max_elements:
-            return f"This screen has too many elements ({num_elements}). Consider removing unnecessary elements."
+            return f"This screen has too many elements ({num_elements}). Consider removing unnecessary elements.", True   # Rule violated
         elif num_elements < self.min_elements:
             self.condition += 1 
-            return f"This screen has too few elements ({num_elements}). Consider adding more essential elements."
-        return None
+            return f"This screen has too few elements ({num_elements}). Consider adding more essential elements.", True   # Rule violated
+        return None, False  # Follows rule
 
     def is_irrelevant(self, element):
         # Checks if an element is irrelevant (e.g., no text and not a primary shape). """
@@ -57,18 +59,24 @@ class Minimalist(HeuristicInterface):
 
     def evaluate_rule(self, elements, screen_width, screen_height):
         feedback = []
+        score = 100     # Start with full score
+        failed_rules = 0    # Count voilated rules
 
         # If the white space ratio is low and the number of elements is small consider it minimalistic 
         if self.condition < 2:
             # Step 1: Evaluate white space ratio
-            white_space_ratio, white_space_feedback = self.evaluate_white_space_ratio(elements, screen_width, screen_height)
+            white_space_ratio, white_space_feedback, white_space_failed = self.evaluate_white_space_ratio(elements, screen_width, screen_height)
             feedback.append(f"White Space Ratio: {white_space_ratio:.2f} - {white_space_feedback}")
+            if white_space_failed:
+                failed_rules += 1
 
             # Step 2: Evaluate element count
             num_elements = len(elements['elements'])
-            element_count_feedback = self.evaluate_elements_count(num_elements)
+            element_count_feedback, element_count_failed = self.evaluate_elements_count(num_elements)
             if element_count_feedback:
                 feedback.append(element_count_feedback)
+                if element_count_failed:
+                    failed_rules += 1
         else:
             feedback.append(f"White Space Ratio follows minimalistic rule")
             feedback.append(f"Number of elements follows minimalistic rule")
@@ -77,15 +85,21 @@ class Minimalist(HeuristicInterface):
         irrelevant_elements = [el for el in elements['elements'] if self.is_irrelevant(el)]
         if irrelevant_elements:
             feedback.append(f"This design contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
+            failed_rules += 1
         else:
             feedback.append(f"No irrelevant elements. Elements follow minimalistic rule")
 
         # If no feedback, mention adherence to minimalist rule
-        if not feedback:
-            feedback.append("Design adheres to the minimalist rule.")
+        # if not feedback:
+        #     feedback.append("Design adheres to the minimalist rule.")
+
+        # Calculate final score (100% - (failed_rules * 33.33%))
+        score = max(0, 100 - ((failed_rules / self.total_rules) * 100))
+
+        feedback.append(f"Final Score: {score:.2f}%")
 
         self.condition = 0
 
-        return feedback
+        return feedback, score
         
 
