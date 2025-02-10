@@ -59,7 +59,7 @@ class Recognition(HeuristicInterface):
 
     def visible_instructions(self, elements_data):
         # Does the UI provide tooltips, placeholders, or labels?
-        feedback = []
+        has_missing_instructions = False
 
         for group_id, elements in elements_data.items():
             for element in elements:
@@ -88,13 +88,14 @@ class Recognition(HeuristicInterface):
 
                 # Check if any instruction is provided
                 if not tooltip and not placeholder and not label:
-                    feedback.append(f"The {element_type} element is missing instructions (tooltip, placeholder, or label). Consider adding one.")
+                    has_missing_instructions = True  # Mark issue found
+                    break  # Stop checking further elements after finding one issue
 
-        # If all elements have instructions, return a success message
-        if not feedback:
-            feedback.append("All interactive elements have visible instructions.")
-
-        return feedback
+        # Provide a single feedback message
+        if has_missing_instructions:
+            return ["Some interactive elements are missing instructions (tooltip, placeholder, or label). Consider adding them."]
+        
+        return ["All interactive elements have visible instructions."]
 
     def consistent_navigation(self, elements_data):
         # Consistency in Navigation
