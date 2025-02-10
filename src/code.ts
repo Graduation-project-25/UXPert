@@ -3,7 +3,7 @@ interface ConsistencyResult {
     status: number;
     consistency_results: {
         Feedback: Record<string, string>;
-        MinimalistFeedback: Record<string, string>;
+        // MinimalistFeedback: Record<string, string>;
     };
     error_prevention_results: {
         Feedback:Record<string, string>;
@@ -61,11 +61,11 @@ figma.ui.onmessage = async (msg) => {
 
             const result = await processResponse.json() as ConsistencyResult;
 
-            if (result.consistency_results.Feedback || result.consistency_results.MinimalistFeedback) {
+            if (result.consistency_results.Feedback) {
                 allFeedback.push({
                     frameName: frame.name,
                     consistencyFeedback: result.consistency_results.Feedback,
-                    minimalistFeedback: result.consistency_results.MinimalistFeedback,
+                    // minimalistFeedback: result.consistency_results.MinimalistFeedback,
                     errorPreventionFeedback: result.error_prevention_results.Feedback,
                     screenshot: imageDataUrl
                 });
