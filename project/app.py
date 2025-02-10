@@ -87,7 +87,7 @@ def process_elements():
             "ErrorPreventionScore": f"Error Prevention Score: {error_prevention_results.get('ErrorPreventionScore', 0)}%.",
             "ValidationIssues": error_prevention_results.get("ValidationIssues", []),
             "ConfirmationIssues": error_prevention_results.get("ConfirmationIssues", []),
-            "Feedback": error_prevention_results.get("Feedback", "")
+            "Feedback": error_prevention_results.get("Feedback", {})
         }
 
         output_data = {

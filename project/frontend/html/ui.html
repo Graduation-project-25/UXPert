@@ -148,7 +148,7 @@
           image.className = 'screenshot';
 
           let feedbackList = '<ul>';
-          for (const [issue, solution] of Object.entries(item.MinimalistFeedback)) {
+          for (const [issue, solution] of Object.entries(item.errorPreventionFeedback)) {
             feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
           }
           feedbackList += '</ul>';
