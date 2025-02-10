@@ -14,7 +14,7 @@ class ClusteringInterface(ABC):
     def save_cluster_as_json(self,clusters,cluster_json_path, group_by):
         pass
 
-    @abstractmethod
-    def calculate_nearest_neighbours(X_train_selected, percentile, n_neighbors=5):
-        pass
+    # @abstractmethod
+    # def calculate_nearest_neighbours(X_train_selected, percentile, n_neighbors=5):
+    #     pass
 
