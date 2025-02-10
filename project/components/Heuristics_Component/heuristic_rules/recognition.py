@@ -1,6 +1,3 @@
-import json
-import math
-import os
 from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface 
 
 
@@ -131,55 +128,29 @@ class Recognition(HeuristicInterface):
 
         return feedback
 
-    def evaluate_icon_visibility(self,elements_data):
-        # feedback = []
-        for key, elements in elements_data.items():
-            for element in elements:  
-                icons = element.get('type_symbolInstance', None)
-                icon_width = element.get('width', None)
-                icon_height = element.get('height', None)
-                labeled = element.get('labeled', None)
-
-                if icons:
-                    if labeled:
-                        is_icon_labeled = True
-                    else: is_icon_labeled = False
-                    icon_labeling_feedback = self.evaluate_icon_labeling(is_icon_labeled)
-                    # print(element)
-                    # print(feedback)
-                    icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
-                # else: break
-        return icon_labeling_feedback,icon_size_feedback
-
-
     def evaluate_icon_labeling(self, is_icon_labeled):
         if is_icon_labeled:
             return "Your icons are labeled - Good Recognition"
         else: return "Your icons are not labeled - Try Labeling your icons for a better recognition"
     
     def evaluate_icon_size(self, icon_width, icon_height):
+        # icons = [element for element in elements if element['type'] == 'symbolInstance']
+        # Check if icon is too small (threshold: 24px width/height)
         if icon_width < 24 or icon_height < 24:
             return "Your icons too small - Try increasing your icon size"
         elif icon_width > 32 or icon_height > 32:
             return "Your icons too large - Try decreasing your icon size"
 
-
-    def evaluate_rule(self, elements):
+    def evaluate_rule(self, is_icon_labeled, icon_width, icon_height):
         feedback = []
 
-        icon_labeling_feedback,icon_size_feedback = self.evaluate_icon_visibility(elements)
-
         # Step 1: Evaluate labeled icons
-        # icon_labeling_feedback = self.evaluate_icon_labeling(is_icon_labeled)
+        icon_labeling_feedback = self.evaluate_icon_labeling(is_icon_labeled)
         feedback.append(f"Icon Labeling: {icon_labeling_feedback}")
 
         # Step 2: Evaluate icons size
-        # icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
+        icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
         feedback.append(f"Icon Size: {icon_size_feedback}")
-
-        # Step 2: Evaluate icons size
-        # consistent_navigation_feedback = self.consistent_navigation(elements)
-        # feedback.append(f"consistent_navigation_feedback Size: {consistent_navigation_feedback}")
 
         #     # Step 2: Evaluate element count
         #     num_elements = len(elements['elements'])
@@ -206,7 +177,3 @@ class Recognition(HeuristicInterface):
 
         return feedback
         
-
-        
-        
-

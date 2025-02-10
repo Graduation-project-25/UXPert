@@ -12,22 +12,36 @@ class ErrorPrevention(HeuristicInterface):
   
     # Global dictionary to store DataFrames for each page
     all_pages_data = {}
-    import os
+
+
+    DATA_FOLDER = "data/figma_features/extracted"
 
     def load_all_design_pages(self):
-        """Load all JSON files in the folder as a dictionary."""
+        """Ensure the extracted folder exists and then load all JSON files if present."""
+        if not os.path.exists(self.DATA_FOLDER):
+            print(f"Warning: {self.DATA_FOLDER} does not exist. No data to process.")
+            return {}
+
+        json_files = [f for f in os.listdir(self.DATA_FOLDER) if f.endswith(".json")]
+
+        if not json_files:
+            print("Warning: No extracted JSON files found in the folder.")
+            return {}
+
         all_data = {}
-        for file_name in os.listdir(self.DATA_FOLDER):
-            if file_name.endswith(".json"):
-                file_path = os.path.join(self.DATA_FOLDER, file_name)
-                try:
-                    with open(file_path, "r") as f:
-                        data = json.load(f)
-                        frame_name = data["screen_size"]["frameName"]
-                        all_data[frame_name] = data["elements"]
-                except (json.JSONDecodeError, KeyError):
-                    print(f"Warning: Skipping corrupted file {file_name}")
+        for file_name in json_files:
+            file_path = os.path.join(self.DATA_FOLDER, file_name)
+            try:
+                with open(file_path, "r") as f:
+                    data = json.load(f)
+                    frame_name = data["screen_size"].get("frameName", "UnknownFrame")
+                    all_data[frame_name] = data.get("elements", [])
+            except (json.JSONDecodeError, KeyError):
+                print(f"Warning: Skipping corrupted file {file_name}")
+
         return all_data
+
+
 
     def detect_buttons(self, ui_data):
         """Detect dangerous buttons in the design."""

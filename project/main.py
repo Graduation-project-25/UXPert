@@ -81,9 +81,9 @@ def main():
 
 
     # print(data)
-    # clustered_data_json = output_folder+ '/X-train Clusters based on label and type.json'
-    # recognition = RecognitionEvaluation()
-    # recognition.evaluate_rule(clustered_data_json,evaluation_folder)
+    clustered_data_json = output_folder+ '/X-train Clusters based on label and type.json'
+    recognition = RecognitionEvaluation()
+    recognition.evaluate_rule(clustered_data_json,evaluation_folder)
 
 
 
