@@ -56,7 +56,10 @@ class ErrorPrevention(HeuristicInterface):
 
             if click_destination and click_destination[0]:  
                 destination_id = click_destination[0]
-                destination_elements = ui_data[ui_data['id'] == destination_id]  
+                if "id" in ui_data.columns:
+                    destination_elements = ui_data[ui_data['id'] == destination_id]
+                else:
+                    destination_elements = pd.DataFrame()  # Avoid error if 'id' is missing
 
                 # Look for confirmation text in the destination elements
                 for _, row in destination_elements.iterrows():
@@ -88,6 +91,7 @@ class ErrorPrevention(HeuristicInterface):
                 })
 
         return confirmation_issues, confirmed_buttons / total_dangerous_buttons * 100
+
 
 
 

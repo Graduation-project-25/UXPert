@@ -99,8 +99,9 @@ function extractElements(node: SceneNode): any[] {
         let color = { r: 0, g: 0, b: 0 };
         let isImageRectangle = false;
         let buttonText = "";
-        let clickDestination = null;  // Initialize clickDestination
+        let clickDestination: string = "None";  // Default to "None" (string)
 
+        // Check for solid color fills or image rectangles
         if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
             const firstFill = node.fills[0];
 
@@ -111,16 +112,52 @@ function extractElements(node: SceneNode): any[] {
             }
         }
 
-        // Extract interactions (e.g., onClick)
+        // Detect click interactions
         const interactions = 'reactions' in node ? node.reactions : [];
         const hasClickInteraction = interactions.some(interaction => interaction.trigger?.type === 'ON_CLICK');
 
-        // Get the click destination if exists
-        if (hasClickInteraction && 'destination' in node) {
-            clickDestination = node.destination;  // Assuming 'destination' is a property in the node
+          
+
+          // Default to "None"
+
+          function logToTerminal(message: any) {
+            fetch("http://localhost:3000/logs", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message }),
+            }).catch((err) => console.error("Failed to send log:", err));
         }
-        const isIcon = node.type === 'VECTOR' || node.type === 'INSTANCE' && node.name.toLowerCase().includes('icon');
-        // Extract text inside buttons (Frames, Groups, Instances)
+        
+        if (hasClickInteraction) {
+            // logToTerminal(`Node: ${node.name}`);
+        
+            // Extract the action from the first ON_CLICK interaction
+            const action = interactions.find(interaction => interaction.trigger?.type === 'ON_CLICK')?.action;
+        
+            // logToTerminal(`Raw action value: ${JSON.stringify(action)}`);
+            // logToTerminal(`Type of action: ${typeof action}`);
+        
+            if (action && typeof action === 'object' && "destinationId" in action) {
+                // logToTerminal(`Action has a destinationId: ${JSON.stringify(action.destinationId)}`);
+                // logToTerminal(`Type of destinationId: ${typeof action.destinationId}`);
+        
+                if (action.destinationId && typeof action.destinationId === 'string') {
+                    clickDestination = action.destinationId;
+                } else {
+                    clickDestination = "Unknown destination";
+                }
+            } 
+            // else {
+            //     logToTerminal(`Action has NO destinationId.`);
+            // }
+        
+            // logToTerminal(`Final assigned clickDestination: ${clickDestination}`);
+        }
+        
+        
+        // Identify buttons and icons
+        const isIcon = node.type === 'VECTOR' || (node.type === 'INSTANCE' && node.name.toLowerCase().includes('icon'));
+
         if (["FRAME", "GROUP", "INSTANCE", "VECTOR"].includes(node.type) && 'children' in node) {
             const textChildren = node.children.filter(child => child.type === "TEXT") as TextNode[];
             if (textChildren.length > 0) {
@@ -129,6 +166,7 @@ function extractElements(node: SceneNode): any[] {
         }
 
         extractedNodes.push({
+            id: node.id ?? "None", 
             name: node.name,
             type: node.type,
             textContent: buttonText || node.name,
@@ -142,8 +180,8 @@ function extractElements(node: SceneNode): any[] {
             color_b: color.b,
             hasClickInteraction,
             isImageRectangle,
-            clickDestination, // Add clickDestination here
-            isIcon, // Added to detect potential icons
+            clickDestination,  // Destination added here
+            isIcon,  // Detect icons
         });
 
         if ('children' in node && ["FRAME", "GROUP", "INSTANCE", "VECTOR"].includes(node.type)) {
