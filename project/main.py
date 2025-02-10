@@ -53,7 +53,6 @@ def main():
     egfe_load_data = EGFE_LoadData()
     minimalist_evaluation = MinimalistEvaluation()
     minimalist_test_evaluation = MinimalistTesting()
-    minimalist_test_evaluation = MinimalistTesting()
 
     recognition_instance = HeuristicFactory.check_rule("recognition")
 
@@ -159,6 +158,18 @@ def main():
     # # evaluation_results = evaluator.evaluate_minimalist_on_clusters()
     # evaluator.evaluate_minimalist()
     # print(evaluator.evaluate_minimalist())
+
+    # Testing
+    # minimalist_testing = MinimalistTesting()
+
+    # # Evaluate test data
+    # print("\nEvaluating test data...")
+    # minimalist_tester.evaluate_rule_test(test_folder, evaluation_folder)
+
+    # # Analyze test results and calculate Precision, Recall, and F1 Score
+    # print("\nAnalyzing test results...")
+    # minimalist_tester.analyze_test_results(train_json_path, test_json_path)
+
 
 
     # clusters_data_path = "project/data/raw/EGFE/extractedFeatures/X-train clusters.json"

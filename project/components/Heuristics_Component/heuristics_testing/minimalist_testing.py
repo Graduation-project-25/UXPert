@@ -37,59 +37,53 @@ class MinimalistTesting(HeuristicTestingInterface):
         # Save the results for both training and test data
         self.evaluation_results.save_evaluation_result(data_to_save, evaluation_folder,"minimalist_test_evaluation.json")
 
-    def analyze_test_results(self, train_json, test_json):
-        try:
-            with open(train_json, 'r', encoding='utf-8') as f:
-                training_data = json.load(f)
-        except (json.JSONDecodeError, KeyError) as e:
-            print(f"Error processing training data: {e}. Skipping file.")
-            return
+    # def analyze_test_results(self, train_json, test_json):
+    #     try:
+    #         with open(train_json, 'r', encoding='utf-8') as f:
+    #             training_data = json.load(f)
+    #     except (json.JSONDecodeError, KeyError) as e:
+    #         print(f"Error processing training data: {e}. Skipping file.")
+    #         return
 
-        try:
-            with open(test_json, 'r', encoding='utf-8') as f:
-                test_data = json.load(f)
-        except (json.JSONDecodeError, KeyError) as e:
-            print(f"Error processing test data: {e}. Skipping file.")
-            return
+    #     try:
+    #         with open(test_json, 'r', encoding='utf-8') as f:
+    #             test_data = json.load(f)
+    #     except (json.JSONDecodeError, KeyError) as e:
+    #         print(f"Error processing test data: {e}. Skipping file.")
+    #         return
 
-        training_results = {"Pass": 0, "Fail": 0}
-        test_results = {"Pass": 0, "Fail": 0}
+    #     training_results = {"Pass": 0, "Fail": 0}
+    #     test_results = {"Pass": 0, "Fail": 0}
 
-        pass_message = "minimalist"
+    #     pass_message = "minimalist"
 
-        # Process training data
-        for train_design_id, train_designs in training_data.items():
-            for train in train_designs:
-                if self.is_minimalist_pass(train['evaluation'],pass_message):  # Check inside the list
-                    training_results["Pass"] += 1
-                else:
-                    training_results["Fail"] += 1
+    #     TP = 0      # True Positive
+    #     FP = 0      # False Positive
+    #     FN = 0      # False Negative
 
-        # Process test data
-        for test_design_id, test_designs in test_data.items():
-            for test in test_designs:
-                if self.is_minimalist_pass(test['evaluation'],pass_message):  # Check inside the list
-                    test_results["Pass"] += 1
-                else:
-                    test_results["Fail"] += 1
+    #     # Process test data
+    #     for test_design_id, test_designs in test_data.items():
+    #         for test in test_designs:
+    #             predicted_pass = self.is_minimalist_pass(test['evaluation'], pass_message)
 
-        train_pass_result = training_results['Pass']
-        train_fail_result = training_results['Fail']
-        test_pass_result = test_results['Pass']
-        test_fail_result = test_results['Fail']
+    #             # Assume ground truth is stored in the test data (you might need a real dataset)
+    #             actual_pass = test.get('ground_truth') == "Pass"  # You need a way to define this
 
-        total_train = train_pass_result + train_fail_result
-        total_test = test_pass_result + test_fail_result
+    #             if predicted_pass and actual_pass:
+    #                 TP += 1  # True Positive
+    #             elif predicted_pass and not actual_pass:
+    #                 FP += 1  # False Positive
+    #             elif not predicted_pass and actual_pass:
+    #                 FN += 1  # False Negative
 
-        accuracy_train = (train_pass_result / total_train) * 100 if total_train > 0 else 0
-        accuracy_test = (test_pass_result / total_test) * 100 if total_test > 0 else 0
+    #     # Compute Precision, Recall, and F1-Score
+    #     precision = TP / (TP + FP) if (TP + FP) > 0 else 0
+    #     recall = TP / (TP + FN) if (TP + FN) > 0 else 0
+    #     f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
-        print("Elements")
-
-        print(f"Training Pass/Fail: {training_results}")
-        print(f"Test Pass/Fail: {test_results}")
-        print(f"Training Accuracy: {accuracy_train:.2f}%")
-        print(f"Test Accuracy: {accuracy_test:.2f}%")
+    #     print(f"Precision: {precision:.2f}")
+    #     print(f"Recall: {recall:.2f}")
+    #     print(f"F1 Score: {f1_score:.2f}")
 
 
     # Helper function to check if "minimalist" exists in the evaluation list
