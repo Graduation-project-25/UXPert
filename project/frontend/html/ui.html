@@ -151,6 +151,7 @@
   
           // Display Error Prevention Feedback
           if (item.errorPreventionFeedback) {
+            feedbackList += `<li><strong>error-Prevention Issues:</strong></li>`;
             for (const [issue, solution] of Object.entries(item.errorPreventionFeedback)) {
               feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
             }
@@ -203,7 +204,6 @@
       document.getElementById('initial-screen').style.display = 'block';
     }, 2000);
   </script>
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -413,5 +413,6 @@
     
     
     </style>
+
 </body>
 </html>
