@@ -116,7 +116,7 @@ def main():
 
     # minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
 
-    minimalist_test_evaluation.analyze_test_results(train_folder, test_folder)
+    # minimalist_test_evaluation.analyze_test_results(train_folder, test_folder)
 
 
     # minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
