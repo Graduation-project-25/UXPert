@@ -110,12 +110,15 @@ function extractElements(node: SceneNode): any[] {
             }
         }
 
-        // Extract interactions
+        // Extract interactions (e.g., onClick)
         const interactions = 'reactions' in node ? node.reactions : [];
         const hasClickInteraction = interactions.some(interaction => interaction.trigger?.type === 'ON_CLICK');
 
+        // Check if it's a potential icon (e.g., vector-based)
+        const isIcon = node.type === 'VECTOR' || node.type === 'INSTANCE' && node.name.toLowerCase().includes('icon');
+        
         // Extract text inside buttons (Frames, Groups, Instances)
-        if (["FRAME", "GROUP", "INSTANCE","VECTOR"].includes(node.type) && 'children' in node) {
+        if (["FRAME", "GROUP", "INSTANCE", "VECTOR"].includes(node.type) && 'children' in node) {
             const textChildren = node.children.filter(child => child.type === "TEXT") as TextNode[];
             if (textChildren.length > 0) {
                 buttonText = textChildren.map(textNode => textNode.characters).join(" ");
@@ -123,9 +126,9 @@ function extractElements(node: SceneNode): any[] {
         }
 
         extractedNodes.push({
-            name: node.name, 
+            name: node.name,
             type: node.type,
-            textContent: buttonText || node.name, // Use extracted text if available
+            textContent: buttonText || node.name,
             width: 'width' in node ? node.width : null,
             height: 'height' in node ? node.height : null,
             "position.x": 'x' in node ? node.x : null,
@@ -135,10 +138,11 @@ function extractElements(node: SceneNode): any[] {
             color_g: color.g,
             color_b: color.b,
             hasClickInteraction,
-            isImageRectangle
+            isImageRectangle,
+            isIcon // Added to detect potential icons
         });
 
-        if ('children' in node && ["FRAME", "GROUP", "INSTANCE","VECTOR"].includes(node.type)) {
+        if ('children' in node && ["FRAME", "GROUP", "INSTANCE", "VECTOR"].includes(node.type)) {
             for (const child of node.children) {
                 processNode(child as SceneNode);
             }
@@ -148,3 +152,4 @@ function extractElements(node: SceneNode): any[] {
     processNode(node);
     return extractedNodes;
 }
+

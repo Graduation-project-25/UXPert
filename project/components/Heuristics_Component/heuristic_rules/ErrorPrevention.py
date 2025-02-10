@@ -7,7 +7,7 @@ class ErrorPrevention(HeuristicInterface):
     DANGEROUS_ACTION_KEYWORDS = ["delete", "remove", "discard", "erase", "reset", "clear", "cancel", "terminate"]
 
     def detect_buttons(self, ui_data):
-        """Detects buttons and identifies if they perform dangerous actions."""
+        """Detects buttons and identifies if they perform dangerous actions. Also distinguishes dangerous icons."""
         buttons = []
 
         if ui_data.empty:
@@ -15,21 +15,28 @@ class ErrorPrevention(HeuristicInterface):
 
         for _, row in ui_data.iterrows():
             if row.get('hasClickInteraction'):
-                button_text = row.get('textContent', '').lower()  # Use textContent instead of name
-                is_dangerous = any(keyword in button_text for keyword in self.DANGEROUS_ACTION_KEYWORDS)
+                element_text = row.get('textContent', '').lower()
+                element_type = row.get('type', '')
+                is_icon = row.get('isIcon', 'FALSE') == 'TRUE'  # Ensure it correctly reads the icon status
+
+                # A button is dangerous if it contains dangerous text OR is an icon and performs a dangerous action
+                is_dangerous = any(keyword in element_text for keyword in self.DANGEROUS_ACTION_KEYWORDS) or is_icon
 
                 buttons.append({
                     "name": row.get('name', 'Unnamed'),
-                    "text": button_text,
+                    "text": element_text,
                     "position.y": row.get("position.y"),
-                    "is_dangerous": is_dangerous
+                    "is_dangerous": is_dangerous,
+                    "is_icon": is_icon  
                 })
 
         return buttons
 
 
+
+
     def check_confirmation_messages(self, ui_data):
-        """Checks if confirmation messages are present near dangerous buttons."""
+        """Checks if confirmation messages are present near dangerous buttons, including both text and icon buttons."""
         buttons = self.detect_buttons(ui_data)
         confirmation_issues = []
         dangerous_buttons = [b for b in buttons if b["is_dangerous"]]
@@ -45,18 +52,16 @@ class ErrorPrevention(HeuristicInterface):
             has_confirmation = False
 
             # Check if the button has a click destination
-            if 'clickDestination' in ui_data.columns:
-                    click_destination = ui_data.loc[ui_data['name'] == button_name, 'clickDestination'].values
-            else:
-                    click_destination = None
+            click_destination = ui_data.loc[ui_data['name'] == button_name, 'clickDestination'].values if 'clickDestination' in ui_data.columns else None
+
             if click_destination and click_destination[0]:  
                 destination_id = click_destination[0]
                 destination_elements = ui_data[ui_data['id'] == destination_id]  
 
-                # Search for confirmation text in the destination
+                # Look for confirmation text in the destination elements
                 for _, row in destination_elements.iterrows():
                     if row['type'] == 'TEXT':
-                        text_content = row.get("name", "").lower()
+                        text_content = row.get("textContent", "").lower()
                         if any(keyword in text_content for keyword in self.CONFIRMATION_KEYWORDS):
                             has_confirmation = True
                             confirmed_buttons += 1
@@ -65,7 +70,7 @@ class ErrorPrevention(HeuristicInterface):
                 # If no clickDestination, check the same page
                 for _, row in ui_data.iterrows():
                     if row['type'] == 'TEXT' and abs(row['position.y'] - button_y) < 50:
-                        text_content = row.get("name", "").lower()
+                        text_content = row.get("textContent", "").lower()
                         if any(keyword in text_content for keyword in self.CONFIRMATION_KEYWORDS):
                             has_confirmation = True
                             confirmed_buttons += 1
@@ -75,9 +80,10 @@ class ErrorPrevention(HeuristicInterface):
                 confirmation_issues.append(f"No confirmation for dangerous button: {button_name}")
 
         # Calculate confirmation percentage
-        confirmation_percentage = (confirmed_buttons / total_dangerous_buttons * 100)
+        confirmation_percentage = (confirmed_buttons / total_dangerous_buttons * 100) if total_dangerous_buttons else 100
 
         return confirmation_issues, confirmation_percentage
+
 
 
     def check_input_validation(self, ui_data):
