@@ -104,6 +104,8 @@ def process_elements():
 
         minimalist_evaluator = MinimalistEvaluation()
         minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
+        print(minimalist_evaluator)
+        
 
 
         return jsonify({
