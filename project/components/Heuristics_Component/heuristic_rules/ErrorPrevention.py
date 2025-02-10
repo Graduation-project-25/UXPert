@@ -14,7 +14,7 @@ class ErrorPrevention(HeuristicInterface):
     all_pages_data = {}
 
 
-    DATA_FOLDER = "data/figma_features/extracted"
+    DATA_FOLDER = "figma_features/extracted"
 
     def load_all_design_pages(self):
         """Ensure the extracted folder exists and then load all JSON files if present."""

@@ -14,10 +14,13 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
 # Define output folder``
-data_folder = "/data/figma_features"
+data_folder = "figma_features"
 output_folder = data_folder + "/extracted"
 evaluation_folder = data_folder + "/evaluation"
-os.makedirs(data_folder, exist_ok=True)  # Ensure the folder exists
+if not os.path.exists(data_folder):
+    os.makedirs(data_folder)
+    print(f"Created folder: {data_folder}")
+  # Ensure the folder exists
 os.makedirs(output_folder, exist_ok=True)  # Ensure the folder exists
 os.makedirs(evaluation_folder, exist_ok=True)  # Ensure the folder exists
 
@@ -58,7 +61,19 @@ def process_elements():
     elements_df = pd.DataFrame(elements)
     print(elements_df)
 
-    try:
+    try: 
+        output_data = {
+            "screen_size": frame_info,  
+            "elements": elements,
+            # "consistency_results": consistency_feedback,
+            # "error_prevention_results": error_feedback,
+            # "error_handling_results": error_handling_feedback
+        }
+        output_file = get_new_filename()
+        with open(output_file, "w", encoding="utf-8") as json_file:
+            json.dump(output_data, json_file, indent=4, ensure_ascii=False)
+
+        
         
         # Evaluate consistency
         consistency_evaluator = Consistency() 
@@ -103,17 +118,7 @@ def process_elements():
             "Feedback": error_handling_results.get("Feedback", {})
         }
 
-        output_data = {
-            "screen_size": frame_info,  
-            "elements": elements,
-            "consistency_results": consistency_feedback,
-            "error_prevention_results": error_feedback,
-            "error_handling_results": error_handling_feedback
-        }
-
-        output_file = get_new_filename()
-        with open(output_file, "w", encoding="utf-8") as json_file:
-            json.dump(output_data, json_file, indent=4, ensure_ascii=False)
+       
 
         return jsonify({
             "message": "Design processed successfully!",
