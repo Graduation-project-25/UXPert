@@ -52,22 +52,22 @@ class MinimalistTesting(HeuristicTestingInterface):
             print(f"Error processing test data: {e}. Skipping file.")
             return
 
-        training_results = {"Pass": 0, "Fail": 0}
-        test_results = {"Pass": 0, "Fail": 0}
+        TP = 0  # True Positive
+        FP = 0  # False Positive
+        FN = 0  # False Negative
+        TN = 0  # True Negative
 
-        pass_message = "minimalist"
-
-        TP = 0      # True Positive
-        FP = 0      # False Positive
-        FN = 0      # False Negative
+        total_samples = 0  # Count total test samples
+        pass_threshold = 70  # Define threshold for passing
 
         # Process test data
         for test_design_id, test_designs in test_data.items():
             for test in test_designs:
-                predicted_pass = self.is_minimalist_pass(test['evaluation'], pass_message)
+                feedback, score = self.evaluate_rule(test['elements'], test['screen_width'], test['screen_height'])
+                predicted_pass = score >= pass_threshold
 
-                # Assume ground truth is stored in the test data (you might need a real dataset)
-                actual_pass = test.get('ground_truth') == "Pass"  # You need a way to define this
+                # Extract ground truth from the test data (modify as needed)
+                actual_pass = test.get('ground_truth', 0) >= pass_threshold  # Default to "Fail" if missing
 
                 if predicted_pass and actual_pass:
                     TP += 1  # True Positive
@@ -75,12 +75,18 @@ class MinimalistTesting(HeuristicTestingInterface):
                     FP += 1  # False Positive
                 elif not predicted_pass and actual_pass:
                     FN += 1  # False Negative
+                else:
+                    TN += 1  # True Negative
 
-        # Compute Precision, Recall, and F1-Score
+                total_samples += 1
+
+        # Compute Accuracy, Precision, Recall, and F1-Score
+        accuracy = (TP + TN) / total_samples if total_samples > 0 else 0
         precision = TP / (TP + FP) if (TP + FP) > 0 else 0
         recall = TP / (TP + FN) if (TP + FN) > 0 else 0
         f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
+        print(f"Accuracy: {accuracy:.2f}")
         print(f"Precision: {precision:.2f}")
         print(f"Recall: {recall:.2f}")
         print(f"F1 Score: {f1_score:.2f}")
