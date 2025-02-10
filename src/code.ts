@@ -99,6 +99,7 @@ function extractElements(node: SceneNode): any[] {
         let color = { r: 0, g: 0, b: 0 };
         let isImageRectangle = false;
         let buttonText = "";
+        let clickDestination = null;  // Initialize clickDestination
 
         if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
             const firstFill = node.fills[0];
@@ -114,9 +115,11 @@ function extractElements(node: SceneNode): any[] {
         const interactions = 'reactions' in node ? node.reactions : [];
         const hasClickInteraction = interactions.some(interaction => interaction.trigger?.type === 'ON_CLICK');
 
-        // Check if it's a potential icon (e.g., vector-based)
+        // Get the click destination if exists
+        if (hasClickInteraction && 'destination' in node) {
+            clickDestination = node.destination;  // Assuming 'destination' is a property in the node
+        }
         const isIcon = node.type === 'VECTOR' || node.type === 'INSTANCE' && node.name.toLowerCase().includes('icon');
-        
         // Extract text inside buttons (Frames, Groups, Instances)
         if (["FRAME", "GROUP", "INSTANCE", "VECTOR"].includes(node.type) && 'children' in node) {
             const textChildren = node.children.filter(child => child.type === "TEXT") as TextNode[];
@@ -139,7 +142,8 @@ function extractElements(node: SceneNode): any[] {
             color_b: color.b,
             hasClickInteraction,
             isImageRectangle,
-            isIcon // Added to detect potential icons
+            clickDestination, // Add clickDestination here
+            isIcon, // Added to detect potential icons
         });
 
         if ('children' in node && ["FRAME", "GROUP", "INSTANCE", "VECTOR"].includes(node.type)) {
@@ -152,4 +156,3 @@ function extractElements(node: SceneNode): any[] {
     processNode(node);
     return extractedNodes;
 }
-

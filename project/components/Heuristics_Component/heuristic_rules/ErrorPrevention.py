@@ -69,20 +69,26 @@ class ErrorPrevention(HeuristicInterface):
             else:
                 # If no clickDestination, check the same page
                 for _, row in ui_data.iterrows():
-                    if row['type'] == 'TEXT' and abs(row['position.y'] - button_y) < 50:
+                    if row['type'] == 'TEXT' and abs(row['position.y'] - button_y) < 50:  # Adjust distance tolerance
                         text_content = row.get("textContent", "").lower()
                         if any(keyword in text_content for keyword in self.CONFIRMATION_KEYWORDS):
                             has_confirmation = True
                             confirmed_buttons += 1
                             break
 
-            if not has_confirmation:
-                confirmation_issues.append(f"No confirmation for dangerous button: {button_name}")
+            if has_confirmation:
+                confirmation_issues.append({
+                    "button_name": button_name,
+                    "confirmation_status": "Found confirmation"
+                })
+            else:
+                confirmation_issues.append({
+                    "button_name": button_name,
+                    "confirmation_status": "Missing confirmation"
+                })
 
-        # Calculate confirmation percentage
-        confirmation_percentage = (confirmed_buttons / total_dangerous_buttons * 100) if total_dangerous_buttons else 100
+        return confirmation_issues, confirmed_buttons / total_dangerous_buttons * 100
 
-        return confirmation_issues, confirmation_percentage
 
 
 
