@@ -43,12 +43,15 @@ def process_elements():
 
     user_name = data.get("user_name", "Unknown User")
     design_name = data.get("design_name", "Untitled Design")
+    page_name = data.get("page_name", "DefaultPage")
     frame_info = data.get("frame", {})
     elements = data.get('elements', [])
     if not elements:
         return jsonify({"error": "No elements found"}), 400
+    frame_name = frame_info.get("frameName", "")  # Get the frame name
+    print(f"Received design from {user_name}: {design_name} on frame {frame_name}")
 
-    print(f"Received design from {user_name}: {design_name}")
+    
 
     # Convert elements to DataFrame
     elements_df = pd.DataFrame(elements)
@@ -58,13 +61,13 @@ def process_elements():
         
         # Evaluate consistency
         # Evaluate consistency
-        # consistency_evaluator = Consistency() 
+        consistency_evaluator = Consistency() 
         consistency_evaluator = HeuristicFactory.check_rule("consistency")
 
 
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
         error_prevention = ErrorPrevention()
-        error_prevention_results = error_prevention.evaluate_rule(elements_df)
+        error_prevention_results = error_prevention.evaluate_rule(elements_df, frame_name)
 
         # minimalist_evaluator = MinimalistEvaluation()
         # minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
