@@ -1,5 +1,4 @@
 import json
-import os
 from components.Heuristics_Component.heuristics_evaluation.evaluation_results import EvaluationResults
 from components.Heuristics_Component.heuristics_evaluation.heuristic_evaluation import HeuristicEvaluationInterface
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
@@ -16,34 +15,30 @@ class RecognitionEvaluation(HeuristicEvaluationInterface):
             with open(clustered_data, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 # print(data)
-
-            feedback = recognition_instance.evaluate_rule(data)
-            # print(feedback)
+                consistent_navigation_feedback = recognition_instance.consistent_navigation(data)
+                visible_instructions_feedback = recognition_instance.visible_instructions(data)
+                minimized_memory_load_feedback= recognition_instance.minimized_memory_load(data)
 
             for key, elements in data.items():
-                for element in elements:
-                    # if feedback
-                        # feedback = recognition_instance.evaluate_rule(data)
+                for element in elements:  
+                    icons = element.get('type_symbolInstance', None)
+                    icon_width = element.get('width', None)
+                    icon_height = element.get('height', None)
+                    labeled = element.get('labeled', None)
 
-                    # print(element)
-                    # print(feedback)
-                    # icons = element.get('type_symbolInstance', None)
-                    # icon_width = element.get('width', None)
-                    # icon_height = element.get('height', None)
-                    # labeled = element.get('labeled', None)
+                    if icons:
+                        if labeled:
+                            is_icon_labeled = True
+                        else: is_icon_labeled = False
+                        icon_visibility_feedback = recognition_instance.evaluate_rule(is_icon_labeled,icon_width,icon_height)
 
-                    # if icons:
-                    #     if labeled:
-                    #         is_icon_labeled = True
-                    #     else: is_icon_labeled = False
-                    #     # feedback = recognition_instance.evaluate_rule(data,is_icon_labeled,icon_width,icon_height)
-
-                    # else: break
+                    else: break
 
                     # Save the updated element with feedback
-                    element["evaluation"] = feedback
-                    # element["evaluation"] = feedback2 
-                    # element["evaluation2"] = feedback2
+                    element["Icons evaluation"] = icon_visibility_feedback  
+                element["consistent navigation"] = consistent_navigation_feedback  
+                element["visible instructions"] = visible_instructions_feedback  
+                element["minimized memory load"] = minimized_memory_load_feedback  
 
                 # Store results per cluster
                 data_to_save[key] = elements  
@@ -53,5 +48,4 @@ class RecognitionEvaluation(HeuristicEvaluationInterface):
         self.evaluation_results.save_evaluation_result(data_to_save, evaluation_folder, "recognition_evaluation.json")
 
             
-
 
