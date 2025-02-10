@@ -131,28 +131,57 @@ class Recognition(HeuristicInterface):
         return feedback
 
 
-    def evaluate_icon_abeling(self, is_icon_labeled):
+    def evaluate_icon_labeling(self, is_icon_labeled):
         if is_icon_labeled:
             return "Your icons are labeled - Good Recognition"
         else: return "Your icons are not labeled - Try Labeling your icons for a better recognition"
     
-    def evaluate_icon_size(self, elements):
-        icons = [element for element in elements if element['type'] == 'symbolInstance']
-        for icon in icons:
-            # Check if icon is too small (threshold: 24px width/height)
-            if icon.get('width', 0) < 24 or icon.get('height', 0) < 24:
-                return "Your icons too small - Try increasing your icon size"
-            elif icon.get('width', 0) > 32 or icon.get('height', 0) > 32:
-                return "Your icons too large - Try decreasing your icon size"
+    def evaluate_icon_size(self, icon_width, icon_height):
+        # icons = [element for element in elements if element['type'] == 'symbolInstance']
+        # Check if icon is too small (threshold: 24px width/height)
+        if icon_width < 24 or icon_height < 24:
+            return "Your icons too small - Try increasing your icon size"
+        elif icon_width > 32 or icon_height > 32:
+            return "Your icons too large - Try decreasing your icon size"
 
 
+    def evaluate_rule(self, is_icon_labeled, icon_width, icon_height):
+        feedback = []
 
+        # Step 1: Evaluate labeled icons
+        icon_labeling_feedback = self.evaluate_icon_labeling(is_icon_labeled)
+        feedback.append(f"Icon Labeling: {icon_labeling_feedback}")
 
+        # Step 2: Evaluate icons size
+        icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
+        feedback.append(f"Icon Size: {icon_size_feedback}")
 
+        #     # Step 2: Evaluate element count
+        #     num_elements = len(elements['elements'])
+        #     element_count_feedback = self.evaluate_elements_count(num_elements)
+        #     if element_count_feedback:
+        #         feedback.append(element_count_feedback)
+        # else:
+        #     feedback.append(f"White Space Ratio follows minimalistic rule")
+        #     feedback.append(f"Number of elements follows minimalistic rule")
 
+        # # Step 3: Check for irrelevant elements
+        # irrelevant_elements = [el for el in elements['elements'] if self.is_irrelevant(el)]
+        # if irrelevant_elements:
+        #     feedback.append(f"This design contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
+        # else:
+        #     feedback.append(f"No irrelevant elements. Elements follow minimalistic rule")
 
+        # # If no feedback, mention adherence to minimalist rule
+        # if not feedback:
+        #     feedback.append("Design adheres to the minimalist rule.")
 
+        # self.condition = 0
+        # print(feedback)
 
-    def evaluate_rule(self, cluster_data):
-        pass
+        return feedback
+        
+
+        
+        
 

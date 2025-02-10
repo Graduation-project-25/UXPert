@@ -149,18 +149,19 @@ class EGFE_Clustering(ClusteringInterface):
 
         type_features =  [col for col in X_train.columns if col.startswith('type_')]
         label_feature =  ['labeled']
-        X_train_selected = X_train[type_features+label_feature]  
-
-        #Remove null values
-        if X_train_selected.isnull().any().any():
-            X_train_selected = X_train_selected.fillna(0)
-            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+        size_features =  ['width','height']
+        X_train_selected = X_train[type_features + label_feature].fillna(0) 
+        X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
 
         # Apply DBSCAN
         clustering = DBSCAN(eps=0.2, min_samples=5).fit(X_train_selected)
 
         # Prepare the dataset with clusters
-        clustered_data = X_train_selected.copy()
+        selected_columns = type_features + label_feature + size_features
+        clustered_data = X_train[selected_columns].copy().fillna(0)  # Keep only required columns
+        # clustered_data = X_train_selected.copy()
+        clustered_data = clustered_data.astype({col: 'int' for col in clustered_data.columns if col.startswith('type_')})
+
         clustered_data.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
         
         #save cluster in json
