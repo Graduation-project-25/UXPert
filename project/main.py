@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
@@ -20,7 +21,7 @@ from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProces
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
 from components.Heuristics_Component.heuristics_testing.minimalist_testing import MinimalistTesting
-from components.Heuristics_Component.heuristic_rules.recognition import Recognition
+from components.Heuristics_Component.heuristics_evaluation.recognition_evaluation import RecognitionEvaluation
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 
@@ -71,19 +72,19 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    clustered_data, clusters = egfe_clustering.dbscan_cluster('label')
-    print (clustered_data)
+    # clustered_data, clusters = egfe_clustering.dbscan_cluster('label')
+    # print (clustered_data)
     # egfe_clustering.handle_outliers(clustered_data, "Label Clustering", "Label Clustering Outliers")
-    egfe_clustering_evaluation.evaluate_clustering(clustered_data)
-
+    # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
 
 
 
     # print(data)
-    # recognition = Recognition()
-    # isIconLabeled = recognition.is_icon_labeled(train_folder)
+    clustered_data_json = output_folder+ '/X-train Clusters based on label and type.json'
+    recognition = RecognitionEvaluation()
+    recognition.evaluate_rule(clustered_data_json,evaluation_folder)
 
 
 

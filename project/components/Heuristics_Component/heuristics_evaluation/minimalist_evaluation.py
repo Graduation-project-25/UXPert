@@ -6,7 +6,7 @@ from components.Heuristics_Component.heuristic_rules.heuristic_factory import He
 
 class MinimalistEvaluation(HeuristicEvaluationInterface):    
     def __init__(self):
-        self.evaluation_results = EvaluationResults()
+        self.evaluation_results = EvaluationResults() 
 
     def evaluate_rule(self, train_folder, evaluation_folder):
         minimalist_instance = HeuristicFactory.check_rule("minimalist")

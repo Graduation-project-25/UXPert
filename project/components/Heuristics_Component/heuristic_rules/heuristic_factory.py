@@ -8,19 +8,6 @@ from components.Heuristics_Component.heuristic_rules.recognition import Recognit
 
 class HeuristicFactory:
    def check_rule(rule_type: str, df=None) -> HeuristicInterface:
-        # heuristics = {
-        # #     "consistency": Consistency,
-        # #     "minimalist": Minimalist,
-        # #     "recognition": Recognition,
-        # #     "ClusteringConsistency": lambda: ClusteringConsistency(df) if df is not None else None  # Pass df safely
-        # # }
-
-        # if rule_type in heuristics:
-        #     heuristic_instance = heuristics[rule_type]()
-        #     if heuristic_instance is None:
-        #         raise ValueError(f"Missing required dataset for heuristic: {rule_type}")
-        #     return heuristic_instance 
-        
         match rule_type:
             case "consistency":
                 return Consistency()
