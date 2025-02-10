@@ -126,13 +126,14 @@ class ErrorPrevention(HeuristicInterface):
 
         if confirmation_percentage < 50:
             prevention_score -= 20  
-        feedback={
-                "ErrorPreventionScore": max(prevention_score, 0),
-                "ValidationIssues": validation_issues,
-                "ConfirmationIssues": confirmation_issues,
-        "feedback" : 
-            {
-            "Feedback": "Good error prevention" if prevention_score > 80 else "Needs improvement."
+        feedback = {
+            "ErrorPreventionScore": round(max(prevention_score, 0), 2),
+            "ValidationIssues": validation_issues,
+            "ConfirmationIssues": confirmation_issues,
+            "Feedback": {
+                "Prevention": "Good error prevention." if prevention_score > 80 else "Needs improvement.",
+                "Validation": "Validation issues detected." if validation_issues else "No validation issues.",
+                "Confirmation": "Confirmation issues detected." if confirmation_issues else "No confirmation issues."
             }
         }
         return feedback
