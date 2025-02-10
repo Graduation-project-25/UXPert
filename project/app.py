@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
 # Define output folder
-data_folder = "project/data/figma_features"
+data_folder = "data/figma_features"
 output_folder = data_folder + "/extracted"
 evaluation_folder = data_folder + "/evaluation"
 os.makedirs(data_folder, exist_ok=True)  # Ensure the folder exists
@@ -65,9 +65,11 @@ def process_elements():
         
         error_prevention = ErrorPrevention()
         error_prevention_results = error_prevention.evaluate_rule(elements_df, frame_name)
-
+        
         minimalist_evaluator = MinimalistEvaluation()
         minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
+
+        
 
         print(f"Consistency evaluation results: {consistency_results}")
         print(f"Error Prevention Results:{error_prevention_results}")
@@ -101,12 +103,16 @@ def process_elements():
         with open(output_file, "w", encoding="utf-8") as json_file:
             json.dump(output_data, json_file, indent=4, ensure_ascii=False)
 
+        
+
+
         return jsonify({
             "message": "Design processed successfully!",
             "status": 200,
             "consistency_results": consistency_feedback,
             "error_prevention_results": error_feedback
         }), 200
+    
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
