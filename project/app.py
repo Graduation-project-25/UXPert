@@ -29,17 +29,17 @@ def get_new_filename():
     existing_files = [f for f in os.listdir(output_folder) if f.endswith(".json")]
     count = len(existing_files)  # Count current files and use it for a new filename
     return os.path.join(output_folder, f"design_{count + 1}.json")
-@app.route("/logs", methods=["POST"])
-def receive_logs():
-    log_data = request.json.get("message", "No message received")
-    print("LOG FROM FIGMA:", log_data)
-    return "", 200  # Send back a success response
+# @app.route("/logs", methods=["POST"])
+# def receive_logs():
+#     log_data = request.json.get("message", "No message received")
+#     print("LOG FROM FIGMA:", log_data)
+#     return "", 200  # Send back a success response
 
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
     if request.method == 'OPTIONS':
         return '', 200  
-
+    print("Raw request body:", request.data)
     data = request.get_json()
     
     if not data:

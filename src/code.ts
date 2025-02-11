@@ -35,11 +35,7 @@ figma.ui.onmessage = async (msg) => {
         const imageBase64 = figma.base64Encode(imageBytes);
         const imageDataUrl = `data:image/png;base64,${imageBase64}`;
 
-        const serializedNodes = extractElements(frame);
-
-        console.log(`Frame: ${frame.name}`);
-        console.log(`Screen Dimensions: ${frame.width}x${frame.height}`);
-        console.log("Extracted Features:", serializedNodes); // Debugging
+        const serializedNodes = await extractElements(frame);  // Ensure serialized nodes are processed correctly
 
         const user_name = figma.currentUser?.name ?? "Unknown User";
         const design_name = figma.root.name ?? "Untitled Design";
@@ -56,7 +52,11 @@ figma.ui.onmessage = async (msg) => {
                         screen_width: frame.width,
                         screen_height: frame.height
                     },
-                    elements: serializedNodes
+                    elements: serializedNodes.map(node => {
+                        // Exclude imageBase64 for non-image elements
+                        const { imageBase64, ...rest } = node;
+                        return imageBase64 ? { ...rest, imageBase64 } : rest;
+                    })
                 }),
             });
 
@@ -68,7 +68,6 @@ figma.ui.onmessage = async (msg) => {
                 allFeedback.push({
                     frameName: frame.name,
                     consistencyFeedback: result.consistency_results.Feedback,
-                    // minimalistFeedback: result.consistency_results.MinimalistFeedback,
                     errorPreventionFeedback: result.error_prevention_results.Feedback,
                     errorHandlingFeedback: result.error_handling_results.Feedback,
                     screenshot: imageDataUrl
@@ -138,6 +137,7 @@ async function extractElements(node: SceneNode): Promise<any[]> {
             }
         }
 
+        // Push the cleaned data to the extractedNodes array
         extractedNodes.push({
             id: node.id ?? "None", 
             name: node.name,
@@ -153,7 +153,7 @@ async function extractElements(node: SceneNode): Promise<any[]> {
             color_b: color.b,
             hasClickInteraction,
             isImageRectangle,
-            imageBase64, // Add extracted image data
+            imageBase64, // Add extracted image data if applicable
             clickDestination,
             isIcon,
         });
