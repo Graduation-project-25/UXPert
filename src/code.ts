@@ -84,7 +84,7 @@ figma.ui.onmessage = async (msg) => {
             type: 'collective-feedback',
             feedback: allFeedback
         });
-        console.log("Sending feedback:", JSON.stringify(allFeedback, null, 2)); // Debugging
+        // console.log("Sending feedback:", JSON.stringify(allFeedback, null, 2)); // Debugging
     }
 };
 
@@ -153,7 +153,7 @@ async function extractElements(node: SceneNode): Promise<any[]> {
             color_b: color.b,
             hasClickInteraction,
             isImageRectangle,
-            imageBase64, // Add extracted image data if applicable
+            // imageBase64, // Add extracted image data if applicable
             clickDestination,
             isIcon,
         });
