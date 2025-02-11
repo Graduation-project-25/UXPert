@@ -10,6 +10,10 @@ interface ConsistencyResult {
     };
     error_handling_results: {
         Feedback: Record<string, string>;
+    };    
+    
+    minimalist_results: {
+        Feedback: Record<string, string>;
     };
 }
 
@@ -70,9 +74,11 @@ figma.ui.onmessage = async (msg) => {
                     consistencyFeedback: result.consistency_results.Feedback,
                     errorPreventionFeedback: result.error_prevention_results.Feedback,
                     errorHandlingFeedback: result.error_handling_results.Feedback,
+                    minimalistFeedback: result.minimalist_results.Feedback,
                     screenshot: imageDataUrl
                 });
             }
+
         } catch (error) {
             console.error("Error during fetch:", error);
             figma.notify(`Failed to send elements from ${frame.name} to backend.`);
