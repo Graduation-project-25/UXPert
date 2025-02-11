@@ -20,12 +20,16 @@ class MinimalistTesting(HeuristicTestingInterface):
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                # feedback = self.minimalist_instance.evaluate_rule(
-                #     data, data['screen_size']['screen_width'], data['screen_size']['screen_height']
-                # )
+                
+                # Ensure required keys exist before processing
+                if not isinstance(data, dict) or 'screen_size' not in data or 'elements' not in data:
+                    print(f"Skipping invalid test data in {file_name}: Missing required keys")
+                    continue
+                
                 feedback = self.rule.evaluate_rule(
-                    data, data['screen_size']['screen_width'], data['screen_size']['screen_height']
+                    data['elements'], data['screen_size']['screen_width'], data['screen_size']['screen_height']
                 )
+                
                 # Store evaluation results for test data
                 result_data = {
                     "screen_size": data["screen_size"],
@@ -40,7 +44,7 @@ class MinimalistTesting(HeuristicTestingInterface):
                 print(f"Error processing {file_name}: {e}. Skipping file.")
         
         # Save the results for both training and test data
-        self.evaluation_results.save_evaluation_result(data_to_save, evaluation_folder,"minimalist_test_evaluation.json")
+        self.evaluation_results.save_evaluation_result(data_to_save, evaluation_folder, "minimalist_test_evaluation.json")
 
     def analyze_test_results(self, train_folder, test_folder):
         train_files = [os.path.join(train_folder, f) for f in os.listdir(train_folder) if f.endswith('.json')]
@@ -57,27 +61,38 @@ class MinimalistTesting(HeuristicTestingInterface):
             except (json.JSONDecodeError, KeyError, FileNotFoundError) as e:
                 print(f"Error processing {train_file}: {e}. Skipping file.")
 
-        # Load test data
+        # Load test data with additional validation
         for test_file in test_files:
             try:
                 with open(test_file, 'r', encoding='utf-8') as f:
-                    test_data.update(json.load(f))
+                    data = json.load(f)
+                    
+                    if isinstance(data, list):  # If JSON root is a list, use file name as key
+                        test_data[test_file] = data
+                    elif isinstance(data, dict):
+                        test_data.update(data)
+                    else:
+                        print(f"Skipping {test_file}: Unexpected data format")
+                        continue
             except (json.JSONDecodeError, KeyError, FileNotFoundError) as e:
                 print(f"Error processing {test_file}: {e}. Skipping file.")
 
-        TP = 0  # True Positive
-        FP = 0  # False Positive
-        TN = 0  # True Negative
-        FN = 0  # False Negative
-
+        TP = FP = TN = FN = 0  # Initialize counters
         total_samples = 0  # Count total test samples
         pass_threshold = 70  # Define threshold for passing
 
         # Process test data
         for test_design_id, test_designs in test_data.items():
             for test in test_designs:
+                print("Type of test:", type(test))  # Debugging output
+                print("Raw test data:", test)
+
+                if not isinstance(test, dict) or 'elements' not in test or 'screen_width' not in test or 'screen_height' not in test:
+                    print(f"Skipping invalid test data: {test}")
+                    continue  # Skip this test case
+                
                 feedback, score = self.rule.evaluate_rule(test['elements'], test['screen_width'], test['screen_height'])
-                print("Score: ", score)
+                print("Score:", score)
                 predicted_pass = (score >= pass_threshold)
 
                 # Extract ground truth from the test data (modify as needed)
@@ -107,6 +122,6 @@ class MinimalistTesting(HeuristicTestingInterface):
 
 
     # Helper function to check if "minimalist" exists in the evaluation list
-    def is_minimalist_pass(self,evaluation_list,pass_message):
+    def is_minimalist_pass(self, evaluation_list, pass_message):
         return any(pass_message.lower() in eval_item.lower() for eval_item in evaluation_list)
 

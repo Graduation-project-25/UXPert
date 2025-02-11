@@ -71,7 +71,7 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    clustered_data, clusters = egfe_clustering.dbscan_cluster('label')
+    # clustered_data, clusters = egfe_clustering.dbscan_cluster('label')
     # print (clustered_data)
     # egfe_clustering.handle_outliers(clustered_data, "Label Clustering", "Label Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
@@ -81,9 +81,9 @@ def main():
 
 
     # print(data)
-    clustered_data_json = output_folder+ '/X-train Clusters based on label and type.json'
-    recognition = RecognitionEvaluation()
-    recognition.evaluate_rule(clustered_data_json,evaluation_folder)
+    # clustered_data_json = output_folder+ '/X-train Clusters based on label and type.json'
+    # recognition = RecognitionEvaluation()
+    # recognition.evaluate_rule(clustered_data_json,evaluation_folder)
 
 
 
@@ -116,8 +116,20 @@ def main():
 
     # minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
 
-    # minimalist_test_evaluation.analyze_test_results(train_folder, test_folder)
+    minimalist_test_evaluation.analyze_test_results(train_folder, test_folder)
 
+    # for file_name in os.listdir(test_folder):
+    #     file_path = os.path.join(test_folder, file_name)
+    #     try:
+    #         with open(file_path, 'r', encoding='utf-8') as f:
+    #             content = f.read().strip()
+    #             if not content:
+    #                 print(f"Empty file detected: {file_name}")
+    #             else:
+    #                 print("loaded")
+    #                 json.loads(content)  # Try loading JSON to validate
+    #     except json.JSONDecodeError:
+    #         print(f"Invalid JSON in file: {file_name}")
 
     # minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
 #     minimalist_test_evaluation.evaluate_rule_test(test_folder, evaluation_folder)
