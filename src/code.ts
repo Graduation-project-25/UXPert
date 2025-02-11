@@ -10,6 +10,10 @@ interface ConsistencyResult {
     };
     error_handling_results: {
         Feedback: Record<string, string>;
+    };    
+    
+    minimalist_results: {
+        Feedback: Record<string, string>;
     };
 }
 
@@ -35,11 +39,7 @@ figma.ui.onmessage = async (msg) => {
         const imageBase64 = figma.base64Encode(imageBytes);
         const imageDataUrl = `data:image/png;base64,${imageBase64}`;
 
-        const serializedNodes = extractElements(frame);
-
-        console.log(`Frame: ${frame.name}`);
-        console.log(`Screen Dimensions: ${frame.width}x${frame.height}`);
-        console.log("Extracted Features:", serializedNodes); // Debugging
+        const serializedNodes = await extractElements(frame);  // Ensure serialized nodes are processed correctly
 
         const user_name = figma.currentUser?.name ?? "Unknown User";
         const design_name = figma.root.name ?? "Untitled Design";
@@ -56,7 +56,11 @@ figma.ui.onmessage = async (msg) => {
                         screen_width: frame.width,
                         screen_height: frame.height
                     },
-                    elements: serializedNodes
+                    elements: serializedNodes.map(node => {
+                        // Exclude imageBase64 for non-image elements
+                        const { imageBase64, ...rest } = node;
+                        return imageBase64 ? { ...rest, imageBase64 } : rest;
+                    })
                 }),
             });
 
@@ -68,12 +72,13 @@ figma.ui.onmessage = async (msg) => {
                 allFeedback.push({
                     frameName: frame.name,
                     consistencyFeedback: result.consistency_results.Feedback,
-                    // minimalistFeedback: result.consistency_results.MinimalistFeedback,
                     errorPreventionFeedback: result.error_prevention_results.Feedback,
                     errorHandlingFeedback: result.error_handling_results.Feedback,
+                    minimalistFeedback: result.minimalist_results.Feedback,
                     screenshot: imageDataUrl
                 });
             }
+
         } catch (error) {
             console.error("Error during fetch:", error);
             figma.notify(`Failed to send elements from ${frame.name} to backend.`);
@@ -85,7 +90,7 @@ figma.ui.onmessage = async (msg) => {
             type: 'collective-feedback',
             feedback: allFeedback
         });
-        console.log("Sending feedback:", JSON.stringify(allFeedback, null, 2)); // Debugging
+        // console.log("Sending feedback:", JSON.stringify(allFeedback, null, 2)); // Debugging
     }
 };
 
@@ -165,6 +170,7 @@ function extractElements(node: SceneNode): any[] {
             }
         }
 
+        // Push the cleaned data to the extractedNodes array
         extractedNodes.push({
             id: node.id ?? "None", 
             name: node.name,
@@ -180,8 +186,9 @@ function extractElements(node: SceneNode): any[] {
             color_b: color.b,
             hasClickInteraction,
             isImageRectangle,
-            clickDestination,  // Destination added here
-            isIcon,  // Detect icons
+            // imageBase64, // Add extracted image data if applicable
+            clickDestination,
+            isIcon,
         });
 
         if ('children' in node && ["FRAME", "GROUP", "INSTANCE", "VECTOR"].includes(node.type)) {

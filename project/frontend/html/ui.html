@@ -131,9 +131,19 @@
       document.getElementById('enhancement-screen').style.display = 'none';
       document.getElementById('feedback-screen').style.display = 'block';
     };
-    
+
+    window.addEventListener("message", (event) => {
+      console.log("Received plugin message:", event.data);
+    });
+
+
+
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
+      if (!msg) {
+        console.error("No pluginMessage found in event data:", event.data);
+        return;
+      }
       if (msg && msg.type === 'collective-feedback') {
         document.getElementById('processing-screen').style.display = 'none';
         document.getElementById('feedback-screen').style.display = 'block';
@@ -177,6 +187,10 @@
 
           const errHandlingCard = createCard('Error Handling Issues', item.errorHandlingFeedback);
           if (errHandlingCard) cards.push(errHandlingCard);
+          
+          const minimalistCard = createCard('Minimalist Issues', item.minimalistFeedback);
+          if (minimalistCard) cards.push(minimalistCard);
+
           
           return cards;
         });

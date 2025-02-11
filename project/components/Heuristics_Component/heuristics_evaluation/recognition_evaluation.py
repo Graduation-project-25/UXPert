@@ -7,7 +7,7 @@ class RecognitionEvaluation(HeuristicEvaluationInterface):
     def __init__(self):
         self.evaluation_results = EvaluationResults()
 
-
+ 
     def evaluate_rule(self, clustered_data, evaluation_folder):
         recognition_instance = HeuristicFactory.check_rule("recognition")
         data_to_save = {}
