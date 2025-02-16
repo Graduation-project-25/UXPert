@@ -82,8 +82,8 @@ def process_elements():
         error_prevention = ErrorPrevention()
         error_prevention_results = error_prevention.evaluate_rule(elements_df)
         
-        # minimalist_evaluator = MinimalistEvaluation()
-        # minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
+        minimalist_evaluator = MinimalistEvaluation()
+        minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
 
 
         error_handling = ErrorHandling()
@@ -99,7 +99,7 @@ def process_elements():
             "ColorConsistency": f"Color consistency is {consistency_results.get('ColorConsistency', 0)}%.",
             "AlignmentConsistency": f"Alignment consistency is {consistency_results.get('AlignmentConsistency', 0)}%.",
             "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
-            "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
+            # "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
             "Feedback": consistency_results.get('Feedback', {})
             
             
