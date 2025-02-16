@@ -60,6 +60,21 @@ def process_elements():
     # Convert elements to DataFrame
     elements_df = pd.DataFrame(elements)
     print(elements_df)
+    # Get the latest minimalist evaluation file
+    def get_latest_minimalist_results():
+        """Fetch the latest minimalist evaluation results from the evaluation folder."""
+        minimalist_file = os.path.join(evaluation_folder, "minimalist_evaluation.json")
+        print(minimalist_file)
+        if os.path.exists(minimalist_file):
+            with open(minimalist_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            for key, elements in data.items():
+                for element in elements:  
+                    evaluation = element.get('evaluation', None)
+                    return evaluation
+
+        return {}  # Return an empty dictionary if the file is missing
+
 
     try: 
         output_data = {
@@ -83,16 +98,14 @@ def process_elements():
         error_prevention_results = error_prevention.evaluate_rule(elements_df)
         
         minimalist_evaluator = MinimalistEvaluation()
-        minimalist_evaluator = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
+        minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
+        minimalist_feedback_list = get_latest_minimalist_results()
 
-
+        # print("minimalist_feedback")
+        # print(minimalist_feedback)
         error_handling = ErrorHandling()
         error_handling_results = error_handling.evaluate_rule(elements_df)
 
-        print(f"Consistency evaluation results: {consistency_results}")
-        print(f"Error Prevention Results:{error_prevention_results}")
-        print(f"Error handlying results: {error_handling_results}")
-        # print(f"minimalist evaluation results: {minimalist_evaluator}")
 
         # Prepare human-readable feedback
         consistency_feedback = {
@@ -101,9 +114,8 @@ def process_elements():
             "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
             # "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
             "Feedback": consistency_results.get('Feedback', {})
-            
-            
         }
+
         error_feedback = {
             "ErrorPreventionScore": f"Error Prevention Score: {error_prevention_results.get('ErrorPreventionScore', 0)}%.",
             "ValidationIssues": error_prevention_results.get("ValidationIssues", []),
@@ -117,17 +129,29 @@ def process_elements():
             "RecoveryIssues": error_handling_results.get("RecoveryIssues", []),
             "Feedback": error_handling_results.get("Feedback", {})
         }
+        minimalist_feedback = {
+            "WhiteSpaceRatio": minimalist_feedback_list[0] if len(minimalist_feedback_list) > 0 else "No data",
+            "ElementDensity": minimalist_feedback_list[1] if len(minimalist_feedback_list) > 1 else "No data",
+            "IrrelevantElements": minimalist_feedback_list[2] if len(minimalist_feedback_list) > 2 else "No data",
+            "FinalScore": minimalist_feedback_list[3] if len(minimalist_feedback_list) > 3 else "No data",
+        }
 
-       
+        print(f"Consistency evaluation feedback: {consistency_feedback}")
+        print(f"Error Prevention feedback:{error_feedback}")
+        print(f"Error handlying feedback: {error_handling_feedback}")
+        print(f"minimalist evaluation feedback: {minimalist_feedback}")       
 
-        return jsonify({
+        response_data = {
             "message": "Design processed successfully!",
             "status": 200,
             "consistency_results": consistency_feedback,
             "error_prevention_results": error_feedback,
-            "error_handling_results": error_handling_feedback
-        }), 200
-    
+            "error_handling_results": error_handling_feedback,
+            "minimalist_results": minimalist_feedback
+        }
+        print("Sending to Figma:", response_data)  # ✅ DEBUG LINE
+
+        return jsonify(response_data), 200
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
