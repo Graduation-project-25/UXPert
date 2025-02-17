@@ -17,7 +17,10 @@
     "@typescript-eslint/eslint-plugin": "^6.12.0",
     "@typescript-eslint/parser": "^6.12.0",
     "eslint": "^8.54.0",
-    "typescript": "^5.7.3"
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.7.3",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
   },
   "eslintConfig": {
     "extends": [
@@ -50,9 +53,6 @@
     "mongodb": "^6.12.0",
     "mongoose": "^8.10.1",
     "node": "^18.20.6",
-    "ts-loader": "^9.5.1",
-    "UXPert": "file:",
-    "webpack": "^5.95.0",
-    "webpack-cli": "^5.1.4"
+    "UXPert": "file:"
   }
 }
