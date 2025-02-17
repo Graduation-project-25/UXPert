@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UXPert - Figma Plugin</title>
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"> -->
+    <!-- <link rel="stylesheet" href="/static/css/styles.css"> -->
+    <link rel="stylesheet" href="http://127.0.0.1:3000/static/css/styles.css">
+
+  </head>
+  <body>
+      <div id="splash-screen">
+        <h1>
+          <span class="letter">U</span>
+          <span class="letter">X</span>
+          <span class="letter">P</span>
+          <span class="letter">e</span>
+          <span class="letter">r</span>
+          <span class="letter">t</span>
+        </h1>
+      </div>
+    
+    <!-- Initial Screen -->
+    <div id="initial-screen" style="display: none;">
+      <h1>Start Detection</h1>
+      <button id="start">Start</button>
+    </div>
+
+    <!-- Processing Screen -->
+    <div id="processing-screen" style="display: none;">
+      <h1>Processing...</h1>
+      <p>Please wait while the design is being evaluated.</p>
+      <div id="progress-container">
+        <progress id="progress-bar" max="100" value="0"></progress>
+        <p id="progress-text">0%</p>
+      </div>
+    </div>
+
+    <!-- Feedback Screen -->
+    <div id="feedback-screen" style="display: none;">
+      <h1>Feedback</h1>
+      <div id="feedback-container"></div>
+      <div id="nav-buttons">
+        <button id="prev" disabled>Previous</button>
+        <button id="next" disabled>Next</button>
+      </div>
+      <button id="close">Close</button>
+      <button id="suggest-enhancements" class="button">Suggest Enhancements</button>
+    </div>
+
+    <!-- Enhancement Suggestions -->
+    <div id="enhancement-screen" style="display: none;">
+      <h1>Suggestions</h1>
+      <p>Here are specific actions you can take to improve your heuristic rules, enhance design consistency, and usability:</p>
+      <ul>
+        <li>
+          <strong>Adopt a Consistent Color Palette:</strong>
+          <p>Choose a color palette that reflects your brand identity and use it consistently across all frames. Tools like Adobe Color or Coolors can help.</p>
+        </li>
+        <li>
+          <strong>Align Elements for Better Visual Hierarchy:</strong>
+          <p>Use guides and grids to align elements. Ensure uniform spacing between items for a clean layout.</p>
+        </li>
+        <li>
+          <strong>Adjust Sizes for Proportional Relationships:</strong>
+          <p>Maintain scale consistency between UI components to establish unity in design.</p>
+        </li>
+        <li>
+          <strong>Incorporate Whitespace Effectively:</strong>
+          <p>Increase whitespace around text and images to reduce cognitive load. Ensure at least 20% of your layout is whitespace.</p>
+        </li>
+        <li>
+          <strong>Ensure Accessibility Compliance:</strong>
+          <p>Use contrast checkers like WebAIM to verify color contrast. Aim for at least a 4.5:1 ratio for body text.</p>
+        </li>
+      </ul>
+      <button id="back-to-feedback" class="suggestion-button">Back to Feedback</button>
+    </div>
+
+    <script>
+      let currentFeedbackIndex = 0;
+      let feedbackCards = [];
+
+      // Splash screen disappears after 2 seconds
+      setTimeout(() => {
+        document.getElementById('splash-screen').style.display = 'none';
+        document.getElementById('initial-screen').style.display = 'block';
+      }, 2000);
+
+      document.getElementById('start').onclick = () => {
+        document.getElementById('initial-screen').style.display = 'none';
+        document.getElementById('processing-screen').style.display = 'block';
+        document.getElementById('progress-container').style.display = 'block';
+
+        let progress = 0;
+        parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+
+        const progressInterval = setInterval(() => {
+          progress += 5;
+          document.getElementById('progress-bar').value = progress;
+          document.getElementById('progress-text').innerText = `${progress}%`;
+
+          if (progress >= 100) {
+            clearInterval(progressInterval);
+          }
+        }, 1000);
+      };
+
+      document.getElementById('close').onclick = () => {
+        parent.postMessage({ pluginMessage: { type: 'close' } }, '*');
+      };
+
+      document.getElementById('prev').onclick = () => {
+        if (currentFeedbackIndex > 0) {
+          showFeedbackCard(currentFeedbackIndex - 1);
+        }
+      };
+
+      document.getElementById('next').onclick = () => {
+        if (currentFeedbackIndex < feedbackCards.length - 1) {
+          showFeedbackCard(currentFeedbackIndex + 1);
+        }
+      };
+
+      document.getElementById('suggest-enhancements').onclick = () => {
+        document.getElementById('feedback-screen').style.display = 'none';
+        document.getElementById('enhancement-screen').style.display = 'block';
+      };
+
+      document.getElementById('back-to-feedback').onclick = () => {
+        document.getElementById('enhancement-screen').style.display = 'none';
+        document.getElementById('feedback-screen').style.display = 'block';
+      };
+
+      window.addEventListener("message", (event) => {
+        console.log("Received plugin message:", event.data);
+      });
+
+
+
+      window.onmessage = (event) => {
+        const msg = event.data.pluginMessage;
+        if (!msg) {
+          console.error("No pluginMessage found in event data:", event.data);
+          return;
+        }
+        if (msg && msg.type === 'collective-feedback') {
+          document.getElementById('processing-screen').style.display = 'none';
+          document.getElementById('feedback-screen').style.display = 'block';
+          document.getElementById('feedback-container').innerHTML = '';
+          
+          feedbackCards = msg.feedback.flatMap(item => {
+            const cards = [];
+            
+            function createCard(title, feedbackData) {
+              if (!feedbackData || Object.keys(feedbackData).length === 0) return null;
+              
+              const card = document.createElement('div');
+              card.className = 'feedback-card';
+              
+              const image = document.createElement('img');
+              image.src = item.screenshot;
+              image.className = 'screenshot';
+              
+              let feedbackList = '<ul>';
+              for (const [issue, solution] of Object.entries(feedbackData)) {
+                feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
+              }
+              feedbackList += '</ul>';
+              
+              const content = document.createElement('div');
+              content.className = 'feedback-content';
+              content.innerHTML = `<h2>${item.frameName} - ${title}</h2><div class='divider'></div>${feedbackList}`;
+              
+              card.appendChild(image);
+              card.appendChild(content);
+              document.getElementById('feedback-container').appendChild(card);
+              
+              return card;
+            }
+            
+            const errorCard = createCard('Error Prevention Issues', item.errorPreventionFeedback);
+            if (errorCard) cards.push(errorCard);
+            
+            const consistencyCard = createCard('Consistency Issues', item.consistencyFeedback);
+            if (consistencyCard) cards.push(consistencyCard);
+
+            const errHandlingCard = createCard('Error Handling Issues', item.errorHandlingFeedback);
+            if (errHandlingCard) cards.push(errHandlingCard);
+            
+            const minimalistCard = createCard('Minimalist Issues', item.minimalistFeedback);
+            if (minimalistCard) cards.push(minimalistCard);
+
+            
+            return cards;
+          });
+          
+          showFeedbackCard(0);
+        }
+      };
+      
+      function showFeedbackCard(index) {
+        feedbackCards.forEach((card, i) => {
+          card.style.display = i === index ? 'flex' : 'none';
+        });
+        currentFeedbackIndex = index;
+        document.getElementById('prev').disabled = currentFeedbackIndex === 0;
+        document.getElementById('next').disabled = currentFeedbackIndex === feedbackCards.length - 1;
+      }
+
+      // Enable arrow key navigation
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') {
+          document.getElementById('prev').click();
+        } else if (event.key === 'ArrowRight') {
+          document.getElementById('next').click();
+        }
+      });
+      setTimeout(() => {
+        document.getElementById('splash-screen').style.display = 'none';
+        document.getElementById('initial-screen').style.display = 'block';
+      }, 2000);
+    </script>
+
+  </body>
+
+  </html>

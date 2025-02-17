@@ -10,7 +10,7 @@ from components.Heuristics_Component.heuristic_rules.heuristic_factory import He
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
 
 # Initialize Flask
-app = Flask(__name__)
+app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
 # Define output folder``
@@ -150,7 +150,7 @@ def process_elements():
             "error_handling_results": error_handling_feedback,
             "minimalist_results": minimalist_feedback
         }
-        print("Sending to Figma:", response_data)  # ✅ DEBUG LINE
+        print("Sending to Figma:", response_data)  # DEBUG LINE
 
         return jsonify(response_data), 200
 

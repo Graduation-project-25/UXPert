@@ -11,8 +11,12 @@
     "figma",
     "dev"
   ],
+<<<<<<< Updated upstream
 
   "ui": "project/fronty/index.html",
+=======
+  "ui": "project/frontend/templates/ui.html",
+>>>>>>> Stashed changes
   "networkAccess": {
     "allowedDomains": ["*"],
     "reasoning": "MyPlugin queries responses",
