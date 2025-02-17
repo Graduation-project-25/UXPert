@@ -150,8 +150,7 @@ def process_elements():
             "error_handling_results": error_handling_feedback,
             "minimalist_results": minimalist_feedback
         }
-        print("Sending to Figma:", response_data)  # DEBUG LINE
-
+        print("Sending to Figma:", response_data)  
         return jsonify(response_data), 200
 
     except Exception as e:
