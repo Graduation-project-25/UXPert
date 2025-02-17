@@ -2,8 +2,6 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 
-from database.cluster_repository import ClusterRepository
-
 load_dotenv()
 
 # MongoDB URI
@@ -14,7 +12,7 @@ client = MongoClient(mongo_uri)
 db = client["uxpert"]
 
 # Initialize Repository
-cluster_repo = ClusterRepository(db)
+# cluster_repo = ClusterRepository(db)
 
 # Test
 # cluster_repo.create({"name": "Test Cluster", "label": "rectangle", "color": "white"})
