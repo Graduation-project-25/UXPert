@@ -112,7 +112,7 @@ def process_elements():
             "ColorConsistency": f"Color consistency is {consistency_results.get('ColorConsistency', 0)}%.",
             "AlignmentConsistency": f"Alignment consistency is {consistency_results.get('AlignmentConsistency', 0)}%.",
             "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
-            "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
+            # "TotalConsistency": f"Total consistency score is {consistency_results.get('TotalConsistency', 0)}%.",
             "Feedback": consistency_results.get('Feedback', {})
         }
 
