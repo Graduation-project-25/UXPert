@@ -140,11 +140,20 @@
 
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
+      console.log("🔹 Received message from Figma:", event.data);
+
       if (!msg) {
         console.error("No pluginMessage found in event data:", event.data);
         return;
       }
       if (msg && msg.type === 'collective-feedback') {
+        console.log(" Minimalist Feedback:", msg.minimalist_results);
+        if (!msg.minimalist_results) {
+        console.error("minimalist_results is missing or undefined!");
+        return;
+    }
+
+
         document.getElementById('processing-screen').style.display = 'none';
         document.getElementById('feedback-screen').style.display = 'block';
         document.getElementById('feedback-container').innerHTML = '';

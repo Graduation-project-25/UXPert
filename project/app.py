@@ -139,7 +139,8 @@ def process_elements():
         print(f"Consistency evaluation feedback: {consistency_feedback}")
         print(f"Error Prevention feedback:{error_feedback}")
         print(f"Error handlying feedback: {error_handling_feedback}")
-        print(f"minimalist evaluation feedback: {minimalist_feedback}")       
+        print(f"minimalist evaluation feedback: {minimalist_feedback}")    
+   
 
         response_data = {
             "message": "Design processed successfully!",
