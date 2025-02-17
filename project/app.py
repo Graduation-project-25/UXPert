@@ -10,7 +10,7 @@ from components.Heuristics_Component.heuristic_rules.heuristic_factory import He
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
 
 # Initialize Flask
-app = Flask(__name__)
+app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
 # Define output folder``

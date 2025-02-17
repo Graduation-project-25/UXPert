@@ -11,7 +11,7 @@
     "figma",
     "dev"
   ],
-  "ui": "project/frontend/html/ui.html",
+  "ui": "project/frontend/templates/ui.html",
   "networkAccess": {
     "allowedDomains": ["*"],
     "reasoning": "MyPlugin queries responses",
