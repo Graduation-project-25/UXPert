@@ -8,7 +8,19 @@ from components.Heuristics_Component.heuristic_rules.ErrorPrevention import Erro
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
+from pymongo import MongoClient
+from database.figma_features_repository import FigmaFeaturesRepository
 
+config = {}
+with open('.config', 'r') as f:
+    for line in f:
+        key, value = line.strip().split('=')
+        config[key] = value
+
+client = MongoClient("mongodb://localhost:27017/") 
+db = client[config["DATABASE_NAME"]]  
+designs_collection = db[config["COLLECTION_NAME"]]  
+figma_repository = FigmaFeaturesRepository(db)       
 # Initialize Flask
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
