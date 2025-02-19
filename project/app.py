@@ -89,6 +89,7 @@ def process_elements():
 
 
     try: 
+       
         output_data = {
             "screen_size": frame_info,  
             "elements": elements,
@@ -118,7 +119,8 @@ def process_elements():
         error_handling = ErrorHandling()
         error_handling_results = error_handling.evaluate_rule(elements_df)
 
-
+        
+        
         # Prepare human-readable feedback
         consistency_feedback = {
             "ColorConsistency": f"Color consistency is {consistency_results.get('ColorConsistency', 0)}%.",
@@ -153,7 +155,20 @@ def process_elements():
         print(f"Error handlying feedback: {error_handling_feedback}")
         print(f"minimalist evaluation feedback: {minimalist_feedback}")    
    
-
+        feature_data = {
+        "user_name": user_name,
+        "design_name": design_name,
+        "page_name": page_name,
+        "frame_name": frame_name,
+        "screen_size": frame_info,
+        "elements": elements,
+        "consistency_results": consistency_feedback,
+        "error_prevention_results": error_feedback,
+        "error_handling_results": error_handling_feedback,
+        "minimalist_results": minimalist_feedback
+        }
+        insert_result = figma_repository.add(feature_data)
+        print(f"Data inserted with ID: {insert_result.inserted_id}")
         response_data = {
             "message": "Design processed successfully!",
             "status": 200,
