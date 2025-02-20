@@ -89,7 +89,39 @@ def process_elements():
 
 
     try: 
-       
+        feature_data = {
+            "user_name": user_name,
+            "design_name": design_name,
+            "page_name": page_name,
+            "frame_name": frame_name,
+            "screen_size": frame_info,
+            "elements": elements
+        }
+
+        print("Attempting to insert data into MongoDB...")
+        insert_result = figma_repository.update_or_insert_frame(feature_data)
+        print("Data inserted successfully.")
+
+        if insert_result.matched_count > 0:
+            print(f"Frame added to existing design: {design_name}")
+        else:
+            print(f"New design document created: {design_name}")
+
+        # Retrieve the saved data to ensure it's up-to-date
+        latest_saved_data = designs_collection.find_one(
+        {"design_name": design_name, "frames.frame_name": frame_name},
+        {"frames.$": 1}  # This projects only the matching frame inside the frames array
+        )
+
+        if not latest_saved_data:
+            print("Failed to retrieve saved design data from MongoDB")
+            return jsonify({"error": "Failed to retrieve saved design data"}), 500
+
+        print("Retrieved saved design data:", latest_saved_data)
+
+    # except Exception as e:
+    #     print(f"Database error: {str(e)}")
+    #     return jsonify({"error": f"Database error: {str(e)}"}), 500
         output_data = {
             "screen_size": frame_info,  
             "elements": elements,
@@ -102,14 +134,30 @@ def process_elements():
             json.dump(output_data, json_file, indent=4, ensure_ascii=False)
 
         
-        
+        frame_data = latest_saved_data.get("frames", [])
+        if frame_data:
+            elements_df = pd.DataFrame(frame_data[0].get("elements", []))
+        else:
+            return jsonify({"error": "No elements found in the retrieved frame data"}), 500
+
         # Evaluate consistency
+        
+        
+        error_prevention = ErrorPrevention(db)
+        print("UI Data before error prevention:", elements_df)
+        error_prevention_results = error_prevention.evaluate_rule(elements_df)
+        print("Error Prevention Results:", error_prevention_results)
+        # print("Starting consistency evaluation...")
         consistency_evaluator = Consistency() 
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
-        
-        error_prevention = ErrorPrevention()
-        error_prevention_results = error_prevention.evaluate_rule(elements_df)
-        
+    #     if consistency_results is None:
+    #      raise ValueError("Consistency evaluation returned None")
+
+    #     print("Consistency Results:", consistency_results)
+
+    # except Exception as e:
+        # print(f"Error in consistency evaluation: {e}")
+        # consistency_results = {}  # Default empty dictionary
         minimalist_evaluator = MinimalistEvaluation()
         minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
         minimalist_feedback_list = get_latest_minimalist_results()
@@ -155,29 +203,30 @@ def process_elements():
         print(f"Error handlying feedback: {error_handling_feedback}")
         print(f"minimalist evaluation feedback: {minimalist_feedback}")    
    
-        feature_data = {
-        "user_name": user_name,
-        "design_name": design_name,
-        "page_name": page_name,
-        "frame_name": frame_name,
-        "screen_size": frame_info,
-        "elements": elements,
-        "consistency_results": consistency_feedback,
-        "error_prevention_results": error_feedback,
-        "error_handling_results": error_handling_feedback,
-        "minimalist_results": minimalist_feedback
-    }
+        feedback_data = {
+            "error_prevention_results": error_prevention_results,
+            "consistency_results": consistency_results,
+            "error_handling_results": error_handling_results,
+            "minimalist_results": minimalist_feedback_list
+        }
 
-        insert_result = figma_repository.add(feature_data)
-        if insert_result.matched_count > 0:
-            print(f"Frame added to existing design: {design_name}")
-        else:
-            print(f"New design document created: {design_name}")
+        # Step 5: Save feedback in MongoDB under the same frame
+        update_result = designs_collection.update_one(
+            {"design_name": design_name, "frames.frame_name": frame_name},
+            {"$set": {"frames.$.feedback": feedback_data}}
+        )
+
+        if update_result.matched_count == 0:
+            print("Error updating feedback in MongoDB.")
+            return jsonify({"error": "Failed to update feedback in database"}), 500
+
+        print("Feedback saved successfully.")
+
         response_data = {
             "message": "Design processed successfully!",
             "status": 200,
-            "consistency_results": consistency_feedback,
             "error_prevention_results": error_feedback,
+            "consistency_results": consistency_feedback,
             "error_handling_results": error_handling_feedback,
             "minimalist_results": minimalist_feedback
         }

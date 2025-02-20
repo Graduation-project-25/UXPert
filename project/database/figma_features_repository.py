@@ -3,24 +3,33 @@ from database.base_repository import BaseRepository
 
 class FigmaFeaturesRepository(BaseRepository):
     def __init__(self, db):
-        super().__init__(db["features"])
-    def add(self, feature_data):
-        design_name = feature_data["design_name"]
-        frame_data = {
-            "frame_name": feature_data["frame_name"],
-            "screen_size": feature_data["screen_size"],
-            "elements": feature_data["elements"],
-            "consistency_results": feature_data["consistency_results"],
-            "error_prevention_results": feature_data["error_prevention_results"],
-            "error_handling_results": feature_data["error_handling_results"],
-            "minimalist_results": feature_data["minimalist_results"]
-        }
-        
-        # Check if design exists, if yes, update by adding a new frame
-        result = self.collection.update_one(
-            {"design_name": design_name},  
-            {"$push": {"frames": frame_data}},  
-            upsert=True  # Create a new document if the design does not exist
-        )
+        super().__init__(db["features"])  # Assuming "features" is the collection name
 
-        return result
+    def update_or_insert_frame(self, feature_data):
+        """
+        Update an existing frame if it exists, otherwise insert a new frame.
+        """
+        filter_query = {
+            "design_name": feature_data["design_name"],
+            "frames.frame_name": feature_data["frame_name"]
+        }
+
+        update_query = {
+            "$set": {
+                "frames.$.screen_size": feature_data["screen_size"],
+                "frames.$.elements": feature_data["elements"]
+            }
+        }
+
+        # Try to update the existing frame
+        update_result = self.collection.update_one(filter_query, update_query)
+
+        if update_result.matched_count == 0:
+            # If no existing frame was found, insert a new frame
+            self.collection.update_one(
+                {"design_name": feature_data["design_name"]},
+                {"$push": {"frames": feature_data}},
+                upsert=True
+            )
+
+        return update_result

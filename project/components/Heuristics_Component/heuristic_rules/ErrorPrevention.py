@@ -2,46 +2,29 @@ import pandas as pd
 from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
 import json
 import os
-import time
+
 class ErrorPrevention(HeuristicInterface):
     
     # Constants
-    CONFIRMATION_KEYWORDS = ["confirm","are you sure", "proceed", "continue", "ok", "yes", "no"]
+    CONFIRMATION_KEYWORDS = ["confirm", "are you sure", "proceed", "continue", "ok", "yes", "no"]
     DANGEROUS_ACTION_KEYWORDS = ["delete", "remove", "discard", "erase", "reset", "clear", "cancel", "terminate"]
-    DATA_FOLDER =  "data/figma_features/extracted"
-  
-    # Global dictionary to store DataFrames for each page
-    all_pages_data = {}
 
-
-    DATA_FOLDER = "figma_features/extracted"
+    def __init__(self, db):
+        """Initialize with MongoDB connection."""
+        self.db = db
+        self.designs_collection = self.db["features"]
 
     def load_all_design_pages(self):
-        """Ensure the extracted folder exists and then load all JSON files if present."""
-        if not os.path.exists(self.DATA_FOLDER):
-            print(f"Warning: {self.DATA_FOLDER} does not exist. No data to process.")
-            return {}
-
-        json_files = [f for f in os.listdir(self.DATA_FOLDER) if f.endswith(".json")]
-
-        if not json_files:
-            print("Warning: No extracted JSON files found in the folder.")
-            return {}
-
+        """Retrieve all saved designs from the database."""
         all_data = {}
-        for file_name in json_files:
-            file_path = os.path.join(self.DATA_FOLDER, file_name)
-            try:
-                with open(file_path, "r") as f:
-                    data = json.load(f)
-                    frame_name = data["screen_size"].get("frameName", "UnknownFrame")
-                    all_data[frame_name] = data.get("elements", [])
-            except (json.JSONDecodeError, KeyError):
-                print(f"Warning: Skipping corrupted file {file_name}")
+        
+        designs = self.designs_collection.find({}, {"screen_size.frameName": 1, "elements": 1})
+        
+        for design in designs:
+            frame_name = design.get("screen_size", {}).get("frameName", "UnknownFrame")
+            all_data[frame_name] = design.get("elements", [])
 
         return all_data
-
-
 
     def detect_buttons(self, ui_data):
         """Detect dangerous buttons in the design."""
@@ -106,8 +89,6 @@ class ErrorPrevention(HeuristicInterface):
         confirmation_percentage = (confirmed_buttons / len(dangerous_buttons)) * 100 if dangerous_buttons else 100
         return confirmation_issues, confirmation_percentage
 
-
-
     def check_input_validation(self, ui_data):
         """Checks if input fields have validation messages or required indicators."""
         input_fields = [row for _, row in ui_data.iterrows() if "input" in row.get('name', '').lower()]
@@ -127,7 +108,6 @@ class ErrorPrevention(HeuristicInterface):
                 validation_issues.append(f"Missing validation for input field: {field_name}")
 
         return validation_issues
-
 
     def evaluate_rule(self, ui_data):
         """Evaluate error prevention heuristic."""

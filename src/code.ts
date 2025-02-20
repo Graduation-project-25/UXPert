@@ -49,7 +49,7 @@ figma.ui.onmessage = async (msg) => {
         if (result.consistency_results.Feedback) {
           allFeedback.push({
             frameName: frame.name,
-            consistencyFeedback: result.consistency_results.Feedback,
+            // consistencyFeedback: result.consistency_results.Feedback,
             errorPreventionFeedback: result.error_prevention_results.Feedback,
             errorHandlingFeedback: result.error_handling_results.Feedback,
             minimalistFeedback: result.minimalist_results.Feedback,
