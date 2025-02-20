@@ -166,9 +166,13 @@ def process_elements():
         "error_prevention_results": error_feedback,
         "error_handling_results": error_handling_feedback,
         "minimalist_results": minimalist_feedback
-        }
+    }
+
         insert_result = figma_repository.add(feature_data)
-        print(f"Data inserted with ID: {insert_result.inserted_id}")
+        if insert_result.matched_count > 0:
+            print(f"Frame added to existing design: {design_name}")
+        else:
+            print(f"New design document created: {design_name}")
         response_data = {
             "message": "Design processed successfully!",
             "status": 200,
