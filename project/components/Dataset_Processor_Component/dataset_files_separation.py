@@ -1,6 +1,5 @@
 import os
 import shutil
-import numpy as np
 from data_processor import DataProcessor
 
 class FileSeparator(DataProcessor):

@@ -16,15 +16,7 @@ class VisualizerInterface(ABC):
     @abstractmethod
     def scatter_plot_ui_elements(self, df):
         pass
-
-    @abstractmethod
-    def clustering_visualization_by_size(self, DBSCAN_dataset, clusters):
-        pass
-
-    @abstractmethod
-    def clustering_visualization_by_position(self, DBSCAN_dataset, clusters):
-        pass
-
+    
     @abstractmethod
     def visualize_alignment_consistency(self, cluster_data):
         pass
@@ -34,6 +26,6 @@ class VisualizerInterface(ABC):
         pass
 
     @abstractmethod
-    def visualize_size_proportionality(self, cluster_data):
+    def clustering_visualization_by_color(self, DBSCAN_dataset, clusters):
         pass
 

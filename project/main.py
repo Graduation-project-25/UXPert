@@ -1,8 +1,6 @@
 import os
 import sys
-import json
 import pandas as pd
-from pathlib import Path
 
 
 
@@ -71,7 +69,7 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    clustered_data, clusters = egfe_clustering.dbscan_cluster('hcolor')
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     print (clustered_data)
     # egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     egfe_clustering_evaluation.evaluate_clustering(clustered_data)
@@ -90,8 +88,7 @@ def main():
     ##############################################################################################################
     
     # Step 6: Visualizing Clustering Results
-    # egfe_visualization.clustering_visualization_by_size(clustered_data, clusters)
-    # egfe_visualization.clustering_visualization_by_position(clustered_data, clusters)
+    egfe_visualization.clustering_visualization_by_color(clustered_data,clusters)
     # egfe_visualization.visualize_alignment_consistency(clustered_data)
     # egfe_visualization.visualize_color_consistency(clustered_data)
     # egfe_visualization.visualize_size_proportionality(clustered_data)

@@ -2,6 +2,7 @@ import os
 import cv2
 from matplotlib import pyplot as plt
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 
 
 from components.Visualizer_Component.visualizer import VisualizerInterface
@@ -82,74 +83,6 @@ class EGFE_Visualization(VisualizerInterface):
         plt.show()
 
 
-    def clustering_visualization_by_size(self, DBSCAN_dataset,clusters):
-        # Plot noise points (-1)
-        if -1 in clusters: 
-            # Assert 'Cluster' in DBSCAN_dataset.columns, "Column 'Cluster' not found in DBSCAN_dataset"
-            plt.scatter(
-                DBSCAN_dataset[DBSCAN_dataset['Cluster'] == -1]['width'],
-                DBSCAN_dataset[DBSCAN_dataset['Cluster'] == -1]['height'],
-                s=20, color='black', label='Noise'
-            )
-
-        # Plot each cluster
-        colors = ['blue', 'red', 'yellow', 'green', 'purple', 'orange', 'pink', 'brown', 'cyan']
-        for cluster_id, color in zip(clusters[clusters >= 0], colors):
-            cluster_data = DBSCAN_dataset[DBSCAN_dataset['Cluster'] == cluster_id]
-            plt.scatter(
-                cluster_data['width'], 
-                cluster_data['height'], 
-                s=20, color=color, label=f'Cluster {cluster_id}'
-            )
-        # Add plot details
-        plt.title("DBSCAN Clustering Visualization")
-        plt.xlabel("Width")
-        plt.ylabel("Height")
-        plt.legend()
-        plt.show()
-
-    def clustering_visualization_by_position(self, DBSCAN_dataset, clusters):
-        # Plot noise points (-1)
-        if -1 in clusters: 
-            # Assert 'Cluster' in DBSCAN_dataset.columns, "Column 'Cluster' not found in DBSCAN_dataset"
-            plt.scatter(
-                DBSCAN_dataset[DBSCAN_dataset['Cluster'] == -1]['position.x'],
-                DBSCAN_dataset[DBSCAN_dataset['Cluster'] == -1]['position.y'],
-                s=20, color='black', label='Noise'
-            )
-
-        # Plot each cluster
-        colors = ['blue', 'red', 'yellow', 'green', 'purple', 'orange', 'pink', 'brown', 'cyan']
-        for cluster_id, color in zip(clusters[clusters >= 0], colors):
-            cluster_data = DBSCAN_dataset[DBSCAN_dataset['Cluster'] == cluster_id]
-            plt.scatter(
-                cluster_data['position.x'], 
-                cluster_data['position.y'], 
-                s=20, color=color, label=f'Cluster {cluster_id}'
-            )
-        # Add plot details
-        plt.title("DBSCAN Clustering Visualization")
-        plt.xlabel("Position X") 
-        plt.ylabel("Position Y")
-        plt.legend()
-        plt.show()
-
-    # def ensure_consistency_score(analysis_df):
-    #     # Debugging: Check the columns in the DataFrame
-    #     print("Checking columns in analysis_df:", analysis_df.columns)
-        
-    #     if 'ConsistencyScore' not in analysis_df.columns:
-    #         # Check for required metrics
-    #         if 'Metric1' in analysis_df.columns and 'Metric2' in analysis_df.columns:
-    #             # Example calculation of ConsistencyScore
-    #             analysis_df['ConsistencyScore'] = (analysis_df['Metric1'] + analysis_df['Metric2']) / 2
-    #         else:
-    #             # Handle missing required metrics
-    #             print("Required metrics are missing for calculating 'ConsistencyScore'.")
-    #             analysis_df['ConsistencyScore'] = 0  # Default value or impute as needed
-    #             print("Default 'ConsistencyScore' set to 0.")
-    #     return analysis_df
-
     def visualize_alignment_consistency(self, cluster_data):
         plt.figure(figsize=(10, 5))
         plt.scatter(cluster_data['position.x'], cluster_data['position.y'], c='blue', label='UI Elements', alpha=0.6)
@@ -187,17 +120,15 @@ class EGFE_Visualization(VisualizerInterface):
         plt.ylabel('Number of Groups')
         plt.show()
     
-    def visualize_size_proportionality(self, cluster_data):
-        """
-        Visualizes the size proportionality of UI elements in a cluster.
-        This visualization uses a box plot to show the distribution of sizes.
-        """
-        sizes = cluster_data['width'] * cluster_data['height']  # Calculate element sizes
-        plt.figure(figsize=(10, 6))
-        
-        plt.boxplot(sizes, vert=False)
-        plt.title('Size Proportionality of UI Elements')
-        plt.xlabel('Size (Width * Height)')
-        plt.grid()
+    def clustering_visualization_by_color(self, clustered_data, clusters):
+        # Reduce to 2D with PCA
+        pca = PCA(n_components=2)
+        X_2d = pca.fit_transform(clustered_data)
+
+        # Plot
+        plt.figure(figsize=(10, 8))
+        scatter = plt.scatter(X_2d[:, 0], X_2d[:, 1], c=clusters, cmap='tab20', s=50, alpha=0.6)
+        plt.colorbar(scatter, label='Cluster ID')
+        plt.title('HDBSCAN Clusters of Colored Elements (PCA)')
         plt.show()
-        
+
