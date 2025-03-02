@@ -26,6 +26,6 @@ class VisualizerInterface(ABC):
         pass
 
     @abstractmethod
-    def clustering_visualization_by_color(self, DBSCAN_dataset, clusters):
+    def clustering_visualization(self, DBSCAN_dataset, clusters):
         pass
 

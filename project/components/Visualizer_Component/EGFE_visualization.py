@@ -120,7 +120,7 @@ class EGFE_Visualization(VisualizerInterface):
         plt.ylabel('Number of Groups')
         plt.show()
     
-    def clustering_visualization_by_color(self, clustered_data, clusters):
+    def clustering_visualization(self, clustered_data, clusters):
         # Reduce to 2D with PCA
         pca = PCA(n_components=2)
         X_2d = pca.fit_transform(clustered_data)
