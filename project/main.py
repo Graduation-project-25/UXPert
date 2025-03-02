@@ -71,10 +71,10 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    # clustered_data, clusters = egfe_clustering.dbscan_cluster('label')
-    # print (clustered_data)
-    # egfe_clustering.handle_outliers(clustered_data, "Label Clustering", "Label Clustering Outliers")
-    # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('hcolor')
+    print (clustered_data)
+    # egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
+    egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
 
@@ -116,7 +116,7 @@ def main():
 
     # minimalist_evaluation.evaluate_rule(train_folder,evaluation_folder)
 
-    minimalist_test_evaluation.analyze_test_results(train_folder, test_folder)
+    # minimalist_test_evaluation.analyze_test_results(train_folder, test_folder)
 
     # for file_name in os.listdir(test_folder):
     #     file_path = os.path.join(test_folder, file_name)

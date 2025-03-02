@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.cluster import DBSCAN
+import hdbscan
 from sklearn.neighbors import NearestNeighbors
 from components.Clustering_Component.clustering import ClusteringInterface
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
@@ -25,6 +26,8 @@ class EGFE_Clustering(ClusteringInterface):
         try:
             if feature == "color":
                 clustered_data, clusters = self.dbscan_cluster_based_on_color_and_type()  
+            elif feature == "hcolor":
+                clustered_data, clusters = self.hdbscan_cluster_based_on_color_and_type()
             elif feature == "position":
                 clustered_data, clusters = self.dbscan_cluster_based_on_position_and_type()
             elif feature == "size":
@@ -47,7 +50,42 @@ class EGFE_Clustering(ClusteringInterface):
             clusters = []
 
         return clustered_data, clusters
+    
 
+
+    def hdbscan_cluster_based_on_color_and_type(self):
+        X_train = self.egfe_load_data.load_data(self.train_folder)
+        color_features = [col for col in X_train.columns if col.startswith('color_')]
+        type_features = [col for col in X_train.columns if col.startswith('type_')]
+        X_train_selected = X_train[color_features + type_features]
+
+        if X_train_selected.isnull().any().any():
+            X_train_selected = X_train_selected.fillna(0)
+            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+
+        # Filter non-zero color rows
+        mask = (X_train_selected[color_features] != 0).any(axis=1)
+        X_train_colored = X_train_selected[mask]
+        print(f"Filtered to {len(X_train_colored)} rows with non-zero colors")
+
+        # Cluster only colored data
+        clustering = hdbscan.HDBSCAN(min_cluster_size=5, min_samples=5, cluster_selection_epsilon=0.05).fit(X_train_colored)
+        clustered_data = X_train_colored.copy()
+        clustered_data.loc[:, 'Cluster'] = clustering.labels_
+
+        print("Top cluster samples:")
+        for cluster_id in [45, 47, 28]:  # Biggest ones
+            sample = clustered_data[clustered_data['Cluster'] == cluster_id].head(2)
+            print(f"Cluster {cluster_id} ({len(clustered_data[clustered_data['Cluster'] == cluster_id])}):")
+            for row in sample.to_dict('records'):
+                print(f"  Color: {row['color_r']}, {row['color_g']}, {row['color_b']}, {row['color_a']} | Type: { {k: v for k, v in row.items() if k.startswith('type_') and v == 1}}")
+
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors and type.json")
+        self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
+        print('Number of instances in each cluster\n', clustered_data[['Cluster']].value_counts())
+        clusters = np.unique(clustering.labels_)
+        return clustered_data, clusters
+        
     def dbscan_cluster_based_on_color_and_type(self):
         X_train = self.egfe_load_data.load_data(self.train_folder)
 
