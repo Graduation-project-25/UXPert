@@ -2,6 +2,9 @@ import os
 import sys
 import pandas as pd
 
+# Database trial
+from pymongo import MongoClient
+from database.cluster_repository import ClusterRepository
 
 
 
@@ -75,6 +78,18 @@ def main():
     egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
+    config = {}
+    with open('.config', 'r') as f:
+        for line in f:
+            key, value = line.strip().split('=')
+            config[key] = value
+
+
+    client = MongoClient("mongodb://localhost:27017/") 
+    db = client[config["DATABASE_NAME"]]  
+    designs_collection = db[config["COLLECTION_NAME"]]  
+    cluster_repo = ClusterRepository(db)
+    cluster_repo.insert_cluster_data(clustered_data, design_name="YourDesign", cluster_type="size_type")
 
 
 

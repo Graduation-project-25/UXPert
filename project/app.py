@@ -20,7 +20,9 @@ with open('.config', 'r') as f:
 client = MongoClient("mongodb://localhost:27017/") 
 db = client[config["DATABASE_NAME"]]  
 designs_collection = db[config["COLLECTION_NAME"]]  
-figma_repository = FigmaFeaturesRepository(db)       
+figma_repository = FigmaFeaturesRepository(db)
+cluster_repo = ClusterRepository(db)
+
 # Initialize Flask
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
