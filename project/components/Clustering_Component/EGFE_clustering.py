@@ -2,22 +2,25 @@ import json
 import os
 import numpy as np
 import pandas as pd
+import hdbscan
 from sklearn.cluster import DBSCAN
 import hdbscan
 from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import StandardScaler
 from components.Clustering_Component.clustering import ClusteringInterface
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
 from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 from utils.csv_exporting import export_to_csv
-
+from database.cluster_repository import ClusterRepository
  
 class EGFE_Clustering(ClusteringInterface):    
-    def __init__(self, train_folder,output_folder):
+    def __init__(self, train_folder,output_folder, db):
         self.output_folder = output_folder
         self.train_folder = train_folder
         self.egfe_ui_processing = EGFE_UiProcessing()
         self.egfe_load_data = EGFE_LoadData()
+        self.cluster_repository = ClusterRepository(db)
     
 
     def dbscan_cluster(self, feature):
@@ -27,9 +30,9 @@ class EGFE_Clustering(ClusteringInterface):
             if feature == "color":
                 clustered_data, clusters = self.hdbscan_cluster_based_on_color_and_type()
             elif feature == "position":
-                clustered_data, clusters = self.dbscan_cluster_based_on_position_and_type()
+                clustered_data, clusters = self.hdbscan_cluster_based_on_position_and_type()
             elif feature == "size":
-                clustered_data, clusters = self.dbscan_cluster_based_on_size_and_type() 
+                clustered_data, clusters = self.hdbscan_cluster_based_on_size_and_type() 
             elif feature == "label":
                 clustered_data, clusters = self.hdbscan_cluster_based_on_label_and_type() 
             # If clustering fails, raise an error
@@ -67,10 +70,13 @@ class EGFE_Clustering(ClusteringInterface):
         clustered_data.loc[:, 'Cluster'] = clustering.labels_
 
         #save cluster in json
-        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors and type.json")
-        self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
+        # cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors and type.json")
+        # self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
         print('Number of instances in each cluster\n', clustered_data[['Cluster']].value_counts())
         clusters = np.unique(clustering.labels_)
+
+        # Save clusters in database
+        self.cluster_repository.insert_cluster_data(clustered_data, "color")
 
         return clustered_data, clustering.labels_
             
