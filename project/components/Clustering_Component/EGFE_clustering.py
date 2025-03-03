@@ -220,7 +220,7 @@ class EGFE_Clustering(ClusteringInterface):
         scaler = StandardScaler()
         X_train_selected[['position.x', 'position.y']] = scaler.fit_transform(X_train_selected[['position.x', 'position.y']])
 
-        # Filter non-zero position rows (adjust as needed)
+        # Filter non-zero position rows
         mask = (X_train_selected[position_features] != 0).any(axis=1)
         X_train_positioned = X_train_selected[mask]
         print(f"Filtered to {len(X_train_positioned)} rows with non-zero positions")
@@ -230,19 +230,19 @@ class EGFE_Clustering(ClusteringInterface):
         clustered_data = X_train_positioned.copy()
         clustered_data.loc[:, 'Cluster'] = clustering.labels_
 
-        # Example: Print top cluster samples (adjust cluster_ids as needed)
-        print("Top cluster samples:")
-        unique_clusters = np.unique(clustering.labels_)
-        top_clusters = []
-        for cluster_id in unique_clusters:
-            if cluster_id != -1:
-                top_clusters.append((cluster_id, len(clustered_data[clustered_data['Cluster'] == cluster_id])))
-        top_clusters.sort(key=lambda x: x[1], reverse=True)
-        for cluster_id, size in top_clusters[:3]:
-            sample = clustered_data[clustered_data['Cluster'] == cluster_id].head(2)
-            print(f"Cluster {cluster_id} ({size}):")
-            for row in sample.to_dict('records'):
-                print(f"  Position X: {row['position.x']}, Position Y: {row['position.y']} | Type: { {k: v for k, v in row.items() if k.startswith('type_') and v == 1}}")
+        # Print top cluster samples
+        # print("Top cluster samples:")
+        # unique_clusters = np.unique(clustering.labels_)
+        # top_clusters = []
+        # for cluster_id in unique_clusters:
+        #     if cluster_id != -1:
+        #         top_clusters.append((cluster_id, len(clustered_data[clustered_data['Cluster'] == cluster_id])))
+        # top_clusters.sort(key=lambda x: x[1], reverse=True)
+        # for cluster_id, size in top_clusters[:3]:
+        #     sample = clustered_data[clustered_data['Cluster'] == cluster_id].head(2)
+        #     print(f"Cluster {cluster_id} ({size}):")
+        #     for row in sample.to_dict('records'):
+        #         print(f"  Position X: {row['position.x']}, Position Y: {row['position.y']} | Type: { {k: v for k, v in row.items() if k.startswith('type_') and v == 1}}")
 
         cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on position and type.json")
         self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
