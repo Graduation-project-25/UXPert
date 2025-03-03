@@ -3,10 +3,11 @@ import os
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.cluster import DBSCAN
 import hdbscan
+from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
 from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import StandardScaler
 from components.Clustering_Component.clustering import ClusteringInterface
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
@@ -31,7 +32,7 @@ class EGFE_Clustering(ClusteringInterface):
             elif feature == "position":
                 clustered_data, clusters = self.dbscan_cluster_based_on_position_and_type()
             elif feature == "size":
-                clustered_data, clusters = self.dbscan_cluster_based_on_size_and_type() 
+                clustered_data, clusters = self.hdbscan_cluster_based_on_size_and_type() 
             elif feature == "label":
                 clustered_data, clusters = self.dbscan_cluster_based_on_type_and_label() 
             # elif feature == 'screen_size':
@@ -120,6 +121,58 @@ class EGFE_Clustering(ClusteringInterface):
         clusters = np.unique(clustering.labels_)
         return clustered_data, clusters 
 
+    def hdbscan_cluster_based_on_size_and_type(self):
+        X_train = self.egfe_load_data.load_data(self.train_folder)
+
+        size_features = ['width', 'height']
+        type_features = [col for col in X_train.columns if col.startswith('type_')]
+        X_train_selected = X_train[size_features + type_features]
+
+        if X_train_selected.isnull().any().any():
+            X_train_selected = X_train_selected.fillna(0)
+            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+
+        # Feature Engineering (add before scaling)
+        # Handle zero heights
+        X_train_selected['aspect_ratio'] = X_train_selected.apply(
+            lambda row: 0 if row['height'] == 0 else row['width'] / row['height'], axis=1
+        )
+        X_train_selected['area'] = X_train_selected['width'] * X_train_selected['height']
+
+        # Scale size features
+        scaler = StandardScaler()
+        X_train_selected[['width', 'height', 'aspect_ratio', 'area']] = scaler.fit_transform(X_train_selected[['width', 'height', 'aspect_ratio', 'area']])
+
+        # Filter non-zero size rows (adjust as needed)
+        mask = (X_train_selected[['width','height']] != 0).any(axis=1) # only use width and height for the mask.
+        X_train_sized = X_train_selected[mask]
+        print(f"Filtered to {len(X_train_sized)} rows with non-zero sizes")
+
+        # Cluster only sized data
+        clustering = hdbscan.HDBSCAN(min_cluster_size=5, min_samples=5, cluster_selection_epsilon=0.05).fit(X_train_sized)
+        clustered_data = X_train_sized.copy()
+        clustered_data.loc[:, 'Cluster'] = clustering.labels_
+
+        # Example: Print top cluster samples (adjust cluster_ids as needed)
+        print("Top cluster samples:")
+        unique_clusters = np.unique(clustering.labels_)
+        top_clusters = []
+        for cluster_id in unique_clusters:
+            if cluster_id != -1:
+                top_clusters.append((cluster_id,len(clustered_data[clustered_data['Cluster'] == cluster_id])))
+        top_clusters.sort(key=lambda x:x[1],reverse=True)
+        for cluster_id, size in top_clusters[:3]:
+            sample = clustered_data[clustered_data['Cluster'] == cluster_id].head(2)
+            print(f"Cluster {cluster_id} ({size}):")
+            for row in sample.to_dict('records'):
+                print(f"  Width: {row['width']}, Height: {row['height']} | Aspect Ratio: {row['aspect_ratio']} | Area: {row['area']} | Type: { {k: v for k, v in row.items() if k.startswith('type_') and v == 1}}")
+
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on size and type.json")
+        self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
+        print('Number of instances in each cluster\n', clustered_data[['Cluster']].value_counts())
+        clusters = np.unique(clustering.labels_)
+        return clustered_data, clusters
+                
     def dbscan_cluster_based_on_position_and_type(self):
         X_train = self.egfe_load_data.load_data(self.train_folder)
         size_features = ['position.x', 'position.y']
