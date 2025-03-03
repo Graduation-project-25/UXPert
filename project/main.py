@@ -90,21 +90,6 @@ def main():
     egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
-    # config = {}
-    # with open('.config', 'r') as f:
-    #     for line in f:
-    #         key, value = line.strip().split('=')
-    #         config[key] = value
-
-
-    # client = MongoClient("mongodb://localhost:27017/") 
-    # db = client[config["DATABASE_NAME"]]  
-    # designs_collection = db[config["COLLECTION_NAME"]]  
-    # cluster_repo = ClusterRepository(db)
-    # cluster_repo.insert_cluster_data(clustered_data, cluster_type="size")
-
-
-
     # print(data)
     # clustered_data_json = output_folder+ '/X-train Clusters based on label and type.json'
     # recognition = RecognitionEvaluation()
