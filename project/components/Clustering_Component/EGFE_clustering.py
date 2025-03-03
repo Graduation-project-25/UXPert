@@ -153,19 +153,19 @@ class EGFE_Clustering(ClusteringInterface):
         clustered_data = X_train_sized.copy()
         clustered_data.loc[:, 'Cluster'] = clustering.labels_
 
-        # Example: Print top cluster samples (adjust cluster_ids as needed)
-        print("Top cluster samples:")
-        unique_clusters = np.unique(clustering.labels_)
-        top_clusters = []
-        for cluster_id in unique_clusters:
-            if cluster_id != -1:
-                top_clusters.append((cluster_id,len(clustered_data[clustered_data['Cluster'] == cluster_id])))
-        top_clusters.sort(key=lambda x:x[1],reverse=True)
-        for cluster_id, size in top_clusters[:3]:
-            sample = clustered_data[clustered_data['Cluster'] == cluster_id].head(2)
-            print(f"Cluster {cluster_id} ({size}):")
-            for row in sample.to_dict('records'):
-                print(f"  Width: {row['width']}, Height: {row['height']} | Aspect Ratio: {row['aspect_ratio']} | Area: {row['area']} | Type: { {k: v for k, v in row.items() if k.startswith('type_') and v == 1}}")
+        # Print top cluster samples
+        # print("Top cluster samples:")
+        # unique_clusters = np.unique(clustering.labels_)
+        # top_clusters = []
+        # for cluster_id in unique_clusters:
+        #     if cluster_id != -1:
+        #         top_clusters.append((cluster_id,len(clustered_data[clustered_data['Cluster'] == cluster_id])))
+        # top_clusters.sort(key=lambda x:x[1],reverse=True)
+        # for cluster_id, size in top_clusters[:3]:
+        #     sample = clustered_data[clustered_data['Cluster'] == cluster_id].head(2)
+        #     print(f"Cluster {cluster_id} ({size}):")
+        #     for row in sample.to_dict('records'):
+        #         print(f"  Width: {row['width']}, Height: {row['height']} | Aspect Ratio: {row['aspect_ratio']} | Area: {row['area']} | Type: { {k: v for k, v in row.items() if k.startswith('type_') and v == 1}}")
 
         cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on size and type.json")
         self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
