@@ -40,6 +40,18 @@ evaluation_folder = output_folder + '/evaluation'
 
 os.makedirs(output_folder, exist_ok=True)
 
+config = {}
+with open('.config', 'r') as f:
+    for line in f:
+        key, value = line.strip().split('=')
+        config[key] = value
+
+
+client = MongoClient("mongodb://localhost:27017/") 
+db = client[config["DATABASE_NAME"]]  
+designs_collection = db[config["COLLECTION_NAME"]]  
+
+
 def main():
     
     # Initialize components
@@ -47,7 +59,7 @@ def main():
     egfe_ui_normalizing = EGFE_UiNormalizing()
     splitter = JSONDataSplitter(output_folder)
     egfe_clustering_evaluation = EGFE_ClusteringEvaluation()
-    egfe_clustering = EGFE_Clustering(train_folder, output_folder)
+    egfe_clustering = EGFE_Clustering(train_folder, output_folder, db)
     egfe_ui_extraction = EGFE_FeatureExtraction()
     egfe_visualization = EGFE_Visualization()
     egfe_clustering_testing = EGFE_ClusteringTesting()
@@ -72,24 +84,24 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    clustered_data, clusters = egfe_clustering.dbscan_cluster('position')
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     print (clustered_data)
     # egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
-    config = {}
-    with open('.config', 'r') as f:
-        for line in f:
-            key, value = line.strip().split('=')
-            config[key] = value
+    # config = {}
+    # with open('.config', 'r') as f:
+    #     for line in f:
+    #         key, value = line.strip().split('=')
+    #         config[key] = value
 
 
-    client = MongoClient("mongodb://localhost:27017/") 
-    db = client[config["DATABASE_NAME"]]  
-    designs_collection = db[config["COLLECTION_NAME"]]  
-    cluster_repo = ClusterRepository(db)
-    cluster_repo.insert_cluster_data(clustered_data, cluster_type="size")
+    # client = MongoClient("mongodb://localhost:27017/") 
+    # db = client[config["DATABASE_NAME"]]  
+    # designs_collection = db[config["COLLECTION_NAME"]]  
+    # cluster_repo = ClusterRepository(db)
+    # cluster_repo.insert_cluster_data(clustered_data, cluster_type="size")
 
 
 

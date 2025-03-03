@@ -16,11 +16,12 @@ from utils.csv_exporting import export_to_csv
 from database.cluster_repository import ClusterRepository
  
 class EGFE_Clustering(ClusteringInterface):    
-    def __init__(self, train_folder,output_folder):
+    def __init__(self, train_folder,output_folder, db):
         self.output_folder = output_folder
         self.train_folder = train_folder
         self.egfe_ui_processing = EGFE_UiProcessing()
         self.egfe_load_data = EGFE_LoadData()
+        self.cluster_repository = ClusterRepository(db)
     
 
     def dbscan_cluster(self, feature):
@@ -77,10 +78,13 @@ class EGFE_Clustering(ClusteringInterface):
         clustered_data.loc[:, 'Cluster'] = clustering.labels_
 
         #save cluster in json
-        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors and type.json")
-        self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
+        # cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors and type.json")
+        # self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
         print('Number of instances in each cluster\n', clustered_data[['Cluster']].value_counts())
         clusters = np.unique(clustering.labels_)
+
+        # Save clusters in database
+        self.cluster_repository.insert_cluster_data(clustered_data, "color")
 
         return clustered_data, clustering.labels_
             
@@ -167,10 +171,14 @@ class EGFE_Clustering(ClusteringInterface):
         #     for row in sample.to_dict('records'):
         #         print(f"  Width: {row['width']}, Height: {row['height']} | Aspect Ratio: {row['aspect_ratio']} | Area: {row['area']} | Type: { {k: v for k, v in row.items() if k.startswith('type_') and v == 1}}")
 
-        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on size and type.json")
-        self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
+        # cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on size and type.json")
+        # self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
         print('Number of instances in each cluster\n', clustered_data[['Cluster']].value_counts())
         clusters = np.unique(clustering.labels_)
+
+        # Save clusters in database
+        self.cluster_repository.insert_cluster_data(clustered_data, "size")
+
         return clustered_data, clustering.labels_
                 
     def dbscan_cluster_based_on_position_and_type(self):
@@ -244,10 +252,15 @@ class EGFE_Clustering(ClusteringInterface):
         #     for row in sample.to_dict('records'):
         #         print(f"  Position X: {row['position.x']}, Position Y: {row['position.y']} | Type: { {k: v for k, v in row.items() if k.startswith('type_') and v == 1}}")
 
-        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on position and type.json")
-        self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
+        # cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on position and type.json")
+        # self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
         print('Number of instances in each cluster\n', clustered_data[['Cluster']].value_counts())
         clusters = np.unique(clustering.labels_)
+        
+        # Save clusters in database
+        self.cluster_repository.insert_cluster_data(clustered_data, "position")
+
+
         return clustered_data, clustering.labels_
         
     def dbscan_cluster_based_on_type_and_label(self):
