@@ -89,7 +89,7 @@ def main():
     db = client[config["DATABASE_NAME"]]  
     designs_collection = db[config["COLLECTION_NAME"]]  
     cluster_repo = ClusterRepository(db)
-    cluster_repo.insert_cluster_data(clustered_data, design_name="new", cluster_type="size")
+    cluster_repo.insert_cluster_data(clustered_data, design_name="Design", cluster_type="size")
 
 
 
