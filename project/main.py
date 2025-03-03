@@ -72,7 +72,7 @@ def main():
     clustered_data, clusters = egfe_clustering.dbscan_cluster('label')
     print (clustered_data)
     # egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
-    # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
+    egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
 
