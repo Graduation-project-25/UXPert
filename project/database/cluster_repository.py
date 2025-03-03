@@ -6,7 +6,7 @@ class ClusterRepository(BaseRepository):
     def __init__(self, db):
         super().__init__(db["clusters"])
 
-    def insert_cluster_data(self, clustered_data, design_name, cluster_type):
+    def insert_cluster_data(self, clustered_data, cluster_type):
         """
         Updates existing cluster data if it exists for the given cluster type,
         otherwise inserts new cluster data.
@@ -17,8 +17,6 @@ class ClusterRepository(BaseRepository):
 
         # Prepare frames to be inserted/updated
         frames = clustered_data.to_dict(orient='records')
-        for frame in frames:
-            frame['design_name'] = design_name  # Move design_name into each frame
 
         # Check if clusters already exist for this cluster type
         filter_query = {"cluster_type": cluster_type}
