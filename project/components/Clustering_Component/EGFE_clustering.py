@@ -171,7 +171,7 @@ class EGFE_Clustering(ClusteringInterface):
         self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
         print('Number of instances in each cluster\n', clustered_data[['Cluster']].value_counts())
         clusters = np.unique(clustering.labels_)
-        return clustered_data, clusters
+        return clustered_data, clustering.labels_
                 
     def dbscan_cluster_based_on_position_and_type(self):
         X_train = self.egfe_load_data.load_data(self.train_folder)

@@ -88,7 +88,7 @@ def main():
     ##############################################################################################################
     
     # Step 6: Visualizing Clustering Results
-    # egfe_visualization.clustering_visualization_by_color(clustered_data, clusters)
+    egfe_visualization.clustering_visualization_by_color(clustered_data, clusters)
     # egfe_visualization.visualize_alignment_consistency(clustered_data)
     # egfe_visualization.visualize_color_consistency(clustered_data)
     # egfe_visualization.visualize_size_proportionality(clustered_data)
