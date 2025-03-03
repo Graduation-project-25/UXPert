@@ -13,7 +13,7 @@ from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProces
 from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
 from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 from utils.csv_exporting import export_to_csv
-
+from database.cluster_repository import ClusterRepository
  
 class EGFE_Clustering(ClusteringInterface):    
     def __init__(self, train_folder,output_folder):
