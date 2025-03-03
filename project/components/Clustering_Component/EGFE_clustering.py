@@ -30,7 +30,7 @@ class EGFE_Clustering(ClusteringInterface):
             if feature == "color":
                 clustered_data, clusters = self.hdbscan_cluster_based_on_color_and_type()
             elif feature == "position":
-                clustered_data, clusters = self.dbscan_cluster_based_on_position_and_type()
+                clustered_data, clusters = self.hdbscan_cluster_based_on_position_and_type()
             elif feature == "size":
                 clustered_data, clusters = self.hdbscan_cluster_based_on_size_and_type() 
             elif feature == "label":
@@ -206,6 +206,50 @@ class EGFE_Clustering(ClusteringInterface):
 
         return clustered_data, clusters 
     
+    def hdbscan_cluster_based_on_position_and_type(self):
+        X_train = self.egfe_load_data.load_data(self.train_folder)
+        position_features = ['position.x', 'position.y']
+        type_features = [col for col in X_train.columns if col.startswith('type_')]
+        X_train_selected = X_train[position_features + type_features]
+
+        if X_train_selected.isnull().any().any():
+            X_train_selected = X_train_selected.fillna(0)
+            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+
+        # Scale position features
+        scaler = StandardScaler()
+        X_train_selected[['position.x', 'position.y']] = scaler.fit_transform(X_train_selected[['position.x', 'position.y']])
+
+        # Filter non-zero position rows (adjust as needed)
+        mask = (X_train_selected[position_features] != 0).any(axis=1)
+        X_train_positioned = X_train_selected[mask]
+        print(f"Filtered to {len(X_train_positioned)} rows with non-zero positions")
+
+        # Cluster only positioned data
+        clustering = hdbscan.HDBSCAN(min_cluster_size=5, min_samples=5, cluster_selection_epsilon=0.05).fit(X_train_positioned)
+        clustered_data = X_train_positioned.copy()
+        clustered_data.loc[:, 'Cluster'] = clustering.labels_
+
+        # Example: Print top cluster samples (adjust cluster_ids as needed)
+        print("Top cluster samples:")
+        unique_clusters = np.unique(clustering.labels_)
+        top_clusters = []
+        for cluster_id in unique_clusters:
+            if cluster_id != -1:
+                top_clusters.append((cluster_id, len(clustered_data[clustered_data['Cluster'] == cluster_id])))
+        top_clusters.sort(key=lambda x: x[1], reverse=True)
+        for cluster_id, size in top_clusters[:3]:
+            sample = clustered_data[clustered_data['Cluster'] == cluster_id].head(2)
+            print(f"Cluster {cluster_id} ({size}):")
+            for row in sample.to_dict('records'):
+                print(f"  Position X: {row['position.x']}, Position Y: {row['position.y']} | Type: { {k: v for k, v in row.items() if k.startswith('type_') and v == 1}}")
+
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on position and type.json")
+        self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
+        print('Number of instances in each cluster\n', clustered_data[['Cluster']].value_counts())
+        clusters = np.unique(clustering.labels_)
+        return clustered_data, clustering.labels_
+        
     def dbscan_cluster_based_on_type_and_label(self):
         X_train = self.egfe_load_data.load_data(self.train_folder)
         X_original = self.egfe_load_data.load_unnormalized_data(self.train_folder)
