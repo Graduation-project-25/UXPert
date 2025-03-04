@@ -1,32 +1,30 @@
-from pymongo import MongoClient
 from database.base_repository import BaseRepository
 import pandas as pd
 
 class ClusterRepository(BaseRepository):
     def __init__(self, db):
         super().__init__(db["clusters"])
+        self.cluster_repo = BaseRepository(self.collection)# Collection name
 
     def insert_cluster_data(self, clustered_data, cluster_type):
-        """
-        Updates existing cluster data if it exists for the given cluster type,
-        otherwise inserts new cluster data.
-        """
         if clustered_data.empty:
             print("Warning: clustered_data DataFrame is empty. Nothing to save.")
             return None
-
+ 
         # Prepare frames to be inserted/updated
         frames = clustered_data.to_dict(orient='records')
+        # print(frames)
+        # print("*******************************************************")
 
         # Check if clusters already exist for this cluster type
         filter_query = {"cluster_type": cluster_type}
-        existing_clusters = list(self.collection.find(filter_query))
+        existing_clusters = list(self.cluster_repo.find_all(filter_query))
 
         if existing_clusters:
             # Clusters exist, so replace them
             try:
-                self.collection.delete_many(filter_query)  # Delete existing clusters
-                self.collection.insert_one({"cluster_type": cluster_type, "frames": frames})  # Insert updated clusters
+                self.cluster_repo.delete_all(filter_query)  # Delete existing clusters
+                self.cluster_repo.add({"cluster_type": cluster_type, "frames": frames})  # Insert updated clusters
                 print(f"Updated {len(frames)} cluster frames for '{cluster_type}'.")
                 return True  # return True to indicate an update
             except Exception as e:
@@ -35,7 +33,7 @@ class ClusterRepository(BaseRepository):
         else:
             # Clusters don't exist, so insert new ones
             try:
-                self.collection.insert_one({"cluster_type": cluster_type, "frames": frames})
+                self.cluster_repo.add({"cluster_type": cluster_type, "frames": frames})
                 print(f"Inserted {len(frames)} cluster frames for '{cluster_type}'.")
                 return True  # return True to indicate an insert
             except Exception as e:

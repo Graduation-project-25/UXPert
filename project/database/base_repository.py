@@ -4,13 +4,13 @@ class BaseRepository:
     def __init__(self, collection):
         self.collection = collection
 
-    def find_all(self):
-        return list(self.collection.find({}))
+    def find_all(self, filter_query):
+        return list(self.collection.find(filter_query))
 
     def find_by_id(self, id):
         return self.collection.find_one({"_id": ObjectId(id)})
 
-    def add(self, data):
+    def add(self, data): 
         return self.collection.insert_one(data)
 
     def update(self, id, data):
@@ -18,3 +18,6 @@ class BaseRepository:
 
     def delete(self, id):
         return self.collection.delete_one({"_id": ObjectId(id)})
+    
+    def delete_all(self, id):
+        return self.collection.delete_many({})
