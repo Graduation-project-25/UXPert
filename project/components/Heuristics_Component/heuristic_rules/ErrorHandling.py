@@ -5,7 +5,7 @@ class ErrorHandling(HeuristicInterface):
 
     def check_error_messages(self, ui_data):
         """Check for clear and informative error messages in the design."""
-        ui_data = ui_data.fillna('')  # Replace missing values with empty strings
+        ui_data = ui_data.fillna('')
         ui_data.columns = ui_data.columns.str.strip()
         
         issues = []
@@ -21,7 +21,7 @@ class ErrorHandling(HeuristicInterface):
 
     def check_recovery_options(self, ui_data):
         """Check if there are recovery options available for users when an error occurs."""
-        ui_data = ui_data.fillna('')  # Handle missing values
+        ui_data = ui_data.fillna('') 
         ui_data.columns = ui_data.columns.str.strip()
         
         issues = []
@@ -37,24 +37,24 @@ class ErrorHandling(HeuristicInterface):
 
     def evaluate_rule(self, ui_data):
         """Evaluate this heuristic by checking error messages and recovery options."""
-        ui_data = ui_data.fillna('')  # Prevent missing value errors
+        ui_data = ui_data.fillna('') 
         ui_data.columns = ui_data.columns.str.strip()
         
-        # Ensure all required columns exist
+
         required_columns = {'type', 'name', 'textContent'}
         missing_columns = required_columns - set(ui_data.columns)
         if missing_columns:
             return {"error": f"Missing required columns: {missing_columns}"}
 
-        # Run evaluations
+
         error_issues = self.check_error_messages(ui_data)
         recovery_issues = self.check_recovery_options(ui_data)
 
-        # Calculate error handling score
+
         total_issues = len(error_issues) + len(recovery_issues)
         error_handling_score = max(0, 100 - (total_issues * 10))
 
-        # Return structured feedback
+
         feedback = {
             "ErrorHandlingScore": round(error_handling_score, 2),
             "ErrorIssues": error_issues,
