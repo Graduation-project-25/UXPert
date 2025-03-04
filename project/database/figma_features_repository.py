@@ -12,7 +12,7 @@ class FigmaFeaturesRepository(BaseRepository):
             "design_name": feature_data["design_name"],
             "frames.frame_name": feature_data["frame_name"]
         }
-
+ 
         update_query = {
             "$set": {
                 "frames.$.screen_size": feature_data["screen_size"],
@@ -25,7 +25,7 @@ class FigmaFeaturesRepository(BaseRepository):
 
         if update_result.matched_count == 0:
             # If no existing frame was found, insert a new frame
-            self.collection.update_one(
+            self.updatee(
                 {"design_name": feature_data["design_name"]},
                 {"$push": {"frames": feature_data}},
                 upsert=True

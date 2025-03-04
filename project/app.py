@@ -3,26 +3,12 @@ import os
 import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from pymongo import MongoClient
 from components.Heuristics_Component.heuristic_rules.ErrorHandling import ErrorHandling
 from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
-from database.cluster_repository import ClusterRepository
 from database.figma_features_repository import FigmaFeaturesRepository
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
 
-
-# config = {}
-# with open('.config', 'r') as f:
-#     for line in f:
-#         key, value = line.strip().split('=')
-#         config[key] = value
-
-# client = MongoClient("mongodb://localhost:27017/") 
-# db = client[config["DATABASE_NAME"]]  
-# designs_collection = db[config["COLLECTION_NAME"]]  
 figma_repository = FigmaFeaturesRepository()
 # cluster_repo = ClusterRepository(db)
 
@@ -148,10 +134,10 @@ def process_elements():
         # Evaluate consistency
         
         
-        error_prevention = ErrorPrevention()
-        print("UI Data before error prevention:", elements_df)
-        error_prevention_results = error_prevention.evaluate_rule(elements_df)
-        print("Error Prevention Results:", error_prevention_results)
+        # error_prevention = ErrorPrevention()
+        # print("UI Data before error prevention:", elements_df)
+        # error_prevention_results = error_prevention.evaluate_rule(elements_df)
+        # print("Error Prevention Results:", error_prevention_results)
         # print("Starting consistency evaluation...")
         consistency_evaluator = Consistency() 
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
@@ -183,12 +169,12 @@ def process_elements():
             "Feedback": consistency_results.get('Feedback', {})
         }
 
-        error_feedback = {
-            "ErrorPreventionScore": f"Error Prevention Score: {error_prevention_results.get('ErrorPreventionScore', 0)}%.",
-            "ValidationIssues": error_prevention_results.get("ValidationIssues", []),
-            "ConfirmationIssues": error_prevention_results.get("ConfirmationIssues", []),
-            "Feedback": error_prevention_results.get("Feedback", {})
-        }
+        # error_feedback = {
+        #     "ErrorPreventionScore": f"Error Prevention Score: {error_prevention_results.get('ErrorPreventionScore', 0)}%.",
+        #     "ValidationIssues": error_prevention_results.get("ValidationIssues", []),
+        #     "ConfirmationIssues": error_prevention_results.get("ConfirmationIssues", []),
+        #     "Feedback": error_prevention_results.get("Feedback", {})
+        # }
         
         error_handling_feedback = {
             "ErrorHandlingScore": f"Error Handling Score: {error_handling_results.get('ErrorHandlingScore', 0)}%.",
@@ -204,16 +190,16 @@ def process_elements():
         }
 
         print(f"Consistency evaluation feedback: {consistency_feedback}")
-        print(f"Error Prevention feedback:{error_feedback}")
+        # print(f"Error Prevention feedback:{error_feedback}")
         print(f"Error handlying feedback: {error_handling_feedback}")
         print(f"minimalist evaluation feedback: {minimalist_feedback}")    
    
-        feedback_data = {
-            "error_prevention_results": error_prevention_results,
-            "consistency_results": consistency_results,
-            "error_handling_results": error_handling_results,
-            "minimalist_results": minimalist_feedback_list
-        }
+        # feedback_data = {
+        #     "error_prevention_results": error_prevention_results,
+        #     "consistency_results": consistency_results,
+        #     "error_handling_results": error_handling_results,
+        #     "minimalist_results": minimalist_feedback_list
+        # }
 
         # Step 5: Save feedback in MongoDB under the same frame
         # update_result = designs_collection.update_one(
@@ -230,7 +216,7 @@ def process_elements():
         response_data = {
             "message": "Design processed successfully!",
             "status": 200,
-            "error_prevention_results": error_feedback,
+            # "error_prevention_results": error_feedback,
             "consistency_results": consistency_feedback,
             "error_handling_results": error_handling_feedback,
             "minimalist_results": minimalist_feedback

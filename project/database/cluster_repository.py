@@ -3,7 +3,6 @@ from database.base_repository import BaseRepository
 class ClusterRepository(BaseRepository):
     def __init__(self):
         super().__init__("clusters")
-        # self.cluster_repo = BaseRepository(self.collection)# Collection name
 
 
     def insert_cluster_data(self, clustered_data, cluster_type):
