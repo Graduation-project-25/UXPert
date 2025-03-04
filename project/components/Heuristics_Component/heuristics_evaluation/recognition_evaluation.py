@@ -11,7 +11,7 @@ class RecognitionEvaluation(HeuristicEvaluationInterface):
  
     def evaluate_rule(self, clustered_data, evaluation_folder):
         data_to_save = {}
-        
+
         try:
             with open(clustered_data, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -28,12 +28,17 @@ class RecognitionEvaluation(HeuristicEvaluationInterface):
                             element_type = k.replace("type_", "")
                             break
 
-                    icons = element.get('type_symbolInstance', None)
                     icon_width = element.get('width', None)
                     icon_height = element.get('height', None)
                     labeled = element.get('labeled', None)
 
-                    is_icon_labeled = labeled is not None if icons and icon_width and icon_height else False
+                    # Determine if it's an icon
+                    is_icon = element_type == "symbolInstance"
+
+                    # Robust labeled detection
+                    is_icon_labeled = False
+                    if is_icon and 'labeled' in element:
+                        is_icon_labeled = element['labeled'] == True or element['labeled'] == 1
 
                     all_feedback = self.recognition_instance.evaluate_rule(element, element_type, screen_width, screen_height, is_icon_labeled, icon_width, icon_height)
                     element["All Feedback"] = all_feedback
