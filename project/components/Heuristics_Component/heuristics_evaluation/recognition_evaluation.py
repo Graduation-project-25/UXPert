@@ -16,8 +16,8 @@ class RecognitionEvaluation(HeuristicEvaluationInterface):
                 data = json.load(f)
                 # print(data)
                 # consistent_navigation_feedback = recognition_instance.consistent_navigation(data)
-                visible_instructions_feedback = self.recognition_instance.visible_instructions(data)
-                minimized_memory_load_feedback= self.recognition_instance.minimized_memory_load(data)
+                # visible_instructions_feedback = self.recognition_instance.visible_instructions(data)
+                # minimized_memory_load_feedback= self.recognition_instance.minimized_memory_load(data)
 
             for key, elements in data.items():
                 for element in elements:  

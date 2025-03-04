@@ -50,17 +50,17 @@ class Recognition(HeuristicInterface):
         elif icon_width > 32 or icon_height > 32:
             return "Your icons too large - Try decreasing your icon size"
 
-    def evaluate_rule(self, is_icon_labeled, icon_width, icon_height):
+    def evaluate_rule(self, element, element_type, screen_width, screen_height, is_icon_labeled, icon_width, icon_height):
         feedback = []
 
         # Step 1: Evaluate memory load
-        memory_load_feedback = self.check_memory_load(element, element_type, screen_width, screen_height)
+        memory_load_feedback = self.minimized_memory_load(element, element_type, screen_width, screen_height)
         feedback.extend(memory_load_feedback)
         if not memory_load_feedback:
             feedback.append("All interactive elements are visible and properly sized.")
 
         # Step 2: Evaluate instruction
-        visible_instructions_feedback = self.check_visible_instructions(element, element_type)
+        visible_instructions_feedback = self.visible_instructions(element, element_type)
         feedback.append(visible_instructions_feedback)
 
         # Step 3: Evaluate labeled icons
