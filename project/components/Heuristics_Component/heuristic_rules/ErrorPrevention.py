@@ -1,7 +1,4 @@
-import pandas as pd
 from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
-import json
-import os
 
 class ErrorPrevention(HeuristicInterface):
     
