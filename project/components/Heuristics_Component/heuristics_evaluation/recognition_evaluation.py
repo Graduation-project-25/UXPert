@@ -6,18 +6,18 @@ from components.Heuristics_Component.heuristic_rules.heuristic_factory import He
 class RecognitionEvaluation(HeuristicEvaluationInterface):    
     def __init__(self):
         self.evaluation_results = EvaluationResults()
+        self.recognition_instance = HeuristicFactory.check_rule("recognition")
 
  
     def evaluate_rule(self, clustered_data, evaluation_folder):
-        recognition_instance = HeuristicFactory.check_rule("recognition")
         data_to_save = {}
         try:
             with open(clustered_data, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 # print(data)
-                consistent_navigation_feedback = recognition_instance.consistent_navigation(data)
-                visible_instructions_feedback = recognition_instance.visible_instructions(data)
-                minimized_memory_load_feedback= recognition_instance.minimized_memory_load(data)
+                # consistent_navigation_feedback = recognition_instance.consistent_navigation(data)
+                visible_instructions_feedback = self.recognition_instance.visible_instructions(data)
+                minimized_memory_load_feedback= self.recognition_instance.minimized_memory_load(data)
 
             for key, elements in data.items():
                 for element in elements:  
@@ -25,18 +25,18 @@ class RecognitionEvaluation(HeuristicEvaluationInterface):
                     icon_width = element.get('width', None)
                     icon_height = element.get('height', None)
                     labeled = element.get('labeled', None)
-
+ 
                     if icons:
                         if labeled:
                             is_icon_labeled = True
                         else: is_icon_labeled = False
-                        icon_visibility_feedback = recognition_instance.evaluate_rule(is_icon_labeled,icon_width,icon_height)
+                        icon_visibility_feedback = self.recognition_instance.evaluate_rule(is_icon_labeled,icon_width,icon_height)
 
                     else: break
 
                     # Save the updated element with feedback
                     element["Icons evaluation"] = icon_visibility_feedback  
-                element["consistent navigation"] = consistent_navigation_feedback  
+                # element["consistent navigation"] = consistent_navigation_feedback  
                 element["visible instructions"] = visible_instructions_feedback  
                 element["minimized memory load"] = minimized_memory_load_feedback  
 

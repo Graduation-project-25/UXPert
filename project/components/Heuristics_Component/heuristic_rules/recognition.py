@@ -1,6 +1,5 @@
 from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface 
 
-
 class Recognition(HeuristicInterface):
 
     def __init__(self):
@@ -90,43 +89,42 @@ class Recognition(HeuristicInterface):
 
         # Provide a single feedback message
         if has_missing_instructions:
-            return ["Some interactive elements are missing instructions (tooltip, placeholder, or label). Consider adding them."]
-        
-        return ["All interactive elements have visible instructions."]
+            return "Some interactive elements are missing instructions (tooltip, placeholder, or label). Consider adding them."
+        return "All interactive elements have visible instructions."
 
-    def consistent_navigation(self, elements_data):
-        # Consistency in Navigation
-        navigation_elements = ["type_symbolInstance", "type_rectangle", "type_text", "type_triangle", "type_group"]       
-        screen_nav_elements = {}  # Store element types per screen/group
-        feedback = []
+    # def consistent_navigation(self, elements_data):
+    #     # Consistency in Navigation
+    #     navigation_elements = ["type_symbolInstance", "type_rectangle", "type_text", "type_triangle", "type_group"]       
+    #     screen_nav_elements = {}  # Store element types per screen/group
+    #     feedback = []
 
-        for group_id, elements in elements_data.items():
-            if not isinstance(elements, list):  # Skip invalid groups
-                continue
+    #     for group_id, elements in elements_data.items():
+    #         if not isinstance(elements, list):  # Skip invalid groups
+    #             continue
             
-            screen_nav_elements[group_id] = set()  # Track elements for this group
+    #         screen_nav_elements[group_id] = set()  # Track elements for this group
 
-            for element in elements:
-                if not isinstance(element, dict):  # Ensure valid data
-                    continue
+    #         for element in elements:
+    #             if not isinstance(element, dict):  # Ensure valid data
+    #                 continue
 
-                for key, value in element.items():
-                    if key.startswith("type_") and value == 1:
-                        element_type = key.replace("type_", "")
-                        if element_type in navigation_elements:
-                            screen_nav_elements[group_id].add(element_type)
+    #             for key, value in element.items():
+    #                 if key.startswith("type_") and value == 1:
+    #                     element_type = key.replace("type_", "")
+    #                     if element_type in navigation_elements:
+    #                         screen_nav_elements[group_id].add(element_type)
 
-        # Compare navigation elements across screens
-        reference_screen = next(iter(screen_nav_elements.values()), set())  # Get the first screen as reference
+    #     # Compare navigation elements across screens
+    #     reference_screen = next(iter(screen_nav_elements.values()), set())  # Get the first screen as reference
 
-        for screen_id, elements in screen_nav_elements.items():
-            if elements != reference_screen:
-                feedback.append(f"Inconsistent navigation elements in screen {screen_id}. Expected: {reference_screen}, Found: {elements}")
+    #     for screen_id, elements in screen_nav_elements.items():
+    #         if elements != reference_screen:
+    #             feedback.append(f"Inconsistent navigation elements in screen {screen_id}. Expected: {reference_screen}, Found: {elements}")
 
-        if not feedback:
-            feedback.append("Navigation elements are consistent across screens.")
+    #     if not feedback:
+    #         feedback.append("Navigation elements are consistent across screens.")
 
-        return feedback
+    #     return feedback
 
     def evaluate_icon_labeling(self, is_icon_labeled):
         if is_icon_labeled:
@@ -152,25 +150,10 @@ class Recognition(HeuristicInterface):
         icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
         feedback.append(f"Icon Size: {icon_size_feedback}")
 
-        #     # Step 2: Evaluate element count
-        #     num_elements = len(elements['elements'])
-        #     element_count_feedback = self.evaluate_elements_count(num_elements)
-        #     if element_count_feedback:
-        #         feedback.append(element_count_feedback)
-        # else:
-        #     feedback.append(f"White Space Ratio follows minimalistic rule")
-        #     feedback.append(f"Number of elements follows minimalistic rule")
 
-        # # Step 3: Check for irrelevant elements
-        # irrelevant_elements = [el for el in elements['elements'] if self.is_irrelevant(el)]
-        # if irrelevant_elements:
-        #     feedback.append(f"This design contains {len(irrelevant_elements)} irrelevant elements. Consider removing them.")
-        # else:
-        #     feedback.append(f"No irrelevant elements. Elements follow minimalistic rule")
-
-        # # If no feedback, mention adherence to minimalist rule
-        # if not feedback:
-        #     feedback.append("Design adheres to the minimalist rule.")
+        # # If no feedback, mention adherence to Recognition rule
+        if not feedback:
+            feedback.append("Design adheres to the Recognition rule.")
 
         # self.condition = 0
         # print(feedback)
