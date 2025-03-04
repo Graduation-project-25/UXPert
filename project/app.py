@@ -3,25 +3,28 @@ import os
 import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from pymongo import MongoClient
 from components.Heuristics_Component.heuristic_rules.ErrorHandling import ErrorHandling
 from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
-from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
-from pymongo import MongoClient
+from database.cluster_repository import ClusterRepository
 from database.figma_features_repository import FigmaFeaturesRepository
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 
-config = {}
-with open('.config', 'r') as f:
-    for line in f:
-        key, value = line.strip().split('=')
-        config[key] = value
 
-client = MongoClient("mongodb://localhost:27017/") 
-db = client[config["DATABASE_NAME"]]  
-designs_collection = db[config["COLLECTION_NAME"]]  
-figma_repository = FigmaFeaturesRepository(db)
-cluster_repo = ClusterRepository(db)
+# config = {}
+# with open('.config', 'r') as f:
+#     for line in f:
+#         key, value = line.strip().split('=')
+#         config[key] = value
+
+# client = MongoClient("mongodb://localhost:27017/") 
+# db = client[config["DATABASE_NAME"]]  
+# designs_collection = db[config["COLLECTION_NAME"]]  
+figma_repository = FigmaFeaturesRepository()
+# cluster_repo = ClusterRepository(db)
 
 # Initialize Flask
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
@@ -109,17 +112,17 @@ def process_elements():
         else:
             print(f"New design document created: {design_name}")
 
-        # Retrieve the saved data to ensure it's up-to-date
-        latest_saved_data = designs_collection.find_one(
-        {"design_name": design_name, "frames.frame_name": frame_name},
-        {"frames.$": 1}  # This projects only the matching frame inside the frames array
-        )
+        # # Retrieve the saved data to ensure it's up-to-date
+        # latest_saved_data = designs_collection.find_one(
+        # {"design_name": design_name, "frames.frame_name": frame_name},
+        # {"frames.$": 1}  # This projects only the matching frame inside the frames array
+        # )
 
-        if not latest_saved_data:
-            print("Failed to retrieve saved design data from MongoDB")
-            return jsonify({"error": "Failed to retrieve saved design data"}), 500
+        # if not latest_saved_data:
+        #     print("Failed to retrieve saved design data from MongoDB")
+        #     return jsonify({"error": "Failed to retrieve saved design data"}), 500
 
-        print("Retrieved saved design data:", latest_saved_data)
+        # print("Retrieved saved design data:", latest_saved_data)
 
     # except Exception as e:
     #     print(f"Database error: {str(e)}")
@@ -136,16 +139,16 @@ def process_elements():
             json.dump(output_data, json_file, indent=4, ensure_ascii=False)
 
         
-        frame_data = latest_saved_data.get("frames", [])
-        if frame_data:
-            elements_df = pd.DataFrame(frame_data[0].get("elements", []))
-        else:
-            return jsonify({"error": "No elements found in the retrieved frame data"}), 500
+        # frame_data = latest_saved_data.get("frames", [])
+        # if frame_data:
+        #     elements_df = pd.DataFrame(frame_data[0].get("elements", []))
+        # else:
+        #     return jsonify({"error": "No elements found in the retrieved frame data"}), 500
 
         # Evaluate consistency
         
         
-        error_prevention = ErrorPrevention(db)
+        error_prevention = ErrorPrevention()
         print("UI Data before error prevention:", elements_df)
         error_prevention_results = error_prevention.evaluate_rule(elements_df)
         print("Error Prevention Results:", error_prevention_results)
@@ -213,14 +216,14 @@ def process_elements():
         }
 
         # Step 5: Save feedback in MongoDB under the same frame
-        update_result = designs_collection.update_one(
-            {"design_name": design_name, "frames.frame_name": frame_name},
-            {"$set": {"frames.$.feedback": feedback_data}}
-        )
+        # update_result = designs_collection.update_one(
+        #     {"design_name": design_name, "frames.frame_name": frame_name},
+        #     {"$set": {"frames.$.feedback": feedback_data}}
+        # )
 
-        if update_result.matched_count == 0:
-            print("Error updating feedback in MongoDB.")
-            return jsonify({"error": "Failed to update feedback in database"}), 500
+        # if update_result.matched_count == 0:
+        #     print("Error updating feedback in MongoDB.")
+        #     return jsonify({"error": "Failed to update feedback in database"}), 500
 
         print("Feedback saved successfully.")
 

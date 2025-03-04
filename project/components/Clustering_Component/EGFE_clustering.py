@@ -20,7 +20,7 @@ class EGFE_Clustering(ClusteringInterface):
         self.train_folder = train_folder
         self.egfe_ui_processing = EGFE_UiProcessing()
         self.egfe_load_data = EGFE_LoadData()
-        self.cluster_repository = ClusterRepository(db)
+        self.cluster_repository = ClusterRepository()
     
 
     def dbscan_cluster(self, feature):
