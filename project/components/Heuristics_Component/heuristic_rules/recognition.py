@@ -26,7 +26,8 @@ class Recognition(HeuristicInterface):
     def visible_instructions(self, element, element_type):
         # Does the UI provide tooltips, placeholders, or labels?
         if element_type not in ["oval", "rectangle", "text", "symbolInstance"]:
-            return "Element type not applicable for instruction check."
+            # return "Element type not applicable for instruction check."
+            return
 
         tooltip = element.get("tooltip", None)
         placeholder = element.get("placeholder", None)
@@ -50,31 +51,33 @@ class Recognition(HeuristicInterface):
         elif icon_width > 32 or icon_height > 32:
             return "Your icons too large - Try decreasing your icon size"
 
-    def evaluate_rule(self, element, element_type, screen_width, screen_height, is_icon_labeled, icon_width, icon_height):
+    def evaluate_rule(self, element, element_type, screen_width, screen_height, is_icon_labeled, icon_width, icon_height, is_icon):
         feedback = []
 
         # Step 1: Evaluate memory load
         memory_load_feedback = self.minimized_memory_load(element, element_type, screen_width, screen_height)
-        feedback.extend(memory_load_feedback)
-        if not memory_load_feedback:
-            feedback.append("All interactive elements are visible and properly sized.")
+        if (memory_load_feedback != ""):
+            feedback.append(memory_load_feedback)
+        # if not memory_load_feedback:
+        #     feedback.append("All interactive elements are visible and properly sized.")
 
         # Step 2: Evaluate instruction
         visible_instructions_feedback = self.visible_instructions(element, element_type)
-        feedback.append(visible_instructions_feedback)
+        if (visible_instructions_feedback != ""):
+            feedback.append(visible_instructions_feedback)
 
-        # Step 3: Evaluate labeled icons
-        icon_labeling_feedback = self.evaluate_icon_labeling(is_icon_labeled)
-        feedback.append(f"Icon Labeling: {icon_labeling_feedback}")
+        # Step 3: Evaluate labeled icons and size if it is an icon.
+        if is_icon:
+            icon_labeling_feedback = self.evaluate_icon_labeling(is_icon_labeled)
+            feedback.append(f"Icon Labeling: {icon_labeling_feedback}")
 
         # Step 4: Evaluate icons size
-        icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
-        feedback.append(f"Icon Size: {icon_size_feedback}")
+            icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
+            feedback.append(f"Icon Size: {icon_size_feedback}")
 
-
-        # # If no feedback, mention adherence to Recognition rule
+        # If no feedback, mention adherence to Recognition rule
         if not feedback:
             feedback.append("Design adheres to the Recognition rule.")
 
         return feedback
-        
+            
