@@ -51,7 +51,7 @@ class Recognition(HeuristicInterface):
         elif icon_width > 32 or icon_height > 32:
             return "Your icons too large - Try decreasing your icon size"
 
-    def evaluate_rule(self, element, element_type, screen_width, screen_height, is_icon_labeled, icon_width, icon_height, is_icon):
+    def evaluate_rule(self, element, element_type, screen_width, screen_height, is_icon_labeled, icon_width, icon_height):
         feedback = []
 
         # Step 1: Evaluate memory load
@@ -67,17 +67,18 @@ class Recognition(HeuristicInterface):
             feedback.append(visible_instructions_feedback)
 
         # Step 3: Evaluate labeled icons and size if it is an icon.
-        if is_icon:
-            icon_labeling_feedback = self.evaluate_icon_labeling(is_icon_labeled)
-            feedback.append(f"Icon Labeling: {icon_labeling_feedback}")
+        # if is_icon:
+        icon_labeling_feedback = self.evaluate_icon_labeling(is_icon_labeled)
+        feedback.append(f"Icon Labeling: {icon_labeling_feedback}")
 
-        # Step 4: Evaluate icons size
-            icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
-            feedback.append(f"Icon Size: {icon_size_feedback}")
+    # Step 4: Evaluate icons size
+        icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
+        feedback.append(f"Icon Size: {icon_size_feedback}")
 
         # If no feedback, mention adherence to Recognition rule
         if not feedback:
             feedback.append("Design adheres to the Recognition rule.")
 
         return feedback
-            
+
+
