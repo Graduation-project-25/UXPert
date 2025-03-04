@@ -39,6 +39,7 @@ class ErrorPrevention(HeuristicInterface):
             if row.get('hasClickInteraction'):
                 element_text = row.get('textContent', '').lower()
                 is_icon = row.get('isIcon', 'FALSE') == 'TRUE'  
+                is_instance = row.get('type') == 'INSTANCE'  # Check if it's an instance
 
                 is_dangerous = any(keyword in element_text for keyword in self.DANGEROUS_ACTION_KEYWORDS) or is_icon
 
@@ -47,10 +48,12 @@ class ErrorPrevention(HeuristicInterface):
                     "name": row.get('name', 'Unnamed'),
                     "text": element_text,
                     "clickDestination": row.get("clickDestination", "").strip(),
-                    "is_dangerous": is_dangerous
+                    "is_dangerous": is_dangerous,
+                    "is_instance": is_instance  # Mark instance elements
                 })
 
         return buttons
+
 
     def check_confirmation_messages(self, ui_data):
         """Check if a dangerous button's destination has a confirmation message."""
@@ -71,10 +74,10 @@ class ErrorPrevention(HeuristicInterface):
                 for frame_name, elements in all_design_pages.items():
                     for element in elements:
                         text_content = " ".join(element.get("textContent", "").strip().lower().split())
-
+                        name = " ".join(element.get("name", "").strip().lower().split())
                         # Check if this is the correct destination frame or if it's a text element in the frame
                         if element.get("id") == destination_id or element.get("type") == "TEXT":
-                            if any(keyword in text_content for keyword in self.CONFIRMATION_KEYWORDS):
+                            if any(keyword in text_content or name for keyword in self.CONFIRMATION_KEYWORDS):
                                 has_confirmation = True
                                 confirmed_buttons += 1
                                 break
