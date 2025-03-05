@@ -24,5 +24,5 @@ class BaseRepository:
     def delete(self, id):
         return self.collection.delete_one({"_id": ObjectId(id)})
     
-    def delete_all(self):
+    def delete_all(self, filter_query):
         return self.collection.delete_many({})

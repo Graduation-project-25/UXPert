@@ -85,21 +85,21 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     # print (clustered_data)
     # egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
     # print(data)
-    clustered_data_json = output_folder+ '/X-train Clusters based on label and type.json'
-    recognition = RecognitionEvaluation()
-    recognition.evaluate_rule(clustered_data_json,evaluation_folder)
+    # clustered_data_json = output_folder+ '/X-train Clusters based on label and type.json'
+    # recognition = RecognitionEvaluation()
+    # recognition.evaluate_rule(clustered_data_json,evaluation_folder)
 
-    testing = RecognitionTesting()
-    testing.evaluate_rule_test(test_folder, evaluation_folder)
+    # testing = RecognitionTesting()
+    # testing.evaluate_rule_test(test_folder, evaluation_folder)
     # testing.analyze_test_results(test_folder, train_folder)
-    print("After disaster")
+    # print("After disaster")
 
     ##############################################################################################################
     

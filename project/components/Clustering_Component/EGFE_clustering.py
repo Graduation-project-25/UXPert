@@ -52,7 +52,6 @@ class EGFE_Clustering(ClusteringInterface):
         type_features = [col for col in X_train.columns if col.startswith('type_')]
         X_train_selected = X_train[color_features + type_features]
 
-
         #Remove null values
         if X_train_selected.isnull().any().any():
             X_train_selected = X_train_selected.fillna(0)
