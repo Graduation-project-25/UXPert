@@ -23,6 +23,7 @@ from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitt
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
 from components.Heuristics_Component.heuristics_testing.minimalist_testing import MinimalistTesting
 from components.Heuristics_Component.heuristics_evaluation.recognition_evaluation import RecognitionEvaluation
+from components.Heuristics_Component.heuristics_testing.recognition_testing import RecognitionTesting
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 
@@ -95,7 +96,10 @@ def main():
     recognition = RecognitionEvaluation()
     recognition.evaluate_rule(clustered_data_json,evaluation_folder)
 
-
+    testing = RecognitionTesting()
+    testing.evaluate_rule_test(test_folder, evaluation_folder)
+    # testing.analyze_test_results(test_folder, train_folder)
+    print("After disaster")
 
     ##############################################################################################################
     

@@ -42,7 +42,7 @@ class RecognitionEvaluation(HeuristicEvaluationInterface):
 
                     all_feedback = self.recognition_instance.evaluate_rule(element, element_type, screen_width, screen_height, is_icon_labeled, icon_width, icon_height)
                     element["All Feedback"] = all_feedback
-                    print(all_feedback)
+                    # print(all_feedback)
 
                 data_to_save[key] = elements
 
