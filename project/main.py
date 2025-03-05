@@ -41,18 +41,6 @@ evaluation_folder = output_folder + '/evaluation'
 
 os.makedirs(output_folder, exist_ok=True)
 
-config = {}
-with open('.config', 'r') as f:
-    for line in f:
-        key, value = line.strip().split('=')
-        config[key] = value
-
-
-client = MongoClient("mongodb://localhost:27017/") 
-db = client[config["DATABASE_NAME"]]  
-designs_collection = db[config["COLLECTION_NAME"]]  
-
-
 def main():
     
     # Initialize components
@@ -60,7 +48,7 @@ def main():
     egfe_ui_normalizing = EGFE_UiNormalizing()
     splitter = JSONDataSplitter(output_folder)
     egfe_clustering_evaluation = EGFE_ClusteringEvaluation()
-    egfe_clustering = EGFE_Clustering(train_folder, output_folder, db)
+    egfe_clustering = EGFE_Clustering(train_folder, output_folder)
     egfe_ui_extraction = EGFE_FeatureExtraction()
     egfe_visualization = EGFE_Visualization()
     egfe_clustering_testing = EGFE_ClusteringTesting()
