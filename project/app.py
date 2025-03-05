@@ -116,9 +116,9 @@ def process_elements():
         output_data = {
             "screen_size": frame_info,  
             "elements": elements,
-            # "consistency_results": consistency_feedback,
-            # "error_prevention_results": error_feedback,
-            # "error_handling_results": error_handling_feedback
+             "consistency_results": consistency_feedback,
+            #  "error_prevention_results": error_feedback,
+             "error_handling_results": error_handling_feedback
         }
         output_file = get_new_filename()
         with open(output_file, "w", encoding="utf-8") as json_file:
