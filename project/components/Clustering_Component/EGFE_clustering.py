@@ -15,7 +15,7 @@ from utils.csv_exporting import export_to_csv
 from database.cluster_repository import ClusterRepository
  
 class EGFE_Clustering(ClusteringInterface):    
-    def __init__(self, train_folder,output_folder, db):
+    def __init__(self, train_folder,output_folder):
         self.output_folder = output_folder
         self.train_folder = train_folder
         self.egfe_ui_processing = EGFE_UiProcessing()
