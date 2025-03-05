@@ -25,7 +25,7 @@ class FigmaFeaturesRepository(BaseRepository):
 
         if update_result.matched_count == 0:
             # If no existing frame was found, insert a new frame
-            self.updatee(
+            self.upsert(
                 {"design_name": feature_data["design_name"]},
                 {"$push": {"frames": feature_data}},
                 upsert=True
