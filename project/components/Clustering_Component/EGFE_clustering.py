@@ -3,9 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import hdbscan
-from sklearn.cluster import DBSCAN
 import hdbscan
-from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 from components.Clustering_Component.clustering import ClusteringInterface
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
@@ -52,33 +50,32 @@ class EGFE_Clustering(ClusteringInterface):
         type_features = [col for col in X_train.columns if col.startswith('type_')]
         X_train_selected = X_train[color_features + type_features]
 
-        #Remove null values
+        # Remove null values
         if X_train_selected.isnull().any().any():
             X_train_selected = X_train_selected.fillna(0)
             X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
 
         # Filter non-zero color rows
-        mask = (X_train_selected[color_features] != 0).any(axis=1) | (X_train_selected[['color_r', 'color_g', 'color_b']].sum(axis=1) == 0)
+        print("Total rows before filtering:", len(X_train_selected))
+        mask = (X_train_selected[color_features] != 0).any(axis=1)
         X_train_colored = X_train_selected[mask]
         print(f"Filtered to {len(X_train_colored)} rows with non-zero colors")
+        print("Sample of filtered data:\n", X_train_colored[color_features].head())
 
         # Cluster only colored data
-        clustering = hdbscan.HDBSCAN(min_cluster_size=5, min_samples=5, cluster_selection_epsilon=0.05).fit(X_train_colored)
-        # Prepare the dataset with clusters
+        clustering = hdbscan.HDBSCAN(min_cluster_size=42, min_samples=1, cluster_selection_epsilon=0.1).fit(X_train_colored)
         clustered_data = X_train_colored.copy()
         clustered_data.loc[:, 'Cluster'] = clustering.labels_
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on color and type.json")      
+        self.save_cluster_as_json(clustered_data,cluster_json_path,'Cluster')
 
-        #save cluster in json
-        # cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors and type.json")
-        # self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
         print('Number of instances in each cluster\n', clustered_data[['Cluster']].value_counts())
         clusters = np.unique(clustering.labels_)
 
         # Save clusters in database
-        self.cluster_repository.insert_cluster_data(clustered_data, "color")
+        # self.cluster_repository.insert_cluster_data(clustered_data, "color")
 
         return clustered_data, clustering.labels_
-
     def hdbscan_cluster_based_on_size_and_type(self):
         X_train = self.egfe_load_data.load_data(self.train_folder)
 
