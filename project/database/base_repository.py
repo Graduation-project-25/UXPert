@@ -18,6 +18,7 @@ class BaseRepository:
 
     def update(self, filter_query, update_query):
         return self.collection.update_one(filter_query, update_query)
+    
     def upsert(self, filter_query, push_query, upsert):
         return self.collection.update_one(filter_query, push_query, upsert=upsert)
     
@@ -25,4 +26,4 @@ class BaseRepository:
         return self.collection.delete_one({"_id": ObjectId(id)})
     
     def delete_all(self, filter_query):
-        return self.collection.delete_many({})
+        return self.collection.delete_many(filter_query)
