@@ -21,11 +21,17 @@ class BaseRepository:
 
     def update(self, filter_query, update_query):
         return self.collection.update_one(filter_query, update_query)
-    def updatee(self, filter_query, update_query, upsert=False):
+    
+    def upsert(self, filter_query, update_query, upsert=False):
         return self.collection.update_many(filter_query, update_query, upsert=upsert)
     
+    
+
+    
+    def updatee(self, filter_query, update_query, upsert=False):
+        return self.collection.update_many(filter_query, update_query, upsert=upsert)
     def delete(self, id):
         return self.collection.delete_one({"_id": ObjectId(id)})
     
-    def delete_all(self):
-        return self.collection.delete_many({})
+    def delete_all(self, filter_query):
+        return self.collection.delete_many(filter_query)

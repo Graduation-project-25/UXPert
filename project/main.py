@@ -23,6 +23,7 @@ from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitt
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
 from components.Heuristics_Component.heuristics_testing.minimalist_testing import MinimalistTesting
 from components.Heuristics_Component.heuristics_evaluation.recognition_evaluation import RecognitionEvaluation
+from components.Heuristics_Component.heuristics_testing.recognition_testing import RecognitionTesting
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 
@@ -40,18 +41,6 @@ evaluation_folder = output_folder + '/evaluation'
 
 os.makedirs(output_folder, exist_ok=True)
 
-config = {}
-with open('.config', 'r') as f:
-    for line in f:
-        key, value = line.strip().split('=')
-        config[key] = value
-
-
-client = MongoClient("mongodb://localhost:27017/") 
-db = client[config["DATABASE_NAME"]]  
-designs_collection = db[config["COLLECTION_NAME"]]  
-
-
 def main():
     
     # Initialize components
@@ -59,7 +48,7 @@ def main():
     egfe_ui_normalizing = EGFE_UiNormalizing()
     splitter = JSONDataSplitter(output_folder)
     egfe_clustering_evaluation = EGFE_ClusteringEvaluation()
-    egfe_clustering = EGFE_Clustering(train_folder, output_folder, db)
+    egfe_clustering = EGFE_Clustering(train_folder, output_folder)
     egfe_ui_extraction = EGFE_FeatureExtraction()
     egfe_visualization = EGFE_Visualization()
     egfe_clustering_testing = EGFE_ClusteringTesting()
@@ -87,7 +76,7 @@ def main():
     clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     # print (clustered_data)
     # egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
-    # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
+    egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
     # print(data)
@@ -95,12 +84,15 @@ def main():
     # recognition = RecognitionEvaluation()
     # recognition.evaluate_rule(clustered_data_json,evaluation_folder)
 
-
+    # testing = RecognitionTesting()
+    # testing.evaluate_rule_test(test_folder, evaluation_folder)
+    # testing.analyze_test_results(test_folder, train_folder)
+    # print("After disaster")
 
     ##############################################################################################################
     
     # Step 6: Visualizing Clustering Results
-    # egfe_visualization.clustering_visualization(clustered_data,clusters)
+    egfe_visualization.clustering_visualization(clustered_data,clusters)
     # egfe_visualization.visualize_alignment_consistency(clustered_data)
     # egfe_visualization.visualize_color_consistency(clustered_data)
     # egfe_visualization.visualize_size_proportionality(clustered_data)

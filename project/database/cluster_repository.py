@@ -5,36 +5,39 @@ class ClusterRepository(BaseRepository):
         super().__init__("clusters")
 
 
-    def insert_cluster_data(self, clustered_data, cluster_type):
+    def insert_cluster_data(self, clustered_data, cluster_type, batch_size=1000):
         if clustered_data.empty:
             print("Warning: clustered_data DataFrame is empty. Nothing to save.")
             return None
- 
-        # Prepare frames to be inserted/updated
-        frames = clustered_data.to_dict(orient='records')
-        # print(frames)
-        # print("*******************************************************")
 
-        # Check if clusters already exist for this cluster type
+        new_frames = clustered_data.to_dict(orient='records')
+        total_new = len(new_frames)
         filter_query = {"cluster_type": cluster_type}
         existing_clusters = list(self.find_all(filter_query))
 
-        if existing_clusters:
-            # Clusters exist, so replace them
-            try:
-                self.delete_all(filter_query)  # Delete existing clusters
-                self.add({"cluster_type": cluster_type, "frames": frames})  # Insert updated clusters
-                print(f"Updated {len(frames)} cluster frames for '{cluster_type}'.")
-                return True  # return True to indicate an update
-            except Exception as e:
-                print(f"Error updating cluster data: {e}")
-                return False  # return False to indicate an error
-        else:
-            # Clusters don't exist, so insert new ones
-            try:
-                self.add({"cluster_type": cluster_type, "frames": frames})
-                print(f"Inserted {len(frames)} cluster frames for '{cluster_type}'.")
-                return True  # return True to indicate an insert
-            except Exception as e:
-                print(f"Error inserting cluster data: {e}")
-                return False  # return False to indicate an error
+        try:
+            if existing_clusters:
+                existing_frames = existing_clusters[0].get("frames", [])
+                updated_frames = existing_frames.copy()
+
+                # Process in batches
+                for i in range(0, total_new, batch_size):
+                    batch = new_frames[i:i + batch_size]
+                    updated_frames.extend(batch)
+                    self.delete_all(filter_query)
+                    self.add({"cluster_type": cluster_type, "frames": updated_frames})
+                    print(f"Processed batch {i // batch_size + 1}: {len(batch)} frames")
+
+                print(f"Updated {total_new} cluster frames for '{cluster_type}'. Total: {len(updated_frames)}")
+                return True
+            else:
+                # Initial insert in batches
+                for i in range(0, total_new, batch_size):
+                    batch = new_frames[i:i + batch_size]
+                    self.add({"cluster_type": cluster_type, "frames": batch})
+                    print(f"Inserted batch {i // batch_size + 1}: {len(batch)} frames")
+                print(f"Inserted {total_new} cluster frames for '{cluster_type}'.")
+                return True
+        except Exception as e:
+            print(f"Error updating cluster data: {e}")
+            return False

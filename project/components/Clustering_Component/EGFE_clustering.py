@@ -3,9 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import hdbscan
-from sklearn.cluster import DBSCAN
 import hdbscan
-from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 from components.Clustering_Component.clustering import ClusteringInterface
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
@@ -15,7 +13,7 @@ from utils.csv_exporting import export_to_csv
 from database.cluster_repository import ClusterRepository
  
 class EGFE_Clustering(ClusteringInterface):    
-    def __init__(self, train_folder,output_folder, db):
+    def __init__(self, train_folder,output_folder):
         self.output_folder = output_folder
         self.train_folder = train_folder
         self.egfe_ui_processing = EGFE_UiProcessing()
@@ -52,33 +50,57 @@ class EGFE_Clustering(ClusteringInterface):
         type_features = [col for col in X_train.columns if col.startswith('type_')]
         X_train_selected = X_train[color_features + type_features]
 
-
-        #Remove null values
+        # Remove null values
         if X_train_selected.isnull().any().any():
             X_train_selected = X_train_selected.fillna(0)
             X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
 
         # Filter non-zero color rows
-        mask = (X_train_selected[color_features] != 0).any(axis=1) | (X_train_selected[['color_r', 'color_g', 'color_b']].sum(axis=1) == 0)
+        print("Total rows before filtering:", len(X_train_selected))
+        mask = (X_train_selected[color_features] != 0).any(axis=1)
         X_train_colored = X_train_selected[mask]
         print(f"Filtered to {len(X_train_colored)} rows with non-zero colors")
 
         # Cluster only colored data
-        clustering = hdbscan.HDBSCAN(min_cluster_size=5, min_samples=5, cluster_selection_epsilon=0.05).fit(X_train_colored)
-        # Prepare the dataset with clusters
+        clustering = hdbscan.HDBSCAN(min_cluster_size=25, min_samples=20, cluster_selection_epsilon=0.01).fit(X_train_colored)
         clustered_data = X_train_colored.copy()
         clustered_data.loc[:, 'Cluster'] = clustering.labels_
-
-        #save cluster in json
-        # cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on Colors and type.json")
-        # self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
+        
         print('Number of instances in each cluster\n', clustered_data[['Cluster']].value_counts())
-        clusters = np.unique(clustering.labels_)
+        
+        # Identify large clusters for sub-clustering
+        cluster_counts = clustered_data['Cluster'].value_counts()
+        large_clusters = cluster_counts[cluster_counts > 150].index
+        
+        new_clusters = clustered_data[~clustered_data['Cluster'].isin(large_clusters)]  # Keep only small clusters initially
+        
+        for large_cluster in large_clusters:
+            large_cluster_size = cluster_counts[large_cluster]
+            print(f"Re-clustering large cluster {large_cluster} with {large_cluster_size} samples")
+            large_cluster_data = clustered_data[clustered_data['Cluster'] == large_cluster].drop(columns=['Cluster'])
+            sub_clustering = hdbscan.HDBSCAN(min_cluster_size=150, min_samples=35, cluster_selection_epsilon=0.9).fit(large_cluster_data)
+            
+            # Assign sub-clusters and add them to new clusters
+            sub_cluster_data = large_cluster_data.copy()
+            sub_cluster_data.loc[:, 'Cluster'] = sub_clustering.labels_ + (large_cluster + 100)  # Offset to avoid conflicts
+            new_clusters = pd.concat([new_clusters, sub_cluster_data])
 
-        # Save clusters in database
-        self.cluster_repository.insert_cluster_data(clustered_data, "color")
+            # Assign sub-clusters
+            sub_cluster_labels = sub_clustering.labels_ + (large_cluster + 100)  # Offset to avoid conflicts
+            clustered_data.loc[clustered_data['Cluster'] == large_cluster, 'Cluster'] = sub_cluster_labels
 
-        return clustered_data, clustering.labels_
+
+
+        # Save clusters as JSON
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on color and type.json")
+        self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
+
+        print("New cluster assignments:\n", clustered_data[['Cluster']].value_counts())
+
+        print(clustered_data['Cluster'].values)        
+        
+        return clustered_data, clustered_data['Cluster'].values
+
 
     def hdbscan_cluster_based_on_size_and_type(self):
         X_train = self.egfe_load_data.load_data(self.train_folder)

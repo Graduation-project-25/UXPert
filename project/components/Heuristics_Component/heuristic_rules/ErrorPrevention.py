@@ -1,6 +1,7 @@
 from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
+from database.base_repository import BaseRepository
 
-class ErrorPrevention(HeuristicInterface):
+class ErrorPrevention(HeuristicInterface,BaseRepository):
     
     # Constants
     CONFIRMATION_KEYWORDS = ["confirm", "are you sure", "proceed", "continue", "ok", "yes", "no"]
