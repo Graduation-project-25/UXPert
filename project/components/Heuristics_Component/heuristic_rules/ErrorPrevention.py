@@ -6,20 +6,22 @@ class ErrorPrevention(HeuristicInterface):
     CONFIRMATION_KEYWORDS = ["confirm", "are you sure", "proceed", "continue", "ok", "yes", "no"]
     DANGEROUS_ACTION_KEYWORDS = ["delete", "remove", "discard", "erase", "reset", "clear", "cancel", "terminate"]
 
-    def __init__(self, db):
-        """Initialize with MongoDB connection."""
-        self.db = db
-        self.designs_collection = self.db["features"]
+    def __init__(self, figma_repository):
+        """Initialize with FigmaFeaturesRepository."""
+        self.figma_repository = figma_repository
 
     def load_all_design_pages(self):
         """Retrieve all saved designs from the database."""
         all_data = {}
         
-        designs = self.designs_collection.find({}, {"screen_size.frameName": 1, "elements": 1})
+        # Use the repository to fetch designs
+        designs = self.figma_repository.get_all_designs()
         
         for design in designs:
-            frame_name = design.get("screen_size", {}).get("frameName", "UnknownFrame")
-            all_data[frame_name] = design.get("elements", [])
+            frames = design.get("frames", [])
+            for frame in frames:
+                frame_name = frame.get("frame_name", "UnknownFrame")
+                all_data[frame_name] = frame.get("elements", [])
 
         return all_data
 
@@ -50,7 +52,6 @@ class ErrorPrevention(HeuristicInterface):
                 })
 
         return buttons
-
 
     def check_confirmation_messages(self, ui_data):
         """Check if a dangerous button's destination has a confirmation message."""

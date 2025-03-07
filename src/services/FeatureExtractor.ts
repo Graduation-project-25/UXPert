@@ -1,4 +1,4 @@
-export class FeatureExtractor {
+ export class FeatureExtractor {
     static async extractElements(node: SceneNode): Promise<any[]> {
         const extractedNodes: any[] = [];
 
@@ -55,7 +55,7 @@ export class FeatureExtractor {
 
                                     // Check if this property corresponds to the overridden text
                                     if (prop && typeof prop === "object" && "value" in prop) {
-                                        console.log(`Found overridden text for key '${key}':`, prop.value);
+                                        console.log(`Found overridden text for key '${key}':, prop.value`);
 
                                         // Ensure propertyReferences is valid and maps the key to this node's ID
                                         if (propertyReferences && propertyReferences[key] === node.id) {
