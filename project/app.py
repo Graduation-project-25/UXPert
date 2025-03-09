@@ -129,9 +129,9 @@ def process_elements():
         output_data = {
             "screen_size": frame_info,  
             "elements": elements,
-             "consistency_results": consistency_feedback,
+            #  "consistency_results": consistency_feedback,
             #  "error_prevention_results": error_feedback,
-             "error_handling_results": error_handling_feedback
+            #  "error_handling_results": error_handling_feedback
         }
         output_file = get_new_filename()
         with open(output_file, "w", encoding="utf-8") as json_file:
@@ -193,9 +193,9 @@ def process_elements():
             "FinalScore": minimalist_feedback_list[3] if len(minimalist_feedback_list) > 3 else "No data",
         }
 
-        print(f"Consistency evaluation feedback: {consistency_feedback}")
+        # print(f"Consistency evaluation feedback: {consistency_feedback}")
         print(f"Error Prevention feedback:{error_feedback}")
-        print(f"Error handlying feedback: {error_handling_feedback}")
+        # print(f"Error handlying feedback: {error_handling_feedback}")
         print(f"minimalist evaluation feedback: {minimalist_feedback}")    
    
         feedback_data = {
@@ -219,8 +219,8 @@ def process_elements():
             "message": "Design processed successfully!",
             "status": 200,
             "error_prevention_results": error_feedback,
-            "consistency_results": consistency_feedback,
-            "error_handling_results": error_handling_feedback,
+            # "consistency_results": consistency_feedback,
+            # "error_handling_results": error_handling_feedback,
             "minimalist_results": minimalist_feedback
         }
         print("Sending to Figma:", response_data)  

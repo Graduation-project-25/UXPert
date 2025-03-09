@@ -23,7 +23,7 @@ class RecognitionEvaluation(HeuristicEvaluationInterface):
 
                     # Determine element type
                     element_type = None
-                    for k, v in element.items():
+                    for k, v in element.items(): 
                         if k.startswith("type_") and v == 1:
                             element_type = k.replace("type_", "")
                             break

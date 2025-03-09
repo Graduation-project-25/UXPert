@@ -73,9 +73,9 @@ class Recognition(HeuristicInterface):
             icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
             feedback.append(f"Icon Size: {icon_size_feedback}")
 
-        # If no feedback, mention adherence to Recognition rule
-        if not feedback:
-            feedback.append("Design adheres to the Recognition rule.")
+        # # If no feedback, mention adherence to Recognition rule
+        # if not feedback:
+        #     feedback.append("Design adheres to the Recognition rule.")
 
         return feedback
         
