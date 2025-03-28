@@ -154,8 +154,9 @@ def process_elements():
         print("Error Prevention Results:", error_prevention_results)
 
         minimalist_evaluator = MinimalistEvaluation()
-        minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
+        minimalist_results = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
         minimalist_feedback_list = get_latest_minimalist_results()
+        # minimalist_results = minimalist_evaluator.evaluate_rule(elements_df)
 
         
 
@@ -184,19 +185,20 @@ def process_elements():
             "ErrorHandlingScore": f"Error Handling Score: {error_handling_results.get('ErrorHandlingScore', 0)}%.",
             "ErrorIssues": error_handling_results.get("ErrorIssues", []),
             "RecoveryIssues": error_handling_results.get("RecoveryIssues", []),
-            "Feedback": error_handling_results.get("Feedback", {})
+            "Feedback": error_handling_results
         }
         minimalist_feedback = {
             "WhiteSpaceRatio": minimalist_feedback_list[0] if len(minimalist_feedback_list) > 0 else "No data",
             "ElementDensity": minimalist_feedback_list[1] if len(minimalist_feedback_list) > 1 else "No data",
             "IrrelevantElements": minimalist_feedback_list[2] if len(minimalist_feedback_list) > 2 else "No data",
             "FinalScore": minimalist_feedback_list[3] if len(minimalist_feedback_list) > 3 else "No data",
+            "Feedback" : minimalist_results
         }
 
         # print(f"Consistency evaluation feedback: {consistency_feedback}")
-        print(f"Error Prevention feedback:{error_feedback}")
+        # print(f"Error Prevention feedback:{error_feedback}")
         # print(f"Error handlying feedback: {error_handling_feedback}")
-        print(f"minimalist evaluation feedback: {minimalist_feedback}")    
+        # print(f"minimalist evaluation feedback: {minimalist_feedback}")    
    
         feedback_data = {
             "error_prevention_results": error_prevention_results,
@@ -219,8 +221,8 @@ def process_elements():
             "message": "Design processed successfully!",
             "status": 200,
             "error_prevention_results": error_feedback,
-            # "consistency_results": consistency_feedback,
-            # "error_handling_results": error_handling_feedback,
+            "consistency_results": consistency_feedback,
+            "error_handling_results": error_handling_feedback,
             "minimalist_results": minimalist_feedback
         }
         print("Sending to Figma:", response_data)  

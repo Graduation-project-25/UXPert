@@ -66,12 +66,13 @@ figma.ui.onmessage = async (msg) => {
                 })
             }) as ConsistencyResult;
 
-            if (result.consistency_results.Feedback) {
+            if (result) {
                 allFeedback.push({
                     frameName: frame.name,
                     errorPreventionFeedback: result.error_prevention_results.Feedback,
                     errorHandlingFeedback: result.error_handling_results.Feedback,
                     minimalistFeedback: result.minimalist_results.Feedback,
+                    consistencyFeedback: result.consistency_results.Feedback,
                     screenshot: imageDataUrl
                 });
             }

@@ -80,7 +80,7 @@
                 id: node.id ?? "None",
                 name: node.name,
                 type: node.type,
-                textContent: textContent, // ✅ Extracts actual overridden text
+                textContent: textContent, 
                 width: 'width' in node ? node.width : null,
                 height: 'height' in node ? node.height : null,
                 "position.x": 'x' in node ? node.x : null,
