@@ -73,10 +73,10 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    clustered_data, clusters = egfe_clustering.dbscan_cluster('size')
+    # clustered_data, clusters = egfe_clustering.dbscan_cluster('label')
     # print (clustered_data)
     # egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
-    egfe_clustering_evaluation.evaluate_clustering(clustered_data)
+    # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
     # print(data)
@@ -87,20 +87,19 @@ def main():
     # testing = RecognitionTesting()
     # testing.evaluate_rule_test(test_folder, evaluation_folder)
     # testing.analyze_test_results(test_folder, train_folder)
-    # print("After disaster")
 
     ##############################################################################################################
     
     # Step 6: Visualizing Clustering Results
-    egfe_visualization.clustering_visualization(clustered_data,clusters)
+    # egfe_visualization.clustering_visualization(clustered_data,clusters)
     # egfe_visualization.visualize_alignment_consistency(clustered_data)
     # egfe_visualization.visualize_color_consistency(clustered_data)
     # egfe_visualization.visualize_size_proportionality(clustered_data)
         
     # Step 7: Assign Clusters to Test Data
-    # new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'size')
+    # new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'label')
     # print(new_x_test)
-    # egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder,'position')
+    # egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder,'label')
     # print("clustered data:")
     # print(clustered_data)
     # print("new x test data:")

@@ -37,12 +37,6 @@ class EGFE_ClusteringTesting(ClusteringTestingInterface):
 
     #     return X_test
 
- 
-
-
-
-
-
 
     def assign_test_clusters(self, train_data, test_folder, feature):
         #  Load test data from the folder
