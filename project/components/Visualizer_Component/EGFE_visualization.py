@@ -129,6 +129,6 @@ class EGFE_Visualization(VisualizerInterface):
         plt.figure(figsize=(10, 8))
         scatter = plt.scatter(X_2d[:, 0], X_2d[:, 1], c=clusters, cmap='tab20', s=50, alpha=0.6)
         plt.colorbar(scatter, label='Cluster ID')
-        plt.title('HDBSCAN Clusters of Colored Elements (PCA)')
+        plt.title('HDBSCAN Clusters of Elements (PCA)')
         plt.show()
 

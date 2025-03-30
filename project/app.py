@@ -6,11 +6,7 @@ from flask_cors import CORS
 from components.Heuristics_Component.heuristic_rules.ErrorHandling import ErrorHandling
 from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
-from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
-from components.Heuristics_Component.heuristics_evaluation.error_prevention_evaluator import ErrorPreventionEvaluation
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
-from pymongo import MongoClient
-from components.Heuristics_Component.heuristics_evaluation.recognition_evaluation import RecognitionEvaluation
 from database.figma_features_repository import FigmaFeaturesRepository
 
 
@@ -79,7 +75,6 @@ def process_elements():
                     return evaluation
 
         return {}  # Return an empty dictionary if the file is missing
-    
 
     try:
         # Prepare feature data

@@ -71,3 +71,31 @@ class EGFE_FeatureExtraction(FeatureExtractorInterface):
                 return True  # Labeled
 
         return False  # Not labeled
+        
+    def is_shape_and_text_overlapping(shape, text):
+        """Check if the text is inside the shape's bounding box."""
+        shape_x, shape_y, shape_w, shape_h = shape["rect"]["x"], shape["rect"]["y"], shape["rect"]["width"], shape["rect"]["height"]
+        text_x, text_y, text_w, text_h = text["rect"]["x"], text["rect"]["y"], text["rect"]["width"], text["rect"]["height"]
+
+        return (text_x >= shape_x and text_x + text_w <= shape_x + shape_w and
+                text_y >= shape_y and text_y + text_h <= shape_y + shape_h)
+    
+
+    def classify_shapes_as_buttons(layers):
+        buttons = []
+        
+        shapes = [layer for layer in layers if layer["_class"] in ["oval", "rectangle"]]
+        texts = [layer for layer in layers if layer["_class"] == "text"]
+        
+        for shape in shapes:
+            for text in texts:
+                if is_overlapping(shape, text):
+                    shape["_class"] = "button"  # Convert shape to button
+                    buttons.append({
+                        "id": shape["id"],
+                        "name": shape["name"],
+                        "text": text["text"]
+                    })
+        
+        return buttons
+
