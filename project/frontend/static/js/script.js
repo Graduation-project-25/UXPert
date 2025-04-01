@@ -1,5 +1,7 @@
-let currentFeedbackIndex = 0;
-let feedbackCards = [];
+let currentPageIndex = 0;
+let currentFeedbackIndex = {};
+let pageCards = {};
+let pageFeedbackData = {};
 
 // Splash screen disappears after 2 seconds
 setTimeout(() => {
@@ -31,14 +33,15 @@ document.getElementById('close').onclick = () => {
 };
 
 document.getElementById('prev').onclick = () => {
-    if (currentFeedbackIndex > 0) {
-        showFeedbackCard(currentFeedbackIndex - 1);
+    if (currentPageIndex > 0) {
+        showPage(currentPageIndex - 1);
     }
 };
 
 document.getElementById('next').onclick = () => {
-    if (currentFeedbackIndex < feedbackCards.length - 1) {
-        showFeedbackCard(currentFeedbackIndex + 1);
+    const pages = document.querySelectorAll('.page-section');
+    if (currentPageIndex < pages.length - 1) {
+        showPage(currentPageIndex + 1);
     }
 };
 
@@ -56,8 +59,6 @@ window.addEventListener("message", (event) => {
     console.log("Received plugin message:", event.data);
 });
 
-
-
 window.onmessage = (event) => {
     const msg = event.data.pluginMessage;
     if (!msg) {
@@ -67,68 +68,107 @@ window.onmessage = (event) => {
     if (msg && msg.type === 'collective-feedback') {
         document.getElementById('processing-screen').style.display = 'none';
         document.getElementById('feedback-screen').style.display = 'block';
-        document.getElementById('feedback-container').innerHTML = '';
+        const pagesContainer = document.getElementById('pages-container');
+        pagesContainer.innerHTML = '';
 
-        feedbackCards = msg.feedback.flatMap(item => {
-            const cards = [];
+        // Group feedback by frameName (page)
+        const feedbackByPage = {};
+        msg.feedback.forEach(item => {
+            if (!feedbackByPage[item.frameName]) {
+                feedbackByPage[item.frameName] = [];
+            }
+            const feedbacks = [];
+            ['errorPreventionFeedback', 'consistencyFeedback', 'errorHandlingFeedback', 'minimalistFeedback'].forEach(type => {
+                if (item[type] && Object.keys(item[type]).length > 0) {
+                    feedbacks.push({ type, data: item[type] });
+                }
+            });
+            feedbackByPage[item.frameName].push({ screenshot: item.screenshot, feedbacks: feedbacks });
+        });
 
-            function createCard(title, feedbackData) {
-                if (!feedbackData || Object.keys(feedbackData).length === 0) return null;
+        // Create a section for each page
+        Object.keys(feedbackByPage).forEach((pageName, index) => {
+            const pageSection = document.createElement('div');
+            pageSection.className = 'page-section';
+            pageSection.innerHTML = `<h2>${pageName}</h2>`;
 
-                const card = document.createElement('div');
-                card.className = 'feedback-card';
+            const feedbackArea = document.createElement('div');
+            feedbackArea.className = 'feedback-area';
 
-                const image = document.createElement('img');
-                image.src = item.screenshot;
-                image.className = 'screenshot';
+            const screenshot = document.createElement('img');
+            screenshot.src = feedbackByPage[pageName][0].screenshot; // Use the first screenshot
+            screenshot.className = 'screenshot';
+            screenshot.alt = `${pageName} Screenshot`;
 
+            const contentArea = document.createElement('div');
+            contentArea.className = 'feedback-content';
+
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.id = `feedback-${pageName}`;
+
+            // Initialize with the first feedback
+            if (feedbackByPage[pageName][0].feedbacks.length > 0) {
+                const firstFeedback = feedbackByPage[pageName][0].feedbacks[0];
                 let feedbackList = '<ul>';
-                for (const [issue, solution] of Object.entries(feedbackData)) {
+                for (const [issue, solution] of Object.entries(firstFeedback.data)) {
                     feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
                 }
                 feedbackList += '</ul>';
-
-                const content = document.createElement('div');
-                content.className = 'feedback-content';
-                content.innerHTML = `<h2>${item.frameName} - ${title}</h2><div class='divider'></div>${feedbackList}`;
-
-                card.appendChild(image);
-                card.appendChild(content);
-                document.getElementById('feedback-container').appendChild(card);
-
-                return card;
+                feedbackDiv.innerHTML = `<h3>${firstFeedback.type.replace('Feedback', ' Issues')}</h3><div class='divider'></div>${feedbackList}`;
             }
 
-            const errorCard = createCard('Error Prevention', item.errorPreventionFeedback);
-            if (errorCard) cards.push(errorCard);
+            const navButton = document.createElement('button');
+            navButton.innerHTML = '→'; // Right arrow
+            navButton.className = 'feedback-nav-button';
+            navButton.onclick = () => navigateFeedback(pageName);
 
-            const consistencyCard = createCard('Consistency', item.consistencyFeedback);
-            if (consistencyCard) cards.push(consistencyCard);
+            contentArea.appendChild(feedbackDiv);
+            contentArea.appendChild(navButton);
 
-            const errHandlingCard = createCard('Error Handling', item.errorHandlingFeedback);
-            if (errHandlingCard) cards.push(errHandlingCard);
+            feedbackArea.appendChild(screenshot);
+            feedbackArea.appendChild(contentArea);
+            pageSection.appendChild(feedbackArea);
+            pagesContainer.appendChild(pageSection);
 
-            const minimalistCard = createCard('Minimalist', item.minimalistFeedback);
-            if (minimalistCard) cards.push(minimalistCard);
-
-
-            return cards;
+            // Store feedback data for navigation
+            pageFeedbackData[pageName] = feedbackByPage[pageName][0].feedbacks;
+            if (!currentFeedbackIndex[pageName]) {
+                currentFeedbackIndex[pageName] = 0;
+            }
         });
 
-        showFeedbackCard(0);
+        // Show the first page
+        showPage(0);
     }
 };
 
-function showFeedbackCard(index) {
-    feedbackCards.forEach((card, i) => {
-        card.style.display = i === index ? 'flex' : 'none';
+function showPage(index) {
+    const pages = document.querySelectorAll('.page-section');
+    pages.forEach((page, i) => {
+        page.style.display = i === index ? 'block' : 'none';
     });
-    currentFeedbackIndex = index;
-    document.getElementById('prev').disabled = currentFeedbackIndex === 0;
-    document.getElementById('next').disabled = currentFeedbackIndex === feedbackCards.length - 1;
+    currentPageIndex = index;
+    document.getElementById('prev').disabled = currentPageIndex === 0;
+    document.getElementById('next').disabled = currentPageIndex === pages.length - 1;
 }
 
-// Enable arrow key navigation
+function navigateFeedback(pageName) {
+    const feedbacks = pageFeedbackData[pageName];
+    let currentIndex = currentFeedbackIndex[pageName];
+    currentIndex = (currentIndex + 1) % feedbacks.length;
+    currentFeedbackIndex[pageName] = currentIndex;
+
+    const feedbackDiv = document.getElementById(`feedback-${pageName}`);
+    const feedback = feedbacks[currentIndex];
+    let feedbackList = '<ul>';
+    for (const [issue, solution] of Object.entries(feedback.data)) {
+        feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
+    }
+    feedbackList += '</ul>';
+    feedbackDiv.innerHTML = `<h3>${feedback.type.replace('Feedback', ' Issues')}</h3><div class='divider'></div>${feedbackList}`;
+}
+
+// Enable arrow key navigation for pages
 window.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowLeft') {
         document.getElementById('prev').click();
@@ -136,6 +176,7 @@ window.addEventListener('keydown', (event) => {
         document.getElementById('next').click();
     }
 });
+
 setTimeout(() => {
     document.getElementById('splash-screen').style.display = 'none';
     document.getElementById('initial-screen').style.display = 'block';
