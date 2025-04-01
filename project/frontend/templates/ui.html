@@ -1,63 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UXPert - Figma Plugin</title>
-  <link rel="stylesheet" href="http://127.0.0.1:3000/static/css/styles.css">
-  <script src="http://127.0.0.1:3000/static/js/script.js" defer></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UXPert - Figma Plugin</title>
+    <link rel="stylesheet" href="http://127.0.0.1:3000/static/css/styles.css">
+    <script src="http://127.0.0.1:3000/static/js/script.js" defer></script>
 </head>
 
 
-
 <body>
-  <div id="splash-screen">
-    <h1>
-      <span class="letter">U</span>
-      <span class="letter">X</span>
-      <span class="letter">P</span>
-      <span class="letter">e</span>
-      <span class="letter">r</span>
-      <span class="letter">t</span>
-    </h1>
-  </div>
-
-  <!-- Initial Screen -->
-  <div id="initial-screen" style="display: none;">
-    <h1>Start Detection</h1>
-    <button id="start">Start</button>
-  </div>
-
-  <!-- Processing Screen -->
-  <div id="processing-screen" style="display: none;">
-    <h1>Processing...</h1>
-    <p>Please wait while the design is being evaluated.</p>
-    <div id="progress-container">
-      <progress id="progress-bar" max="100" value="0"></progress>
-      <p id="progress-text">0%</p>
+    <div id="splash-screen">
+        <h1>
+            <span class="letter">U</span>
+            <span class="letter">X</span>
+            <span class="letter">P</span>
+            <span class="letter">e</span>
+            <span class="letter">r</span>
+            <span class="letter">t</span>
+        </h1>
     </div>
-  </div>
 
-  <!-- Feedback Screen -->
-  <div id="feedback-screen" style="display: none;">
-    <h1>Feedback</h1>
-    <div id="feedback-container"></div>
-    <div id="nav-buttons">
-      <button id="prev" disabled>Previous</button>
-      <button id="next" disabled>Next</button>
+    <!-- Initial Screen -->
+    <div id="initial-screen" style="display: none;">
+        <h1>Start Detection</h1>
+        <button id="start">Start</button>
     </div>
+
+    <!-- Processing Screen -->
+    <div id="processing-screen" style="display: none;">
+        <h1>Processing...</h1>
+        <p>Please wait while the design is being evaluated.</p>
+        <div id="progress-container">
+            <progress id="progress-bar" max="100" value="0"></progress>
+            <p id="progress-text">0%</p>
+        </div>
+    </div>
+
+    <!-- Feedback Screen -->
+    <div id="feedback-screen" style="display: none;">
+        <h1>Feedback</h1>
+        <div id="pages-container" class="scrollable"></div>
+        <div id="nav-buttons">
+            <button id="prev" disabled>Previous</button>
+            <button id="next" disabled>Next</button>
+        </div>
     <div class="action-buttons">
-      <button id="close">Close</button>
-      <button id="suggest-enhancements" class="button">Suggest Enhancements</button>
+          <button id="close">Close</button>
+          <button id="suggest-enhancements" class="button">Suggest Enhancements</button>
       <button id="show-modified-design" class="button">Show Modified Design</button>
     </div>
-  </div>
+    </div>
 
   <!-- Enhancement Suggestions -->
   <div id="enhancement-screen" style="display: none;">
-    <h1>General Suggestions</h1>
+    <h1>Suggestions</h1>
     <p>Here are specific actions you can take to improve your heuristic rules, enhance design consistency, and
       usability:</p>
     <ul>
@@ -87,34 +84,6 @@
     <button id="back-to-feedback" class="suggestion-button">Back to Feedback</button>
   </div>
 
-  <!-- Modified Design Screen -->
-  <div id="modified-design-screen" style="display: none;">
-    <h1>AI-Generated Design Improvements</h1>
-    <p>Based on Nielsen's heuristics, here are suggested improvements for your design:</p>
-    
-    <div class="design-comparison">
-      <div class="design-container">
-        <div class="design-label">Original Design</div>
-        <img id="original-design-image" src="" alt="Original design">
-      </div>
-      <div class="design-container">
-        <div class="design-label">Modified Design</div>
-        <img id="modified-design-image" src="" alt="Modified design">
-      </div>
-    </div>
-    
-    <div class="modification-instructions">
-      <h3>Modification Instructions</h3>
-      <div id="modification-instructions-text"></div>
-    </div>
-    
-    <div class="action-buttons">
-      <button id="back-to-feedback-from-mod" class="action-button">Back to Feedback</button>
-      <button id="apply-changes" class="action-button apply-button">Apply Changes</button>
-      <button id="discard-changes" class="action-button discard-button">Discard Changes</button>
-    </div>
-  </div>
 
 </body>
-
 </html>

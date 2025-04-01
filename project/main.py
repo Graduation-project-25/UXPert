@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import pandas as pd
@@ -27,6 +28,7 @@ from components.Heuristics_Component.heuristics_testing.recognition_testing impo
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 
+from PIL import Image, ImageDraw
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 2000)
@@ -55,8 +57,53 @@ def main():
     egfe_load_data = EGFE_LoadData()
     minimalist_evaluation = MinimalistEvaluation()
     minimalist_test_evaluation = MinimalistTesting()
-
     recognition_instance = HeuristicFactory.check_rule("recognition")
+
+    # Image Generation Test
+    # Define file paths
+    # json_file_path = "figma_features/extracted/design_4.json"
+    # output_image_path = "figma_features/extracted/0testtttt.png"
+
+    # # Load JSON data from the file
+    # with open(json_file_path, "r", encoding="utf-8") as file:
+    #     json_data = json.load(file)
+    #     print(json_data)
+
+    #     # Extract screen dimensions
+    #     screen_width = json_data["screen_size"]["screen_width"]
+    #     screen_height = json_data["screen_size"]["screen_height"]
+
+    #     # Create a blank white canvas
+    #     image = Image.new("RGB", (screen_width, screen_height), "white")
+    #     draw = ImageDraw.Draw(image)
+
+    #     # Process and draw each UI element
+    #     for element in json_data["elements"]:
+    #         x = element["position.x"]
+    #         y = element["position.y"]
+    #         width = element["width"]
+    #         height = element["height"]
+
+    #         # Convert color values (assuming they are normalized between 0-1)
+    #         color = (
+    #             int(element["color_r"] * 255),
+    #             int(element["color_g"] * 255),
+    #             int(element["color_b"] * 255)
+    #         )
+
+    #         # Adjust negative positions (move elements into the visible screen area)
+    #         x = max(0, x)
+    #         y = max(0, y)
+
+    #         # Draw the rectangle (UI element)
+    #         draw.rectangle([x, y, x + width, y + height], outline="black", fill=color)
+
+    #     # Save and show the generated UI image
+    #     image.save(output_image_path)
+    #     image.show()
+
+    #     print("Image saved as ui_output.png")
+
 
 
     # Step 1: Save json in extracted features folder
@@ -73,7 +120,7 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    # clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    # clustered_data, clusters = egfe_clustering.dbscan_cluster('label')
     # print (clustered_data)
     # egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
@@ -87,7 +134,6 @@ def main():
     # testing = RecognitionTesting()
     # testing.evaluate_rule_test(test_folder, evaluation_folder)
     # testing.analyze_test_results(test_folder, train_folder)
-    # print("After disaster")
 
     ##############################################################################################################
     
@@ -98,9 +144,9 @@ def main():
     # egfe_visualization.visualize_size_proportionality(clustered_data)
         
     # Step 7: Assign Clusters to Test Data
-    # new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'size')
+    # new_x_test = egfe_clustering_testing.assign_test_clusters(clustered_data,test_folder,'label')
     # print(new_x_test)
-    # egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder,'position')
+    # egfe_clustering_testing.save_clusters_to_json(new_x_test , output_folder,'label')
     # print("clustered data:")
     # print(clustered_data)
     # print("new x test data:")

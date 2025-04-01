@@ -46,7 +46,7 @@ initialScreen.onStart(() => {
       const dummyFeedback = [
         {
           frameName: 'Frame 1',
-          feedbackTitle: 'Consistency Issues',
+          feedbackTitle: 'Consistency',
           feedbackData: { "Color": "Mismatch found", "Alignment": "Not centered" },
           screenshot: 'data:image/png;base64,...'
         }

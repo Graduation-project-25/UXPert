@@ -34,22 +34,21 @@ class Recognition(HeuristicInterface):
         label = element.get("label", None)
 
         if tooltip is None and placeholder is None and label is None:
-            return "Missing instructions (tooltip, placeholder, or label). Consider adding them."
+            return "Missing instructions (tooltip, placeholder, or label)" # Consider adding them"
         else:
-            return "Element has visible instructions."
+            return "Element has visible instructions"
 
     def evaluate_icon_labeling(self, is_icon_labeled):
         if is_icon_labeled:
-            return "Your icons are labeled - Good Recognition"
-        else: return "Your icons are not labeled - Try Labeling your icons for a better recognition"
+            return "Your icons are labeled" # - Good Recognition"
+        else: return "Your icons are not labeled" # - Try Labeling your icons for a better recognition"
     
     def evaluate_icon_size(self, icon_width, icon_height):
-        # icons = [element for element in elements if element['type'] == 'symbolInstance']
         # Check if icon is too small (threshold: 24px width/height)
         if icon_width < 24 or icon_height < 24:
-            return "Your icons too small - Try increasing your icon size"
+            return f"{icon_width} * {icon_height} - Too small icon - Icon Size Should be between 24 & 32" # - Try increasing your icon size"
         elif icon_width > 32 or icon_height > 32:
-            return "Your icons too large - Try decreasing your icon size"
+            return f"{icon_width} * {icon_height} - Too large icon - Icon Size Should be between 24 & 32" # - Try decreasing your icon size"
 
     def evaluate_rule(self, element, element_type, screen_width, screen_height, is_icon_labeled, icon_width, icon_height):
         feedback = []

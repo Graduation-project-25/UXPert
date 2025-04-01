@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import hdbscan
 import hdbscan
+from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 from components.Clustering_Component.clustering import ClusteringInterface
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
@@ -43,7 +44,7 @@ class EGFE_Clustering(ClusteringInterface):
             clusters = []
 
         return clustered_data, clusters
-    
+     
     def hdbscan_cluster_based_on_color_and_type(self):
         X_train = self.egfe_load_data.load_data(self.train_folder)
         color_features = [col for col in X_train.columns if col.startswith('color_')]
@@ -89,8 +90,6 @@ class EGFE_Clustering(ClusteringInterface):
             sub_cluster_labels = sub_clustering.labels_ + (large_cluster + 100)  # Offset to avoid conflicts
             clustered_data.loc[clustered_data['Cluster'] == large_cluster, 'Cluster'] = sub_cluster_labels
 
-
-
         # Save clusters as JSON
         cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on color and type.json")
         self.save_cluster_as_json(clustered_data, cluster_json_path, 'Cluster')
@@ -100,7 +99,6 @@ class EGFE_Clustering(ClusteringInterface):
         print(clustered_data['Cluster'].values)        
         
         return clustered_data, clustered_data['Cluster'].values
-
 
     def hdbscan_cluster_based_on_size_and_type(self):
         X_train = self.egfe_load_data.load_data(self.train_folder)
@@ -204,45 +202,48 @@ class EGFE_Clustering(ClusteringInterface):
         # Save clusters in database
         self.cluster_repository.insert_cluster_data(clustered_data, "position")
 
-
         return clustered_data, clustering.labels_
         
     def hdbscan_cluster_based_on_label_and_type(self):
         X_train = self.egfe_load_data.load_data(self.train_folder)
-        type_features = [col for col in X_train.columns if col.startswith('type_')]
-        label_feature = ['labeled']
-        size_features = ['width', 'height']
-        X_train_selected = X_train[size_features + type_features + label_feature]
+        X_original = self.egfe_load_data.load_unnormalized_data(self.train_folder)
+        df_exploded = X_original.explode('elements')  # Flatten the list of elements
 
-        #Remove null values
-        if X_train_selected.isnull().any().any():
-            X_train_selected = X_train_selected.fillna(0)
-            X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
+        # Extract 'type' from each dictionary inside 'elements'
+        df_exploded['width'] = df_exploded['elements'].apply(lambda x: x.get('width') if isinstance(x, dict) else None)
+        df_exploded['height'] = df_exploded['elements'].apply(lambda x: x.get('height') if isinstance(x, dict) else None)
+
+        type_features =  [col for col in X_train.columns if col.startswith('type_')]
+        label_feature =  ['labeled']
+        size_features =  ['width' ,'height']
         
-        #Remove duplicates
-        X_train_selected = X_train_selected.drop_duplicates()
+        X_train_selected = X_train[type_features + label_feature].fillna(0)
+        X_train_selected = X_train_selected.astype({col: 'int' for col in X_train_selected.columns if col.startswith('type_')})
 
-        # # Fit the DBSCAN model
-        clustering = hdbscan.HDBSCAN(
-                min_samples=20,                
-                cluster_selection_epsilon=0.5
-            ).fit(X_train_selected)
+        # Apply DBSCAN
+        clustering = hdbscan.HDBSCAN(cluster_selection_epsilon=0.2, min_cluster_size=5, min_samples=5).fit(X_train_selected)
 
-        # Prepare the dataset with clusters
-        clustered_data = X_train_selected.copy()
-        clustered_data['Cluster'] = clustering.labels_  # Add cluster labels        
-                
-        # cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on label and type.json")      
-        # self.save_cluster_as_json(clustered_data,cluster_json_path,'Cluster')
+        # Prepare Data for Saving
+        selected_columns = type_features + label_feature 
+
+        clustered_data = X_train[selected_columns].copy().fillna(0)  # Keep only required columns
+        clustered_data = clustered_data.astype({col: 'int' for col in clustered_data.columns if col.startswith('type_')})
+
+        # Add extracted size features
+        clustered_data[size_features] = df_exploded[size_features].reset_index(drop=True)
+        clustered_data.loc[:, 'Cluster'] = clustering.labels_  # Adding cluster column
+        
+        #save cluster in json
+        cluster_json_path = os.path.join(self.output_folder, "X-train Clusters based on label and type.json")      
+        self.save_cluster_as_json(clustered_data,cluster_json_path,'Cluster')
         print('Number of instances in each cluster\n',clustered_data[['Cluster']].value_counts())  # View the number of instances in each cluster
         clusters = np.unique(clustering.labels_)
 
         # Save clusters in database
         self.cluster_repository.insert_cluster_data(clustered_data, "label")
 
-        return clustered_data, clustering.labels_ 
+        return clustered_data.drop(columns=size_features, errors='ignore'), clustered_data['Cluster'].values 
 
-    
     def save_cluster_as_json(self, clusters, cluster_json_path, group_by):
         clusters_dict = clusters.groupby(group_by).apply(lambda df: df.to_dict(orient='records'), include_groups=False).to_dict()
         with open(cluster_json_path, 'w', encoding='utf-8') as json_file:

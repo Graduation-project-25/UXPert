@@ -52,7 +52,7 @@ class FigmaFeaturesRepository(BaseRepository):
             filter_query = {
                 "design_name": design_name,
                 "frames.frame_name": frame_name
-            }
+            } 
 
             update_query = {
                 "$set": { "frames.$[frame].feedback": feedback_data }
