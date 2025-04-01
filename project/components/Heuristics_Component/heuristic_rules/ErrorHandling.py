@@ -101,20 +101,14 @@ class ErrorHandling(HeuristicInterface):
         error_handling_score = max(0, 100 - total_penalty)
 
         feedback = {
-            "ErrorHandlingScore": round(error_handling_score, 2),
-            "ErrorIssues": error_issues,
-            "RecoveryIssues": recovery_issues,
-            "PlacementIssues": placement_issues,
-            "Feedback": {
-                "Errors": "Error messages are clear and well-formed." if not error_issues else "Some error messages need improvement.",
-                "Recovery": "Recovery options are available." if not recovery_issues else "Consider adding help/recovery buttons.",
-                "Placement": "Error messages are well-placed." if not placement_issues else "Ensure errors are near related input fields."
-            },
-            "Suggestions": {
-                "Error Messages": "Ensure error messages are descriptive, distinguishable (color, bold), and provide actionable solutions.",
-                "Recovery": "Provide 'Retry', 'Help', or 'Undo' options near errors to improve usability.",
-                "Placement": "Link error messages to the relevant fields to ensure clarity."
-            }
-        }
+    "ErrorHandlingScore": round(error_handling_score, 2),
+    "ErrorIssues": error_issues,
+    "RecoveryIssues": recovery_issues,
+    "Feedback": f"Errors: {' '.join(error_issues) if error_issues else 'No issues found.'} | "
+                f"Recovery: {' '.join(recovery_issues) if recovery_issues else 'Recovery options are available.'}",
+    "Suggestions": f"Error Messages: Ensure they are clear, descriptive, and visually distinct. "
+                   f"Recovery: Provide retry, help, or undo buttons near errors."
+    }
+
 
         return feedback
