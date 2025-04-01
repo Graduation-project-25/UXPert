@@ -278,106 +278,106 @@ def process_elements():
         print(f"Error: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
-@app.route('/modify-design', methods=['POST', 'OPTIONS'])
-def modify_design():
-    if request.method == 'OPTIONS':
-        return '', 200
+# @app.route('/modify-design', methods=['POST', 'OPTIONS'])
+# def modify_design():
+#     if request.method == 'OPTIONS':
+#         return '', 200
         
-    try:
-        print("\n=== NEW REQUEST ===")
-        data = request.get_json()
-        print("Received data keys:", data.keys() if data else "No data")
+#     try:
+#         print("\n=== NEW REQUEST ===")
+#         data = request.get_json()
+#         print("Received data keys:", data.keys() if data else "No data")
         
-        # Validate required fields
-        if not data or 'screenshot' not in data or 'feedback' not in data:
-            print("Missing required fields")
-            return jsonify({"error": "Missing required fields"}), 400
+#         # Validate required fields
+#         if not data or 'screenshot' not in data or 'feedback' not in data:
+#             print("Missing required fields")
+#             return jsonify({"error": "Missing required fields"}), 400
             
-        screenshot_base64 = data['screenshot']
-        heuristic_feedback = data['feedback']
-        design_elements = data.get('elements', [])
+#         screenshot_base64 = data['screenshot']
+#         heuristic_feedback = data['feedback']
+#         design_elements = data.get('elements', [])
         
-        # Validate image
-        try:
-            print("Validating image...")
-            image_data = base64.b64decode(screenshot_base64.split(',')[1])
-            img = Image.open(BytesIO(image_data))
-            print(f"Image validated: {img.format}, {img.size}")
-        except Exception as e:
-            print(f"Image validation failed: {str(e)}")
-            return jsonify({"error": f"Invalid image: {str(e)}"}), 400
+#         # Validate image
+#         try:
+#             print("Validating image...")
+#             image_data = base64.b64decode(screenshot_base64.split(',')[1])
+#             img = Image.open(BytesIO(image_data))
+#             print(f"Image validated: {img.format}, {img.size}")
+#         except Exception as e:
+#             print(f"Image validation failed: {str(e)}")
+#             return jsonify({"error": f"Invalid image: {str(e)}"}), 400
 
-        # Prepare prompt
-        prompt = f"""Analyze this UI design based on Nielsen's heuristics:
-        {json.dumps(heuristic_feedback, indent=2)}
+#         # Prepare prompt
+#         prompt = f"""Analyze this UI design based on Nielsen's heuristics:
+#         {json.dumps(heuristic_feedback, indent=2)}
         
-        Elements:
-        {json.dumps(design_elements, indent=2)}
+#         Elements:
+#         {json.dumps(design_elements, indent=2)}
         
-        Provide specific visual improvements in markdown format."""
+#         Provide specific visual improvements in markdown format."""
         
-        print("Attempting OpenAI API call...")
+#         print("Attempting OpenAI API call...")
         
-        try:
-            # Skip vision models and go straight to text-only
-            print("Using GPT-3.5-turbo (text-only fallback)")
-            response = openai.chat.completions.create(
-                model="gpt-3.5-turbo-0125",
-                messages=[{
-                    "role": "user",
-                    "content": prompt  # Text-only prompt
-                }],
-                max_tokens=1000,
-            )
-            print("OpenAI API call successful with gpt-4o")
+#         try:
+#             # Skip vision models and go straight to text-only
+#             print("Using GPT-3.5-turbo (text-only fallback)")
+#             response = openai.chat.completions.create(
+#                 model="gpt-3.5-turbo-0125",
+#                 messages=[{
+#                     "role": "user",
+#                     "content": prompt  # Text-only prompt
+#                 }],
+#                 max_tokens=1000,
+#             )
+#             print("OpenAI API call successful with gpt-4o")
             
-        except Exception as e:
-            print(f"gpt-4o failed, trying gpt-4o-2024-05-13. Error: {str(e)}")
-            try:
-                response = openai.chat.completions.create(
-                    model="gpt-4o-2024-05-13",
-                    messages=[{
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": prompt},
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/png;base64,{screenshot_base64}",
-                                },
-                            },
-                        ],
-                    }],
-                    max_tokens=1000,
-                )
-                print("OpenAI API call successful with gpt-4o-2024-05-13")
+#         except Exception as e:
+#             print(f"gpt-4o failed, trying gpt-4o-2024-05-13. Error: {str(e)}")
+#             try:
+#                 response = openai.chat.completions.create(
+#                     model="gpt-4o-2024-05-13",
+#                     messages=[{
+#                         "role": "user",
+#                         "content": [
+#                             {"type": "text", "text": prompt},
+#                             {
+#                                 "type": "image_url",
+#                                 "image_url": {
+#                                     "url": f"data:image/png;base64,{screenshot_base64}",
+#                                 },
+#                             },
+#                         ],
+#                     }],
+#                     max_tokens=1000,
+#                 )
+#                 print("OpenAI API call successful with gpt-4o-2024-05-13")
                 
-            except Exception as e:
-                print(f"Vision models failed, falling back to text-only. Error: {str(e)}")
-                response = openai.chat.completions.create(
-                    model="gpt-3.5-turbo-0125",
-                    messages=[{"role": "user", "content": prompt}],
-                    max_tokens=1000,
-                )
-                print("Text-only API call successful")
+#             except Exception as e:
+#                 print(f"Vision models failed, falling back to text-only. Error: {str(e)}")
+#                 response = openai.chat.completions.create(
+#                     model="gpt-3.5-turbo-0125",
+#                     messages=[{"role": "user", "content": prompt}],
+#                     max_tokens=1000,
+#                 )
+#                 print("Text-only API call successful")
 
-        instructions = response.choices[0].message.content
-        print("Successfully generated modifications")
+#         instructions = response.choices[0].message.content
+#         print("Successfully generated modifications")
         
-        return jsonify({
-            "status": "success",
-            "modification_instructions": instructions,
-            "original_screenshot": screenshot_base64,
-            "modified_screenshot": None
-        })
+#         return jsonify({
+#             "status": "success",
+#             "modification_instructions": instructions,
+#             "original_screenshot": screenshot_base64,
+#             "modified_screenshot": None
+#         })
         
-    except Exception as e:
-        print(f"CRITICAL ERROR: {str(e)}")
-        return jsonify({
-            "error": str(e),
-            "message": "Failed to process design modifications",
-            "traceback": traceback.format_exc()
-        }), 500
+#     except Exception as e:
+#         print(f"CRITICAL ERROR: {str(e)}")
+#         return jsonify({
+#             "error": str(e),
+#             "message": "Failed to process design modifications",
+#             "traceback": traceback.format_exc()
+#         }), 500
 
 @app.route('/', methods=['GET'])
 def home():

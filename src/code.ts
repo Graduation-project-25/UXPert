@@ -142,6 +142,6 @@ figma.ui.onmessage = async (msg) => {
         // Get modified design for the first frame
         const firstFrame = frames[0];
         const firstFeedback = allFeedback[0];
-        await getModifiedDesign(firstFrame, firstFeedback, await FeatureExtractor.extractElements(firstFrame));
+        // await getModifiedDesign(firstFrame, firstFeedback, await FeatureExtractor.extractElements(firstFrame));
     }
 };
