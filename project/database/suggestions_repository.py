@@ -1,3 +1,4 @@
+from PIL import Image, ImageDraw
 from database.base_repository import BaseRepository
 
 class SuggestionsRepository(BaseRepository):
@@ -42,17 +43,8 @@ class SuggestionsRepository(BaseRepository):
             update_query = {
                 "$set": { f"frames.$[frame].elements.$[element].{field_name}": new_value }
             }
-                # { "arrayFilters": [ { "frame.id": 102 }, { "element.id": 204 } ] }
-#
 
             array_filters = [{ "frame.frame_name": frame_name }, { "element.id": element_id }]
-            print("**********************************************************")
-            print("Filter Query:", filter_query)
-            print("Update Query:", update_query)
-            print("Array Filters:", array_filters)
-            print("**********************************************************")
-
-
             update_result = self.update_many_element(
                 filter_query,
                 update_query,
@@ -64,3 +56,30 @@ class SuggestionsRepository(BaseRepository):
         except Exception as e:
             print(f"Error updating element: {e}")
             return None
+
+    def get_image(self):
+        # Fetch JSON data
+        ui_data = self.find_one({"design_name": "simple test design"})
+        print("UI DATA")
+        print(ui_data)
+        # Extract frame details
+        frame = ui_data["frames"][0]  # Assuming single frame for simplicity
+        frame_width, frame_height = frame["design_name"], frame["user_name"]
+
+        # Create a blank canvas (white background)
+        image = Image.new("RGB", (frame_width, frame_height), "white")
+        draw = ImageDraw.Draw(image)
+
+        # Draw elements
+        for element in frame["elements"]:
+            x, y = element["position"]["x"], element["position"]["y"]
+            w, h = element["width"], element["height"]
+            color = tuple(element["color"])  # Convert list to tuple (R, G, B)
+
+            draw.rectangle([x, y, x + w, y + h], fill=color)
+
+        # Save the image
+        image.save("output_ui.png")
+        image.show()  # Open the image
+
+        print("Image saved as output_ui.png")

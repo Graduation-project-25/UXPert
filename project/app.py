@@ -235,11 +235,7 @@ def process_elements():
             "minimalist_results": minimalist_feedback
         }
         print("Sending to Figma:", response_data) 
-        print("##############################################################") 
         recognition_suggestion.save_updated_elements(design_name, frame_name)
-        print("Yarab")
-        print("##############################################################") 
-
         return jsonify(response_data), 200
     
 

@@ -27,6 +27,7 @@ from components.Heuristics_Component.heuristics_testing.recognition_testing impo
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 
+from PIL import Image
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 2000)
@@ -55,8 +56,26 @@ def main():
     egfe_load_data = EGFE_LoadData()
     minimalist_evaluation = MinimalistEvaluation()
     minimalist_test_evaluation = MinimalistTesting()
-
     recognition_instance = HeuristicFactory.check_rule("recognition")
+
+
+
+
+    # Start the JVM
+    if not jpype.isJVMStarted():
+        jpype.startJVM()
+
+    # Load JSON into Workbook
+    json_file = f"{json_folder}/0.json"
+    workbook = Workbook(json_file)
+	
+    # Save as PNG
+    image_file = f"{image_folder}/0testttttt.png"
+    workbook.save(image_file)
+
+    # Shutdown JVM
+    jpype.shutdownJVM()
+
 
 
     # Step 1: Save json in extracted features folder

@@ -79,7 +79,7 @@
             extractedNodes.push({
                 id: node.id ?? "None",
                 name: node.name,
-                type: node.type,
+                type: node.name.startsWith("ic") ? "ICON" : node.type,
                 textContent: textContent, 
                 width: 'width' in node ? node.width : null,
                 height: 'height' in node ? node.height : null,
@@ -100,6 +100,7 @@
                     await processNode(child as SceneNode);
                 }
             }
+            
         }
 
         await processNode(node);

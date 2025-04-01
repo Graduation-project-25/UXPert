@@ -25,7 +25,7 @@ class RecognitionSuggestions(SuggestionInterface):
         new_width = icon_width
         new_height = icon_height
         
-        if icon_width < 24 or icon_height < 24:
+        if icon_width <= 24 or icon_height <= 24:
             # Calculate the scale factor to maintain aspect ratio
             scale_factor = min_size / icon_width
             new_width = min_size
@@ -54,10 +54,11 @@ class RecognitionSuggestions(SuggestionInterface):
         for frame in frames:
             elements = frame.get("elements", [])
             for element in elements:  
-                if element["name"].lower().startswith("ic"):
+                if element["type"] == "ICON":
                     updated_icon_width, updated_icon_height = self.suggest_icon_size(element["width"], element["height"])
                     self.suggestion_repository.update_element_value(design_name, frame_name, element["id"],"width",updated_icon_width)
                     self.suggestion_repository.update_element_value(design_name, frame_name, element["id"],"height",updated_icon_height)
+        # self.suggestion_repository.get_image()
 
 
     def apply_suggestion():
