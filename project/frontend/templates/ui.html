@@ -52,38 +52,46 @@
     </div>
     </div>
 
-  <!-- Enhancement Suggestions -->
-  <div id="enhancement-screen" style="display: none;">
-    <h1>Suggestions</h1>
-    <p>Here are specific actions you can take to improve your heuristic rules, enhance design consistency, and
-      usability:</p>
-    <ul>
-      <li>
-        <strong>Adopt a Consistent Color Palette:</strong>
-        <p>Choose a color palette that reflects your brand identity and use it consistently across all frames. Tools
-          like Adobe Color or Coolors can help.</p>
-      </li>
-      <li>
-        <strong>Align Elements for Better Visual Hierarchy:</strong>
-        <p>Use guides and grids to align elements. Ensure uniform spacing between items for a clean layout.</p>
-      </li>
-      <li>
-        <strong>Adjust Sizes for Proportional Relationships:</strong>
-        <p>Maintain scale consistency between UI components to establish unity in design.</p>
-      </li>
-      <li>
-        <strong>Incorporate Whitespace Effectively:</strong>
-        <p>Increase whitespace around text and images to reduce cognitive load. Ensure at least 20% of your layout is
-          whitespace.</p>
-      </li>
-      <li>
-        <strong>Ensure Accessibility Compliance:</strong>
-        <p>Use contrast checkers like WebAIM to verify color contrast. Aim for at least a 4.5:1 ratio for body text.</p>
-      </li>
-    </ul>
-    <button id="back-to-feedback" class="suggestion-button">Back to Feedback</button>
+    <!-- Enhancement Suggestions -->
+    <div id="enhancement-screen" style="display: none;">
+        <h1>Suggestions</h1>
+        <p>Here are specific actions you can take to improve your heuristic rules, enhance design consistency, and usability:</p>
+        <ul>
+            <li><strong>Adopt a Consistent Color Palette:</strong> <p>Choose a color palette that reflects your brand identity and use it consistently across all frames. Tools like Adobe Color or Coolors can help.</p></li>
+            <li><strong>Align Elements for Better Visual Hierarchy:</strong> <p>Use guides and grids to align elements. Ensure uniform spacing between items for a clean layout.</p></li>
+            <li><strong>Adjust Sizes for Proportional Relationships:</strong> <p>Maintain scale consistency between UI components to establish unity in design.</p></li>
+            <li><strong>Incorporate Whitespace Effectively:</strong> <p>Increase whitespace around text and images to reduce cognitive load. Ensure at least 20% of your layout is whitespace.</p></li>
+            <li><strong>Ensure Accessibility Compliance:</strong> <p>Use contrast checkers like WebAIM to verify color contrast. Aim for at least a 4.5:1 ratio for body text.</p></li>
+        </ul>
+        <button id="back-to-feedback" class="suggestion-button">Back to Feedback</button>
+    </div>
+
+    <!-- Modified Design Screen -->
+  <div id="modified-design-screen" style="display: none;">
+    <h1>AI-Generated Design Improvements</h1>
+    <p>Based on Nielsen's heuristics, here are suggested improvements for your design:</p>
+    
+    <div class="design-comparison">
+      <div class="design-container">
+        <div class="design-label">Original Design</div>
+        <img id="original-design-image" src="" alt="Original design">
+      </div>
+      <div class="design-container">
+        <div class="design-label">Modified Design</div>
+        <img id="modified-design-image" src="" alt="Modified design">
+      </div>
+    </div>
+    
+    <div class="modification-instructions">
+      <h3>Modification Instructions</h3>
+      <div id="modification-instructions-text"></div>
+    </div>
+    
+    <div class="action-buttons">
+      <button id="back-to-feedback-from-mod" class="action-button">Back to Feedback</button>
+      <button id="apply-changes" class="action-button apply-button">Apply Changes</button>
+      <button id="discard-changes" class="action-button discard-button">Discard Changes</button>
+    </div>
   </div>
-
-
 </body>
 </html>
