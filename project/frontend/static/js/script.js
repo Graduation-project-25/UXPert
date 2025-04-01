@@ -99,16 +99,16 @@ window.onmessage = (event) => {
                 return card;
             }
 
-            const errorCard = createCard('Error Prevention Issues', item.errorPreventionFeedback);
+            const errorCard = createCard('Error Prevention', item.errorPreventionFeedback);
             if (errorCard) cards.push(errorCard);
 
-            const consistencyCard = createCard('Consistency Issues', item.consistencyFeedback);
+            const consistencyCard = createCard('Consistency', item.consistencyFeedback);
             if (consistencyCard) cards.push(consistencyCard);
 
-            const errHandlingCard = createCard('Error Handling Issues', item.errorHandlingFeedback);
+            const errHandlingCard = createCard('Error Handling', item.errorHandlingFeedback);
             if (errHandlingCard) cards.push(errHandlingCard);
 
-            const minimalistCard = createCard('Minimalist Issues', item.minimalistFeedback);
+            const minimalistCard = createCard('Minimalist', item.minimalistFeedback);
             if (minimalistCard) cards.push(minimalistCard);
 
 

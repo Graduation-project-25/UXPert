@@ -47,7 +47,7 @@
                                 console.log("Extracting overridden properties...");
                                 const propertyOverrides = parentInstance.componentProperties;
 
-                                // 🔹 Fix for TypeScript error
+                                //Fix for TypeScript error
                                 const propertyReferences = parentInstance.componentPropertyReferences as Record<string, string> | null;
 
                                 for (const key in propertyOverrides) {
@@ -86,7 +86,7 @@
                 "position.x": 'x' in node ? node.x : null,
                 "position.y": 'y' in node ? node.y : null,
                 rotation: 'rotation' in node ? node.rotation : null,
-                color_r: color.r,
+                color_r: color.r, 
                 color_g: color.g,
                 color_b: color.b,
                 hasClickInteraction,
@@ -94,6 +94,7 @@
                 clickDestination,
             });
 
+            
             if ('children' in node && ["FRAME", "GROUP", "INSTANCE", "VECTOR"].includes(node.type)) {
                 for (const child of node.children) {
                     await processNode(child as SceneNode);

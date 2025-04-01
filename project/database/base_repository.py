@@ -25,6 +25,12 @@ class BaseRepository:
             upsert=upsert, 
             array_filters=array_filters
         )  
+    def update_many_element(self, filter_query, update_query, array_filters=None):
+        return self.collection.update_many(
+            filter_query, 
+            update_query, 
+            array_filters=array_filters
+        )  
       
     def delete(self, id):
         return self.collection.delete_one({"_id": ObjectId(id)})

@@ -6,16 +6,23 @@ from flask_cors import CORS
 from components.Heuristics_Component.heuristic_rules.ErrorHandling import ErrorHandling
 from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
+from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
+from components.Suggestion_Component.recognition_suggestion import RecognitionSuggestions
 from database.figma_features_repository import FigmaFeaturesRepository
-
+from database.suggestions_repository import SuggestionsRepository
 
 figma_repository = FigmaFeaturesRepository()       
+suggestion_repository = SuggestionsRepository() 
+recognition_suggestion = RecognitionSuggestions()
+
 # Initialize Flask
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
-# Define output folder`
+
+####################To Be Removed (DB)####################
+# Define output folder
 data_folder = "figma_features"
 output_folder = data_folder + "/extracted"
 evaluation_folder = data_folder + "/evaluation"
@@ -31,37 +38,40 @@ def get_new_filename():
     existing_files = [f for f in os.listdir(output_folder) if f.endswith(".json")]
     count = len(existing_files)  # Count current files and use it for a new filename
     return os.path.join(output_folder, f"design_{count + 1}.json")
-# @app.route("/logs", methods=["POST"])
-# def receive_logs():
-#     log_data = request.json.get("message", "No message received")
-#     print("LOG FROM FIGMA:", log_data)
-#     return "", 200  # Send back a success response
+##########################################################
+
+
 
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
     if request.method == 'OPTIONS':
         return '', 200  
-
-    print("Raw request body:", request.data)
+    # print("Raw request body:", request.data)
     data = request.get_json()
-
     if not data:
         return jsonify({"error": "No data received"}), 400
 
+
+    #Extract Design Information
     user_name = data.get("user_name", "Unknown User")
     design_name = data.get("design_name", "Untitled Design")
     page_name = data.get("page_name", "DefaultPage")
     frame_info = data.get("frame", {})
     frame_name = frame_info.get("frameName", "")
     elements = data.get('elements', [])
-
+    
     if not elements:
         return jsonify({"error": "No elements found"}), 400
-
     print(f"Received design from {user_name}: {design_name} on frame {frame_name}")
 
+    #Convert Elements to DataFrame
     elements_df = pd.DataFrame(elements)
     print(elements_df)
+
+
+
+    ####################To Be Removed (DB)####################
+    # Fetch Latest Minimalist Evaluation
     def get_latest_minimalist_results():
         """Fetch the latest minimalist evaluation results from the evaluation folder."""
         minimalist_file = os.path.join(evaluation_folder, "minimalist_evaluation.json")
@@ -75,6 +85,9 @@ def process_elements():
                     return evaluation
 
         return {}  # Return an empty dictionary if the file is missing
+    ##########################################################
+    
+
 
     try:
         # Prepare feature data
@@ -87,23 +100,25 @@ def process_elements():
             "elements": elements
         }
 
+        #Insert data into MongoDB
         print("Attempting to insert data into MongoDB...")
         insert_result = figma_repository.update_or_insert_frame(feature_data)
+        insert_result = suggestion_repository.save_suggested_features(feature_data)
         print("Data inserted successfully.")
-
         if insert_result.matched_count > 0:
             print(f"Frame added to existing design: {design_name}")
         else:
             print(f"New design document created: {design_name}")
-        
-        # Retrieve the updated design using the repository
+
+
+        #Retrieve Saved Design
         latest_saved_data = figma_repository.get_saved_design(design_name, frame_name)
 
         if not latest_saved_data:
             print("Failed to retrieve saved design data from MongoDB")
             return jsonify({"error": "Failed to retrieve saved design data"}), 500
 
-        # print("Retrieved saved design data:", latest_saved_data)
+
 
         # Extract elements from the retrieved design data
         frames = latest_saved_data.get("frames", [])
@@ -121,12 +136,12 @@ def process_elements():
         # Convert elements into the expected format for heuristic evaluation
         designs_for_evaluation = [{"elements": elements_db}]
 
+
+
+        ####################To Be Removed (DB)####################
         output_data = {
             "screen_size": frame_info,  
             "elements": elements,
-            #  "consistency_results": consistency_feedback,
-            #  "error_prevention_results": error_feedback,
-            #  "error_handling_results": error_handling_feedback
         }
         output_file = get_new_filename()
         with open(output_file, "w", encoding="utf-8") as json_file:
@@ -138,10 +153,12 @@ def process_elements():
             elements_df = pd.DataFrame(frame_data[0].get("elements", []))
         else:
             return jsonify({"error": "No elements found in the retrieved frame data"}), 500
+        ###########################################################
+
 
 
         # Run heuristic evaluations
-        consistency_evaluator = Consistency()
+        consistency_evaluator = HeuristicFactory.check_rule("consistency")
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
 
         error_prevention_evaluator = ErrorPrevention(figma_repository)
@@ -154,10 +171,7 @@ def process_elements():
         # minimalist_results = minimalist_evaluator.evaluate_rule(elements_df)
 
         
-
-        # print("minimalist_feedback")
-        # print(minimalist_feedback)
-        error_handling = ErrorHandling()
+        error_handling = HeuristicFactory.check_rule("errorHandling")
         error_handling_results = error_handling.evaluate_rule(elements_df)
         
         # Prepare human-readable feedback
@@ -186,7 +200,7 @@ def process_elements():
             "WhiteSpaceRatio": minimalist_feedback_list[0] if len(minimalist_feedback_list) > 0 else "No data",
             "ElementDensity": minimalist_feedback_list[1] if len(minimalist_feedback_list) > 1 else "No data",
             "IrrelevantElements": minimalist_feedback_list[2] if len(minimalist_feedback_list) > 2 else "No data",
-            "FinalScore": minimalist_feedback_list[3] if len(minimalist_feedback_list) > 3 else "No data",
+            # "FinalScore": minimalist_feedback_list[3] if len(minimalist_feedback_list) > 3 else "No data",
             "Feedback" : minimalist_results
         }
 
@@ -210,7 +224,7 @@ def process_elements():
             return jsonify({"error": "Failed to update feedback in database"}), 500
 
         print("Feedback saved successfully.")
-        
+
         # Prepare final response
         response_data = {
             "message": "Design processed successfully!",
@@ -220,8 +234,14 @@ def process_elements():
             "error_handling_results": error_handling_feedback,
             "minimalist_results": minimalist_feedback
         }
-        print("Sending to Figma:", response_data)  
+        print("Sending to Figma:", response_data) 
+        print("##############################################################") 
+        recognition_suggestion.save_updated_elements(design_name, frame_name)
+        print("Yarab")
+        print("##############################################################") 
+
         return jsonify(response_data), 200
+    
 
     except Exception as e:
         print(f"Error: {str(e)}")
