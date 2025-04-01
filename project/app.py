@@ -20,6 +20,8 @@ from PIL import Image
 import openai
 import requests
 from flask_limiter import Limiter
+from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist  # Added import for Minimalist
+
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
 load_dotenv()  
@@ -192,12 +194,12 @@ def process_elements():
         error_prevention_results = error_prevention_evaluator.evaluate_rule(elements_db)
         print("Error Prevention Results:", error_prevention_results)
 
-        minimalist_evaluator = MinimalistEvaluation()
-        minimalist_results = minimalist_evaluator.evaluate_rule(output_folder, evaluation_folder)
-        minimalist_feedback_list = get_latest_minimalist_results()
-        # minimalist_results = minimalist_evaluator.evaluate_rule(elements_df)
+        # Use Minimalist class directly instead of MinimalistEvaluation
+        screen_width = frame_info.get("width", 1920)  # Default screen width
+        screen_height = frame_info.get("height", 1080)  # Default screen height
+        minimalist_evaluator = Minimalist()  # Initialize Minimalist
+        minimalist_feedback, minimalist_score = minimalist_evaluator.evaluate_rule({"elements": elements}, screen_width, screen_height)  # Evaluate directly
 
-        
         error_handling = HeuristicFactory.check_rule("errorHandling")
         error_handling_results = error_handling.evaluate_rule(elements_df)
 
@@ -226,15 +228,13 @@ def process_elements():
             "RecoveryIssues": error_handling_results.get("RecoveryIssues", []),
             "Feedback": error_handling_results
         }
-        minimalist_feedback = {
-            "WhiteSpaceRatio": minimalist_feedback_list[0] if len(minimalist_feedback_list) > 0 else "No data",
-            "ElementDensity": minimalist_feedback_list[1] if len(minimalist_feedback_list) > 1 else "No data",
-            "IrrelevantElements": minimalist_feedback_list[2] if len(minimalist_feedback_list) > 2 else "No data",
-            # "FinalScore": minimalist_feedback_list[3] if len(minimalist_feedback_list) > 3 else "No data",
-            "Feedback" : minimalist_results
+        minimalist_feedback_dict = {
+            "Feedback": minimalist_feedback,  # List of feedback messages from Minimalist
+            "Score": f"Final Score: {minimalist_score:.2f}%"  # Score from Minimalist
         }
+
         recognition_feedback = {
-            "Feedback" : recognition_results
+            "Feedback": recognition_results
         }
 
         # print(f"Consistency evaluation feedback: {consistency_feedback}")
@@ -246,8 +246,8 @@ def process_elements():
             "error_prevention_results": error_prevention_results,
             "consistency_results": consistency_results,
             "error_handling_results": error_handling_results,
-            "minimalist_results": minimalist_feedback_list,
-            "recognition_results" : recognition_results
+            "minimalist_results": minimalist_feedback_dict,  # Use new dict
+            "recognition_results": recognition_results
         }
         
 
@@ -266,8 +266,8 @@ def process_elements():
             "error_prevention_results": error_feedback,
             "consistency_results": consistency_feedback,
             "error_handling_results": error_handling_feedback,
-            "minimalist_results": minimalist_feedback,
-            "recognition_results" : recognition_feedback
+            "minimalist_results": minimalist_feedback_dict,  # Use new dict
+            "recognition_results": recognition_feedback
         }
         print("Sending to Figma:", response_data) 
         recognition_suggestion.save_updated_elements(design_name, frame_name)
