@@ -38,7 +38,7 @@ def get_new_filename():
     existing_files = [f for f in os.listdir(output_folder) if f.endswith(".json")]
     count = len(existing_files)  # Count current files and use it for a new filename
     return os.path.join(output_folder, f"design_{count + 1}.json")
-##########################################################
+########################################################## 
 
 
 

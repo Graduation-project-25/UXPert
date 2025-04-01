@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import pandas as pd
@@ -27,7 +28,7 @@ from components.Heuristics_Component.heuristics_testing.recognition_testing impo
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 2000)
@@ -58,23 +59,50 @@ def main():
     minimalist_test_evaluation = MinimalistTesting()
     recognition_instance = HeuristicFactory.check_rule("recognition")
 
+    # Image Generation Test
+    # Define file paths
+    # json_file_path = "figma_features/extracted/design_4.json"
+    # output_image_path = "figma_features/extracted/0testtttt.png"
 
+    # # Load JSON data from the file
+    # with open(json_file_path, "r", encoding="utf-8") as file:
+    #     json_data = json.load(file)
+    #     print(json_data)
 
+    #     # Extract screen dimensions
+    #     screen_width = json_data["screen_size"]["screen_width"]
+    #     screen_height = json_data["screen_size"]["screen_height"]
 
-    # Start the JVM
-    if not jpype.isJVMStarted():
-        jpype.startJVM()
+    #     # Create a blank white canvas
+    #     image = Image.new("RGB", (screen_width, screen_height), "white")
+    #     draw = ImageDraw.Draw(image)
 
-    # Load JSON into Workbook
-    json_file = f"{json_folder}/0.json"
-    workbook = Workbook(json_file)
-	
-    # Save as PNG
-    image_file = f"{image_folder}/0testttttt.png"
-    workbook.save(image_file)
+    #     # Process and draw each UI element
+    #     for element in json_data["elements"]:
+    #         x = element["position.x"]
+    #         y = element["position.y"]
+    #         width = element["width"]
+    #         height = element["height"]
 
-    # Shutdown JVM
-    jpype.shutdownJVM()
+    #         # Convert color values (assuming they are normalized between 0-1)
+    #         color = (
+    #             int(element["color_r"] * 255),
+    #             int(element["color_g"] * 255),
+    #             int(element["color_b"] * 255)
+    #         )
+
+    #         # Adjust negative positions (move elements into the visible screen area)
+    #         x = max(0, x)
+    #         y = max(0, y)
+
+    #         # Draw the rectangle (UI element)
+    #         draw.rectangle([x, y, x + width, y + height], outline="black", fill=color)
+
+    #     # Save and show the generated UI image
+    #     image.save(output_image_path)
+    #     image.show()
+
+    #     print("Image saved as ui_output.png")
 
 
 
