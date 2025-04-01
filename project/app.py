@@ -1,8 +1,10 @@
 import json
 import os
+import traceback
 import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+import app
 from components.Heuristics_Component.heuristic_rules.ErrorHandling import ErrorHandling
 from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
@@ -11,7 +13,26 @@ from components.Heuristics_Component.heuristics_evaluation.error_prevention_eval
 from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
 from pymongo import MongoClient
 from components.Heuristics_Component.heuristics_evaluation.recognition_evaluation import RecognitionEvaluation
+from components.Heuristics_Component.heuristics_testing.recognition_testing import RecognitionTesting
 from database.figma_features_repository import FigmaFeaturesRepository
+from dotenv import load_dotenv
+import base64
+from io import BytesIO
+from PIL import Image
+import openai
+import requests
+from flask_limiter import Limiter
+# limiter = Limiter(app1, key_func=lambda: 'global')
+
+load_dotenv()  
+openai.api_key = os.getenv("OPENAI_API_KEY")
+print(f"OpenAI Key: {openai.api_key}")
+# Add this to your Flask app startup
+try:
+    models = openai.models.list()
+    print("Available models:", [m.id for m in models.data])
+except Exception as e:
+    print("OpenAI connection failed:", str(e))
 
 
 figma_repository = FigmaFeaturesRepository()       
@@ -23,6 +44,12 @@ CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 data_folder = "figma_features"
 output_folder = data_folder + "/extracted"
 evaluation_folder = data_folder + "/evaluation"
+
+
+
+dataset_folder = './data/raw/EGFE'
+main_output_folder = dataset_folder + '/extractedFeatures'
+test_folder = main_output_folder + '/test'
 if not os.path.exists(data_folder):
     os.makedirs(data_folder)
     print(f"Created folder: {data_folder}")
@@ -164,6 +191,9 @@ def process_elements():
         # print(minimalist_feedback)
         error_handling = ErrorHandling()
         error_handling_results = error_handling.evaluate_rule(elements_df)
+
+        recognition__evaluator = RecognitionTesting()
+        recognition_results = recognition__evaluator.evaluate_rule_test(test_folder , evaluation_folder)
         
         # Prepare human-readable feedback
         consistency_feedback = {
@@ -194,6 +224,9 @@ def process_elements():
             "FinalScore": minimalist_feedback_list[3] if len(minimalist_feedback_list) > 3 else "No data",
             "Feedback" : minimalist_results
         }
+        recognition_feedback = {
+            "Feedback" : recognition_results
+        }
 
         # print(f"Consistency evaluation feedback: {consistency_feedback}")
         # print(f"Error Prevention feedback:{error_feedback}")
@@ -204,7 +237,8 @@ def process_elements():
             "error_prevention_results": error_prevention_results,
             "consistency_results": consistency_results,
             "error_handling_results": error_handling_results,
-            "minimalist_results": minimalist_feedback_list
+            "minimalist_results": minimalist_feedback_list,
+            "recognition_results" : recognition_results
         }
         
 
@@ -223,7 +257,8 @@ def process_elements():
             "error_prevention_results": error_feedback,
             "consistency_results": consistency_feedback,
             "error_handling_results": error_handling_feedback,
-            "minimalist_results": minimalist_feedback
+            "minimalist_results": minimalist_feedback,
+            "recognition_results" : recognition_feedback
         }
         print("Sending to Figma:", response_data)  
         return jsonify(response_data), 200
@@ -232,6 +267,106 @@ def process_elements():
         print(f"Error: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
+@app.route('/modify-design', methods=['POST', 'OPTIONS'])
+def modify_design():
+    if request.method == 'OPTIONS':
+        return '', 200
+        
+    try:
+        print("\n=== NEW REQUEST ===")
+        data = request.get_json()
+        print("Received data keys:", data.keys() if data else "No data")
+        
+        # Validate required fields
+        if not data or 'screenshot' not in data or 'feedback' not in data:
+            print("Missing required fields")
+            return jsonify({"error": "Missing required fields"}), 400
+            
+        screenshot_base64 = data['screenshot']
+        heuristic_feedback = data['feedback']
+        design_elements = data.get('elements', [])
+        
+        # Validate image
+        try:
+            print("Validating image...")
+            image_data = base64.b64decode(screenshot_base64.split(',')[1])
+            img = Image.open(BytesIO(image_data))
+            print(f"Image validated: {img.format}, {img.size}")
+        except Exception as e:
+            print(f"Image validation failed: {str(e)}")
+            return jsonify({"error": f"Invalid image: {str(e)}"}), 400
+
+        # Prepare prompt
+        prompt = f"""Analyze this UI design based on Nielsen's heuristics:
+        {json.dumps(heuristic_feedback, indent=2)}
+        
+        Elements:
+        {json.dumps(design_elements, indent=2)}
+        
+        Provide specific visual improvements in markdown format."""
+        
+        print("Attempting OpenAI API call...")
+        
+        try:
+            # Skip vision models and go straight to text-only
+            print("Using GPT-3.5-turbo (text-only fallback)")
+            response = openai.chat.completions.create(
+                model="gpt-3.5-turbo-0125",
+                messages=[{
+                    "role": "user",
+                    "content": prompt  # Text-only prompt
+                }],
+                max_tokens=1000,
+            )
+            print("OpenAI API call successful with gpt-4o")
+            
+        except Exception as e:
+            print(f"gpt-4o failed, trying gpt-4o-2024-05-13. Error: {str(e)}")
+            try:
+                response = openai.chat.completions.create(
+                    model="gpt-4o-2024-05-13",
+                    messages=[{
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{screenshot_base64}",
+                                },
+                            },
+                        ],
+                    }],
+                    max_tokens=1000,
+                )
+                print("OpenAI API call successful with gpt-4o-2024-05-13")
+                
+            except Exception as e:
+                print(f"Vision models failed, falling back to text-only. Error: {str(e)}")
+                response = openai.chat.completions.create(
+                    model="gpt-3.5-turbo-0125",
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=1000,
+                )
+                print("Text-only API call successful")
+
+        instructions = response.choices[0].message.content
+        print("Successfully generated modifications")
+        
+        return jsonify({
+            "status": "success",
+            "modification_instructions": instructions,
+            "original_screenshot": screenshot_base64,
+            "modified_screenshot": None
+        })
+        
+    except Exception as e:
+        print(f"CRITICAL ERROR: {str(e)}")
+        return jsonify({
+            "error": str(e),
+            "message": "Failed to process design modifications",
+            "traceback": traceback.format_exc()
+        }), 500
 
 @app.route('/', methods=['GET'])
 def home():

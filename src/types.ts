@@ -1,5 +1,5 @@
 // src/types.ts
-export interface ConsistencyResult {
+export interface FeedbackResult {
     status: number;
     consistency_results: {
       Feedback: Record<string, string>;
@@ -12,6 +12,9 @@ export interface ConsistencyResult {
     };    
     minimalist_results: {
       Feedback: Record<string, string>;
+    };
+    recognition_results : {
+      Feedback : Record<string, string>;
     };
   }
   

@@ -59,6 +59,7 @@ class RecognitionTesting(HeuristicTestingInterface):
                 print(f"Error processing {file_name}: {e}. Skipping file.")
 
         self.evaluation_results.save_evaluation_result(data_to_save, evaluation_folder, "recognition_test_evaluation.json")
+        return feedback
 
     def analyze_test_results(self, train_json, test_json):
         pass

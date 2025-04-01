@@ -10,6 +10,8 @@
 
 </head>
 
+
+
 <body>
   <div id="splash-screen">
     <h1>
@@ -46,13 +48,16 @@
       <button id="prev" disabled>Previous</button>
       <button id="next" disabled>Next</button>
     </div>
-    <button id="close">Close</button>
-    <button id="suggest-enhancements" class="button">Suggest Enhancements</button>
+    <div class="action-buttons">
+      <button id="close">Close</button>
+      <button id="suggest-enhancements" class="button">Suggest Enhancements</button>
+      <button id="show-modified-design" class="button">Show Modified Design</button>
+    </div>
   </div>
 
   <!-- Enhancement Suggestions -->
   <div id="enhancement-screen" style="display: none;">
-    <h1>Suggestions</h1>
+    <h1>General Suggestions</h1>
     <p>Here are specific actions you can take to improve your heuristic rules, enhance design consistency, and
       usability:</p>
     <ul>
@@ -82,6 +87,33 @@
     <button id="back-to-feedback" class="suggestion-button">Back to Feedback</button>
   </div>
 
+  <!-- Modified Design Screen -->
+  <div id="modified-design-screen" style="display: none;">
+    <h1>AI-Generated Design Improvements</h1>
+    <p>Based on Nielsen's heuristics, here are suggested improvements for your design:</p>
+    
+    <div class="design-comparison">
+      <div class="design-container">
+        <div class="design-label">Original Design</div>
+        <img id="original-design-image" src="" alt="Original design">
+      </div>
+      <div class="design-container">
+        <div class="design-label">Modified Design</div>
+        <img id="modified-design-image" src="" alt="Modified design">
+      </div>
+    </div>
+    
+    <div class="modification-instructions">
+      <h3>Modification Instructions</h3>
+      <div id="modification-instructions-text"></div>
+    </div>
+    
+    <div class="action-buttons">
+      <button id="back-to-feedback-from-mod" class="action-button">Back to Feedback</button>
+      <button id="apply-changes" class="action-button apply-button">Apply Changes</button>
+      <button id="discard-changes" class="action-button discard-button">Discard Changes</button>
+    </div>
+  </div>
 
 </body>
 

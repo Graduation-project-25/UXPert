@@ -51,5 +51,5 @@ class RecognitionEvaluation(HeuristicEvaluationInterface):
 
         self.evaluation_results.save_evaluation_result(data_to_save, evaluation_folder, "recognition_evaluation.json")
 
-
+        return all_feedback
 

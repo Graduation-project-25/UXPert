@@ -1,7 +1,7 @@
 import { FeatureExtractor } from "./services/FeatureExtractor";
 import { ApiService } from "./services/ApiService";
 import { UiService } from "./services/UiService";
-import { ConsistencyResult } from "./types";
+import { FeedbackResult } from "./types";
 
 // Show UI when the plugin starts
 UiService.showUI();
@@ -25,7 +25,57 @@ async function trackInstanceTextChanges() {
     });
 }
 
-// Call the function when the plugin starts
+
+
+async function getModifiedDesign(frame: FrameNode, feedback: any, elements: any[]) {
+    try {
+        console.log("Exporting frame as image...");
+        const imageBytes = await frame.exportAsync({ format: "PNG" });
+        const imageBase64 = figma.base64Encode(imageBytes);
+        const imageDataUrl = `data:image/png;base64,${imageBase64}`;
+
+        console.log("Sending to modification endpoint...");
+        const response = await fetch("http://localhost:3000/modify-design", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                screenshot: imageDataUrl,
+                feedback: feedback,
+                elements: elements
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("API Error:", errorData);
+            throw new Error(errorData.error || "API request failed");
+        }
+
+        const result = await response.json();
+        console.log("Received modification result:", result);
+        
+        if (result.status === "success") {
+            figma.ui.postMessage({
+                type: 'modified-design',
+                original: imageDataUrl,
+                modified: result.modified_screenshot,
+                instructions: result.modification_instructions
+            });
+        } else {
+            throw new Error(result.message || "Modification failed");
+        }
+
+    } catch (error) {
+        console.error("Design modification error:", error);
+        figma.notify('Failed to get design modifications. Check console for details.');
+        
+        // Send error details to UI
+        figma.ui.postMessage({
+            type: 'modification-error',
+            error: error instanceof Error ? error.message : String(error)
+        });
+    }
+}
 trackInstanceTextChanges();
 
 figma.ui.onmessage = async (msg) => {
@@ -64,7 +114,7 @@ figma.ui.onmessage = async (msg) => {
                     const { imageBase64, ...rest } = node;
                     return imageBase64 ? { ...rest, imageBase64 } : rest;
                 })
-            }) as ConsistencyResult;
+            }) as FeedbackResult;
 
             if (result) {
                 allFeedback.push({
@@ -73,6 +123,7 @@ figma.ui.onmessage = async (msg) => {
                     errorHandlingFeedback: result.error_handling_results.Feedback,
                     minimalistFeedback: result.minimalist_results.Feedback,
                     consistencyFeedback: result.consistency_results.Feedback,
+                    recognitionFeedback : result.recognition_results.Feedback,
                     screenshot: imageDataUrl
                 });
             }
@@ -82,7 +133,15 @@ figma.ui.onmessage = async (msg) => {
         }
     }
 
+    // if (allFeedback.length > 0) {
+    //     UiService.sendFeedbackToUI(allFeedback);
+    // }
+
     if (allFeedback.length > 0) {
         UiService.sendFeedbackToUI(allFeedback);
+        // Get modified design for the first frame
+        const firstFrame = frames[0];
+        const firstFeedback = allFeedback[0];
+        await getModifiedDesign(firstFrame, firstFeedback, await FeatureExtractor.extractElements(firstFrame));
     }
 };
