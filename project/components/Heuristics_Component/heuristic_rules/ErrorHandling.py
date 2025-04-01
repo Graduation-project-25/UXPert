@@ -106,8 +106,6 @@ class ErrorHandling(HeuristicInterface):
     "RecoveryIssues": recovery_issues,
     "Feedback": f"Errors: {' '.join(error_issues) if error_issues else 'No issues found.'} | "
                 f"Recovery: {' '.join(recovery_issues) if recovery_issues else 'Recovery options are available.'}",
-    "Suggestions": f"Error Messages: Ensure they are clear, descriptive, and visually distinct. "
-                   f"Recovery: Provide retry, help, or undo buttons near errors."
     }
 
 
