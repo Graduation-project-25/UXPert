@@ -13,7 +13,7 @@ class ErrorHandling(HeuristicInterface):
         missing_columns = required_columns - set(ui_data.columns)
 
         for column in missing_columns:
-            ui_data[column] = ''  # Add missing columns with default empty values
+            ui_data[column] = ''  
 
         return ui_data
 
@@ -66,7 +66,7 @@ class ErrorHandling(HeuristicInterface):
                     issues.append(f"Button '{row['name']}' may not be clear. Consider using a more descriptive label.")
 
         if recovery_elements == 0:
-            issues.append("No visible recovery options found (e.g., retry, help, or undo buttons).")
+            issues.append("No visible recovery options found (retry, help, or undo buttons).")
 
         return issues
 
