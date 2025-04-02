@@ -36,7 +36,7 @@ class FigmaFeaturesRepository(BaseRepository):
     
     def get_all_designs(self):
         """Retrieve all designs from the database."""
-        return self.collection.find({})
+        return self.find_all()
     
     def get_saved_design(self, design_name, frame_name):
         """ Retrieve a saved design and its frame data """
@@ -44,39 +44,3 @@ class FigmaFeaturesRepository(BaseRepository):
         projection = {"frames.$": 1}  # Return only the matching frame
         return self.find_one(filter_query, projection)
     
-    def update_feedback(self, design_name, frame_name, feedback_data):
-        """
-        Update feedback for a specific frame in a design.
-        """
-        try:
-            filter_query = {
-                "design_name": design_name,
-                "frames.frame_name": frame_name
-            } 
-
-            update_query = {
-                "$set": { "frames.$[frame].feedback": feedback_data }
-            }
-
-            array_filters = [{ "frame.frame_name": frame_name }]
-
-            print("Filter Query:", filter_query)
-            print("Update Query:", update_query)
-            print("Array Filters:", array_filters)
-
-            # Perform the update operation
-            update_result = self.collection.update_many(
-                filter_query,
-                update_query,
-                array_filters=array_filters
-            )
-
-            # Log the raw result of the update operation
-            print("Update Result (Matched Count):", update_result.matched_count)
-            print("Update Result (Modified Count):", update_result.modified_count)
-            print("Update Result (Raw Result):", update_result.raw_result)
-
-            return update_result
-        except Exception as e:
-            print(f"Error updating feedback: {e}")
-            raise

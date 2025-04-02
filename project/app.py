@@ -10,7 +10,10 @@ from components.Heuristics_Component.heuristic_rules.heuristic_factory import He
 from components.Suggestion_Component.recognition_suggestion import RecognitionSuggestions
 from components.Heuristics_Component.heuristics_testing.recognition_testing import RecognitionTesting
 from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist  # Added import for Minimalist
+from database.feedback_repository import FeedbackRepository
 from database.figma_features_repository import FigmaFeaturesRepository
+from database.suggestions_repository import SuggestionsRepository
+
 from dotenv import load_dotenv
 import base64, json, traceback
 import openai
@@ -21,21 +24,21 @@ import requests
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
 load_dotenv()  
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# openai.api_key = os.getenv("OPENAI_API_KEY")
 # print(f"OpenAI Key: {openai.api_key}")
-client = OpenAI()
+# client = OpenAI()
 
 # Add this to your Flask app startup
-try:
-    models = openai.models.list()
-    print("Available models:", [m.id for m in models.data])
-except Exception as e:
-    print("OpenAI connection failed:", str(e))
-from database.suggestions_repository import SuggestionsRepository
+# try:
+#     models = openai.models.list()
+#     print("Available models:", [m.id for m in models.data])
+# except Exception as e:
+#     print("OpenAI connection failed:", str(e))
 
 figma_repository = FigmaFeaturesRepository()       
-suggestion_repository = SuggestionsRepository() 
-recognition_suggestion = RecognitionSuggestions()
+feedback_repository = FeedbackRepository()       
+# suggestion_repository = SuggestionsRepository() 
+# recognition_suggestion = RecognitionSuggestions()
 
 # Initialize Flask
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
@@ -130,7 +133,7 @@ def process_elements():
         #Insert data into MongoDB
         print("Attempting to insert data into MongoDB...")
         insert_result = figma_repository.update_or_insert_frame(feature_data)
-        insert_result = suggestion_repository.save_suggested_features(feature_data)
+        # insert_result = suggestion_repository.save_suggested_features(feature_data)
         print("Data inserted successfully.")
         if insert_result.matched_count > 0:
             print(f"Frame added to existing design: {design_name}")
@@ -224,7 +227,7 @@ def process_elements():
         }
         minimalist_feedback_dict = {
             "Feedback": minimalist_feedback,  # List of feedback messages from Minimalist
-            "Score": f"Final Score: {minimalist_score:.2f}%"  # Score from Minimalist
+            # "Score": f"Final Score: {minimalist_score:.2f}%"  # Score from Minimalist
         }
 
         # recognition_feedback = {
@@ -245,7 +248,7 @@ def process_elements():
         }
         
 
-        update_result = figma_repository.update_feedback(design_name, frame_name, feedback_data)
+        update_result = feedback_repository.update_feedback(design_name, frame_name, feedback_data)
 
         if update_result.matched_count == 0:
             print("Error updating feedback in MongoDB.")
@@ -264,7 +267,7 @@ def process_elements():
             # "recognition_results": recognition_feedback
         }
         print("Sending to Figma:", response_data) 
-        recognition_suggestion.save_updated_elements(design_name, frame_name)
+        # recognition_suggestion.save_updated_elements(design_name, frame_name)
         return jsonify(response_data), 200
     
 

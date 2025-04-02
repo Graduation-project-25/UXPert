@@ -7,8 +7,9 @@ class BaseRepository:
         db = db_config.connect()
         self.collection = db[collection]
 
-    def find_all(self, filter_query):
-        return list(self.collection.find(filter_query))
+    def find_all(self):
+        return list(self.collection.find({}))
+    
     def find_by_id(self, id):
         return self.collection.find_one({"_id": ObjectId(id)})
     
@@ -25,6 +26,7 @@ class BaseRepository:
             upsert=upsert, 
             array_filters=array_filters
         )  
+    
     def update_many_element(self, filter_query, update_query, array_filters=None):
         return self.collection.update_many(
             filter_query, 
