@@ -329,13 +329,5 @@ else if (msg.type === 'show-modified-design') {
         figma.notify(`Failed to show modified design: ${error instanceof Error ? error.message : String(error)}`);
     }
 
-};
-
-
-
-
-}
-
-
-}
+}}}
 
