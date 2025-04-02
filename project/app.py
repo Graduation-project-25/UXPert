@@ -5,30 +5,26 @@ import pandas as pd
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 import app
-from components.Heuristics_Component.heuristic_rules.ErrorHandling import ErrorHandling
 from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
-from components.Heuristics_Component.heuristic_rules.consistency import Consistency
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
-from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
 from components.Suggestion_Component.recognition_suggestion import RecognitionSuggestions
 from components.Heuristics_Component.heuristics_testing.recognition_testing import RecognitionTesting
+from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist  # Added import for Minimalist
 from database.figma_features_repository import FigmaFeaturesRepository
 from dotenv import load_dotenv
 import base64, json, traceback
-from io import BytesIO
-from PIL import Image
 import openai
 from openai import OpenAI 
 import requests
-from flask_limiter import Limiter
-from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist  # Added import for Minimalist
+# from flask_limiter import Limiter
 
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
 load_dotenv()  
 openai.api_key = os.getenv("OPENAI_API_KEY")
-print(f"OpenAI Key: {openai.api_key}")
+# print(f"OpenAI Key: {openai.api_key}")
 client = OpenAI()
+
 # Add this to your Flask app startup
 try:
     models = openai.models.list()
@@ -56,7 +52,7 @@ evaluation_folder = data_folder + "/evaluation"
 
 dataset_folder = './data/raw/EGFE'
 main_output_folder = dataset_folder + '/extractedFeatures'
-test_folder = main_output_folder + '/test'
+# test_folder = main_output_folder + '/test'
 if not os.path.exists(data_folder):
     os.makedirs(data_folder)
     print(f"Created folder: {data_folder}")
@@ -150,7 +146,6 @@ def process_elements():
             return jsonify({"error": "Failed to retrieve saved design data"}), 500
 
 
-
         # Extract elements from the retrieved design data
         frames = latest_saved_data.get("frames", [])
         if not frames:
@@ -166,7 +161,6 @@ def process_elements():
 
         # Convert elements into the expected format for heuristic evaluation
         designs_for_evaluation = [{"elements": elements_db}]
-
 
 
         ####################To Be Removed (DB)####################
@@ -186,8 +180,6 @@ def process_elements():
             return jsonify({"error": "No elements found in the retrieved frame data"}), 500
         ###########################################################
 
-
-
         # Run heuristic evaluations
         consistency_evaluator = HeuristicFactory.check_rule("consistency")
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
@@ -206,7 +198,7 @@ def process_elements():
         error_handling_results = error_handling.evaluate_rule(elements_df)
 
         recognition__evaluator = RecognitionTesting()
-        recognition_results = recognition__evaluator.evaluate_rule_test(test_folder , evaluation_folder)
+        # recognition_results = recognition__evaluator.evaluate_rule_test(test_folder , evaluation_folder)
         
         # Prepare human-readable feedback
         consistency_feedback = {
@@ -235,9 +227,9 @@ def process_elements():
             "Score": f"Final Score: {minimalist_score:.2f}%"  # Score from Minimalist
         }
 
-        recognition_feedback = {
-            "Feedback": recognition_results
-        }
+        # recognition_feedback = {
+        #     "Feedback": recognition_results
+        # }
 
         # print(f"Consistency evaluation feedback: {consistency_feedback}")
         # print(f"Error Prevention feedback:{error_feedback}")
@@ -249,7 +241,7 @@ def process_elements():
             "consistency_results": consistency_results,
             "error_handling_results": error_handling_results,
             "minimalist_results": minimalist_feedback_dict,  # Use new dict
-            "recognition_results": recognition_results
+            # "recognition_results": recognition_results
         }
         
 
@@ -269,7 +261,7 @@ def process_elements():
             "consistency_results": consistency_feedback,
             "error_handling_results": error_handling_feedback,
             "minimalist_results": minimalist_feedback_dict,  # Use new dict
-            "recognition_results": recognition_feedback
+            # "recognition_results": recognition_feedback
         }
         print("Sending to Figma:", response_data) 
         recognition_suggestion.save_updated_elements(design_name, frame_name)
