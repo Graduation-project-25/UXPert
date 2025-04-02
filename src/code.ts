@@ -337,5 +337,5 @@ else if (msg.type === 'show-modified-design') {
 }
 
 
-
+}
 
