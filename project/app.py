@@ -14,10 +14,11 @@ from components.Suggestion_Component.recognition_suggestion import RecognitionSu
 from components.Heuristics_Component.heuristics_testing.recognition_testing import RecognitionTesting
 from database.figma_features_repository import FigmaFeaturesRepository
 from dotenv import load_dotenv
-import base64
+import base64, json, traceback
 from io import BytesIO
 from PIL import Image
 import openai
+from openai import OpenAI 
 import requests
 from flask_limiter import Limiter
 from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist  # Added import for Minimalist
@@ -27,6 +28,7 @@ from components.Heuristics_Component.heuristic_rules.minimalist import Minimalis
 load_dotenv()  
 openai.api_key = os.getenv("OPENAI_API_KEY")
 print(f"OpenAI Key: {openai.api_key}")
+client = OpenAI()
 # Add this to your Flask app startup
 try:
     models = openai.models.list()
@@ -278,106 +280,88 @@ def process_elements():
         print(f"Error: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
-# @app.route('/modify-design', methods=['POST', 'OPTIONS'])
-# def modify_design():
-#     if request.method == 'OPTIONS':
-#         return '', 200
-        
-#     try:
-#         print("\n=== NEW REQUEST ===")
-#         data = request.get_json()
-#         print("Received data keys:", data.keys() if data else "No data")
-        
-#         # Validate required fields
-#         if not data or 'screenshot' not in data or 'feedback' not in data:
-#             print("Missing required fields")
-#             return jsonify({"error": "Missing required fields"}), 400
-            
-#         screenshot_base64 = data['screenshot']
-#         heuristic_feedback = data['feedback']
-#         design_elements = data.get('elements', [])
-        
-#         # Validate image
-#         try:
-#             print("Validating image...")
-#             image_data = base64.b64decode(screenshot_base64.split(',')[1])
-#             img = Image.open(BytesIO(image_data))
-#             print(f"Image validated: {img.format}, {img.size}")
-#         except Exception as e:
-#             print(f"Image validation failed: {str(e)}")
-#             return jsonify({"error": f"Invalid image: {str(e)}"}), 400
+@app.route('/modify-design', methods=['POST'])
+def modify_design():
+    try:
+        # 1. Validate Input
+        data = request.get_json()
+        if not data or 'screenshot' not in data or 'elements' not in data:
+            return jsonify({"error": "Missing required data"}), 400
 
-#         # Prepare prompt
-#         prompt = f"""Analyze this UI design based on Nielsen's heuristics:
-#         {json.dumps(heuristic_feedback, indent=2)}
-        
-#         Elements:
-#         {json.dumps(design_elements, indent=2)}
-        
-#         Provide specific visual improvements in markdown format."""
-        
-#         print("Attempting OpenAI API call...")
-        
-#         try:
-#             # Skip vision models and go straight to text-only
-#             print("Using GPT-3.5-turbo (text-only fallback)")
-#             response = openai.chat.completions.create(
-#                 model="gpt-3.5-turbo-0125",
-#                 messages=[{
-#                     "role": "user",
-#                     "content": prompt  # Text-only prompt
-#                 }],
-#                 max_tokens=1000,
-#             )
-#             print("OpenAI API call successful with gpt-4o")
-            
-#         except Exception as e:
-#             print(f"gpt-4o failed, trying gpt-4o-2024-05-13. Error: {str(e)}")
-#             try:
-#                 response = openai.chat.completions.create(
-#                     model="gpt-4o-2024-05-13",
-#                     messages=[{
-#                         "role": "user",
-#                         "content": [
-#                             {"type": "text", "text": prompt},
-#                             {
-#                                 "type": "image_url",
-#                                 "image_url": {
-#                                     "url": f"data:image/png;base64,{screenshot_base64}",
-#                                 },
-#                             },
-#                         ],
-#                     }],
-#                     max_tokens=1000,
-#                 )
-#                 print("OpenAI API call successful with gpt-4o-2024-05-13")
-                
-#             except Exception as e:
-#                 print(f"Vision models failed, falling back to text-only. Error: {str(e)}")
-#                 response = openai.chat.completions.create(
-#                     model="gpt-3.5-turbo-0125",
-#                     messages=[{"role": "user", "content": prompt}],
-#                     max_tokens=1000,
-#                 )
-#                 print("Text-only API call successful")
+        screenshot_b64 = data['screenshot'].split(',')[1]  # Remove header
+        figma_json = data['elements']
 
-#         instructions = response.choices[0].message.content
-#         print("Successfully generated modifications")
+        # 2. Prepare Nielsen's Heuristics Prompt
+        NIELSEN_PROMPT = """Analyze this UI design against these 10 heuristics:
+        1️⃣ Visibility of System Status: Can users see system status?
+        2️⃣ Match with Real World: Does terminology match user expectations?
+        3️⃣ User Control: Can users undo/escape actions?
+        4️⃣ Consistency: Are patterns predictable?
+        5️⃣ Error Prevention: Are risky actions guarded?
+        6️⃣ Recognition: Is information visible when needed?
+        7️⃣ Flexibility: Are shortcuts available?
+        8️⃣ Minimalism: Is content prioritized?
+        9️⃣ Error Recovery: Are clear error messages shown?
+        🔟 Documentation: Is help easily accessible?
+
+        Return JSON with:
+        - "issues": [{"heuristic": 1, "element": "button1", "problem": "No loading indicator"}]
+        - "changes": [{"element": "button1", "property": "color", "new_value": "#3366FF"}]
+        - "dalle_prompt": "Redesign description for DALL-E"
+        """
+
+        # 3. Call GPT-4o for Analysis
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user", 
+                    "content": [
+                        {"type": "text", "text": f"{NIELSEN_PROMPT}\n\nCurrent Design:\n{json.dumps(figma_json)}"},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{screenshot_b64}"}}
+                    ]
+                }
+            ],
+            response_format={"type": "json_object"},
+            max_tokens=2000
+        )
         
-#         return jsonify({
-#             "status": "success",
-#             "modification_instructions": instructions,
-#             "original_screenshot": screenshot_base64,
-#             "modified_screenshot": None
-#         })
-        
-#     except Exception as e:
-#         print(f"CRITICAL ERROR: {str(e)}")
-#         return jsonify({
-#             "error": str(e),
-#             "message": "Failed to process design modifications",
-#             "traceback": traceback.format_exc()
-#         }), 500
+        ai_response = json.loads(response.choices[0].message.content)
+
+        # 4. Generate Modified Image
+        img_response = client.images.generate(
+            model="dall-e-3",
+            prompt=f"""Redesign this UI to fix Nielsen heuristic violations:
+            {ai_response['dalle_prompt']}
+            Maintain original branding but improve:
+            - Visibility of system status
+            - Error prevention mechanisms
+            - Consistency with platform standards
+            """,
+            size="1024x1024",
+            quality="hd"
+        )
+
+        # 5. Return Results
+        # return jsonify({
+        #     "modified_image": img_response.data[0].url,
+        #     "design_changes": ai_response['changes'],
+        #     "heuristic_issues": ai_response['issues'],
+        #     "suggestions": ai_response.get('dalle_prompt', "")
+        # })
+        return jsonify({
+            "status": "success",
+            "modified_image": img_response.data[0].url,
+            "modified_json": ai_response.get('changes', []),  # Changed key
+            "analysis": ai_response.get('issues', []),       # Changed key
+            "instructions": ai_response.get('dalle_prompt', "")
+        })
+
+    except Exception as e:
+        return jsonify({
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }), 500
 
 @app.route('/', methods=['GET'])
 def home():

@@ -27,53 +27,80 @@ async function trackInstanceTextChanges() {
 
 
 
-async function getModifiedDesign(frame: FrameNode, feedback: any, elements: any[]) {
+async function getModifiedDesign(frame: FrameNode) {
     try {
-        console.log("Exporting frame as image...");
+        // Extract data
+        const elements = await FeatureExtractor.extractForAI(frame);
         const imageBytes = await frame.exportAsync({ format: "PNG" });
         const imageBase64 = figma.base64Encode(imageBytes);
-        const imageDataUrl = `data:image/png;base64,${imageBase64}`;
-
-        console.log("Sending to modification endpoint...");
+        
+        // Call backend
         const response = await fetch("http://localhost:3000/modify-design", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                screenshot: imageDataUrl,
-                feedback: feedback,
-                elements: elements
+                screenshot: `data:image/png;base64,${imageBase64}`,
+                elements
             }),
         });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error("API Error:", errorData);
-            throw new Error(errorData.error || "API request failed");
-        }
-
+        
         const result = await response.json();
-        console.log("Received modification result:", result);
         
-        if (result.status === "success") {
-            figma.ui.postMessage({
-                type: 'modified-design',
-                original: imageDataUrl,
-                modified: result.modified_screenshot,
-                instructions: result.modification_instructions
-            });
-        } else {
-            throw new Error(result.message || "Modification failed");
-        }
-
-    } catch (error) {
-        console.error("Design modification error:", error);
-        figma.notify('Failed to get design modifications. Check console for details.');
+        // Apply JSON changes to Figma
+        applyJsonChanges(result.modified_json);
         
-        // Send error details to UI
+        // Show modified image
         figma.ui.postMessage({
-            type: 'modification-error',
-            error: error instanceof Error ? error.message : String(error)
+            type: 'design-modified',
+            original: `data:image/png;base64,${imageBase64}`,
+            modified: result.modified_image,
+            changes: result.analysis
         });
+        
+    } catch (error) {
+        figma.notify(`AI modification failed: ${error}`);
+    }
+}
+
+function hexToRgb(hex: string): { r: number, g: number, b: number } {
+    // Remove # if present
+    hex = hex.replace('#', '');
+    
+    // Parse r, g, b values
+    const r = parseInt(hex.substring(0, 2), 16) / 255;
+    const g = parseInt(hex.substring(2, 4), 16) / 255;
+    const b = parseInt(hex.substring(4, 6), 16) / 255;
+    
+    return { r, g, b };
+}
+async function applyJsonChanges(changes: any[]) {
+    for (const change of changes) {
+        try {
+            // Use async version with error handling
+            const node = await figma.getNodeByIdAsync(change.id);
+            
+            if (!node) {
+                console.warn(`Node ${change.id} not found`);
+                continue;
+            }
+
+            // Handle color changes
+            if (change.color && 'fills' in node) {
+                const rgb = hexToRgb(change.color);
+                (node as RectangleNode).fills = [{
+                    type: 'SOLID',
+                    color: rgb
+                }];
+            }
+
+            // Handle text changes
+            if (change.text && 'characters' in node) {
+                (node as TextNode).characters = change.text;
+            }
+
+        } catch (error) {
+            console.error(`Failed to modify node ${change.id}:`, error);
+        }
     }
 }
 trackInstanceTextChanges();
@@ -136,12 +163,16 @@ figma.ui.onmessage = async (msg) => {
     // if (allFeedback.length > 0) {
     //     UiService.sendFeedbackToUI(allFeedback);
     // }
-
+    if (msg.type === 'design-modified') {
+        // This will be handled by the UI's JavaScript
+    }
     if (allFeedback.length > 0) {
         UiService.sendFeedbackToUI(allFeedback);
         // Get modified design for the first frame
         const firstFrame = frames[0];
         const firstFeedback = allFeedback[0];
-        // await getModifiedDesign(firstFrame, firstFeedback, await FeatureExtractor.extractElements(firstFrame));
+        getModifiedDesign(firstFrame).catch(e => {
+            figma.notify(`Design modification failed: ${e.message}`);
+        });
     }
 };

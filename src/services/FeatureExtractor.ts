@@ -1,7 +1,25 @@
  export class FeatureExtractor {
+    static async extractForAI(node: SceneNode): Promise<any> {
+        const elements = await this.extractElements(node);
+        return {
+            metadata: {
+                screenWidth: 'width' in node ? node.width : null,
+                screenHeight: 'height' in node ? node.height : null
+            },
+            elements: elements.map(el => ({
+                id: el.id,
+                type: el.type,
+                text: el.textContent,
+                color: `rgb(${el.color_r*255},${el.color_g*255},${el.color_b*255})`,
+                interactions: el.hasClickInteraction ? {
+                    destination: el.clickDestination
+                } : null
+            }))
+        };
+    }
     static async extractElements(node: SceneNode): Promise<any[]> {
         const extractedNodes: any[] = [];
-
+        
         async function processNode(node: SceneNode) {
             if (!node.visible) return;
 

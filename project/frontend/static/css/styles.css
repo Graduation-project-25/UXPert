@@ -296,6 +296,16 @@ progress::-moz-progress-bar {
   background-color: #f44336;
   color: white;
 }
+.design-container img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #eee;
+}
+
+#modification-instructions-text {
+  max-height: 200px;
+  overflow-y: auto;
+}
 @keyframes colorFade {
   0% { opacity: 0.2; color: #ffffff; }
   100% { opacity: 1; color: #ffeb00; }

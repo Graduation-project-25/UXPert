@@ -58,7 +58,31 @@ document.getElementById('back-to-feedback').onclick = () => {
 window.addEventListener("message", (event) => {
     console.log("Received plugin message:", event.data);
 });
+// Handle modified designs
+window.addEventListener('message', event => {
+    const msg = event.data.pluginMessage;
+    
+    if (msg.type === 'design-modified') {
+        // Show modified design screen
+        document.getElementById('feedback-screen').style.display = 'none';
+        const modScreen = document.getElementById('modified-design-screen');
+        modScreen.style.display = 'block';
+        
+        // Display images
+        document.getElementById('original-design-image').src = msg.original;
+        document.getElementById('modified-design-image').src = msg.modified;
+        
+        // Display instructions
+        document.getElementById('modification-instructions-text').innerHTML = 
+            `<ul>${msg.instructions.map(i => `<li>${i}</li>`).join('')}</ul>`;
+    }
+});
 
+// Handle back button
+document.getElementById('back-to-feedback-from-mod').addEventListener('click', () => {
+    document.getElementById('modified-design-screen').style.display = 'none';
+    document.getElementById('feedback-screen').style.display = 'block';
+});
 window.onmessage = (event) => {
     const msg = event.data.pluginMessage;
     if (!msg) {
