@@ -78,7 +78,7 @@
       <img id="modified-design-image" crossorigin="anonymous" alt="Modified">
   </div>
 </div>
-  <div id="modified-design-screen" style="display: none;">
+  <!-- <div id="modified-design-screen" style="display: none;">
     <h1>AI-Generated Design Improvements</h1>
     <p>Based on Nielsen's heuristics, here are suggested improvements for your design:</p>
     
@@ -110,6 +110,77 @@
         <span id="design-counter">1 of 1</span>
         <button id="next-design">Next</button>
     </div>
+    <div class="modification-visualization">
+      <h3>Modified Regions</h3>
+      <div id="modification-visualization"></div>
   </div>
+  <div class="modification-details">
+    <h3>Detailed Changes</h3>
+    <div id="modification-list"></div>
+    
+    <h3>Instructions</h3>
+    <div id="modification-instructions"></div>
+</div>
+  </div> -->
+
+  <!-- <div id="modified-design-screen" style="display: none;">
+    <h1>Design Improvements</h1>
+    <p>Based on Nielsen's 10 Usability Heuristics</p>
+    
+    <div class="design-comparison">
+        <div class="design-container">
+            <div class="design-label">Original Design</div>
+            <img id="original-design-image" crossorigin="anonymous" alt="Original">
+        </div>
+        <div class="design-container">
+            <div class="design-label">Improved Design</div>
+            <img id="modified-design-image" crossorigin="anonymous" alt="Modified">
+        </div>
+    </div>
+    
+    <div id="modification-instructions" class="instructions-container"></div>
+    <div id="analysis-container" class="analysis-results"></div>
+    
+    <div class="action-buttons">
+        <button id="back-to-feedback">Back to Feedback</button>
+    </div> -->
+
+   <!-- Add this error screen -->
+<div id="error-screen" style="display: none;">
+    <h2>Error Modifying Design</h2>
+    <p id="error-message"></p>
+    <pre id="error-details"></pre>
+    <div id="ai-response-debug" style="white-space: pre-wrap;"></div>
+    <button id="retry-button">Try Again</button>
+</div>
+
+<!-- Updated modified design screen -->
+<div id="modified-design-screen" style="display: none;">
+    <h1>Design Improvements</h1>
+    
+    <div class="design-comparison">
+        <div class="design-container">
+            <div class="design-label">Original</div>
+            <img id="original-design-image" crossorigin="anonymous" alt="Original">
+        </div>
+        <div class="design-container">
+            <div class="design-label">Modified</div>
+            <img id="modified-design-image" crossorigin="anonymous" alt="Modified">
+        </div>
+    </div>
+    
+    <div class="changes-container">
+        <h3>Changes Made</h3>
+        <ul id="changes-list"></ul>
+    </div>
+    
+    <div class="full-analysis">
+        <h3>Full Analysis</h3>
+        <pre id="full-analysis"></pre>
+    </div>
+    
+    <button id="back-to-feedback">Back to Feedback</button>
+</div>
+</div>
 </body>
 </html>
