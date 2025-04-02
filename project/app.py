@@ -2,7 +2,7 @@ import json
 import os
 import traceback
 import pandas as pd
-from flask import Flask, jsonify, request
+from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 import app
 from components.Heuristics_Component.heuristic_rules.ErrorHandling import ErrorHandling
@@ -327,7 +327,12 @@ def modify_design():
             quality="hd"
         )
         print(f"DALL-E Response: {img_response}")  # Debug log
+        dalle_url = img_response.data[0].url
+        image_response = requests.get(dalle_url)
+        image_bytes = image_response.content
+        modified_image_b64 = base64.b64encode(image_bytes).decode('utf-8')
 
+       
         # Build instructions array
         instructions = []
         if 'issues' in ai_response:
@@ -340,19 +345,32 @@ def modify_design():
 
         return jsonify({
             "status": "success",
-            "modified_image": img_response.data[0].url,
+            "modified_image": f"data:image/png;base64,{modified_image_b64}",  # Now sending as base64
             "modified_json": ai_response.get('changes', []),
             "analysis": ai_response.get('issues', []),
             "instructions": instructions
         })
 
+        
     except Exception as e:
         print(f"Error: {str(e)}\n{traceback.format_exc()}")  # Debug log
         return jsonify({
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
-
+    
+@app.route('/proxy-image')
+def proxy_image():
+    try:
+        image_url = request.args.get('url')
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+        }
+        response = requests.get(image_url, headers=headers, stream=True)
+        return Response(response.iter_content(chunk_size=1024), 
+                      content_type=response.headers['Content-Type'])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 @app.route('/', methods=['GET'])
 def home():
     return "Welcome to the Flask server!", 200

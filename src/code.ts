@@ -29,12 +29,10 @@ async function trackInstanceTextChanges() {
 
 async function getModifiedDesign(frame: FrameNode) {
     try {
-        console.log("Starting design modification...");  // Debug log
         const elements = await FeatureExtractor.extractForAI(frame);
         const imageBytes = await frame.exportAsync({ format: "PNG" });
         const imageBase64 = figma.base64Encode(imageBytes);
         
-        console.log("Sending to backend...");  // Debug log
         const response = await fetch("http://localhost:3000/modify-design", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
@@ -45,17 +43,11 @@ async function getModifiedDesign(frame: FrameNode) {
         });
         
         const result = await response.json();
-        console.log("Backend response:", result);  // Debug log
         
         if (result.error) {
             throw new Error(result.error);
         }
 
-        // Apply JSON changes to Figma
-        if (result.modified_json && result.modified_json.length > 0) {
-            await applyJsonChanges(result.modified_json);
-        }
-        
         // Show modified image
         figma.ui.postMessage({
             type: 'design-modified',
@@ -65,11 +57,10 @@ async function getModifiedDesign(frame: FrameNode) {
         });
         
     } catch (error) {
-        console.error("Design modification failed:", error);  // Debug log
+        console.error("Design modification failed:", error);
         figma.notify(`AI modification failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 }
-
 
 function hexToRgb(hex: string): { r: number, g: number, b: number } {
     // Remove # if present
@@ -184,8 +175,17 @@ figma.ui.onmessage = async (msg) => {
         // Get modified design for the first frame
         const firstFrame = frames[0];
         const firstFeedback = allFeedback[0];
-        getModifiedDesign(firstFrame).catch(e => {
-            figma.notify(`Design modification failed: ${e.message}`);
-        });
+        // Process all frames, not just the first one
+        const modifiedDesigns = [];
+        for (const frame of frames) {
+            if (!frame.visible) continue;
+            
+            try {
+                await getModifiedDesign(frame);
+            } catch (e) {
+                console.error(`Failed to modify frame ${frame.name}:`, e);
+            }
+        }
+    
     }
 };
