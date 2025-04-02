@@ -1,6 +1,5 @@
-from components.Heuristics_Component.heuristic_rules import ErrorPrevention
-from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 from components.Heuristics_Component.heuristic_rules.ErrorHandling import ErrorHandling
+from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.consistency import Consistency
 from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist
 from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
