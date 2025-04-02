@@ -6,14 +6,15 @@ import pandas as pd
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 import app
-from components.Heuristics_Component.heuristic_rules.ErrorHandling import ErrorHandling
 from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
-from components.Heuristics_Component.heuristic_rules.consistency import Consistency
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
-from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
 from components.Suggestion_Component.recognition_suggestion import RecognitionSuggestions
 from components.Heuristics_Component.heuristics_testing.recognition_testing import RecognitionTesting
+from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist  # Added import for Minimalist
+from database.feedback_repository import FeedbackRepository
 from database.figma_features_repository import FigmaFeaturesRepository
+from database.suggestions_repository import SuggestionsRepository
+
 from dotenv import load_dotenv
 import base64, json, traceback
 import re
@@ -33,16 +34,16 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 print(f"OpenAI Key: {openai.api_key}")
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Add this to your Flask app startup
-try:
-    models = openai.models.list()
-    print("Available models:", [m.id for m in models.data])
-except Exception as e:
-    print("OpenAI connection failed:", str(e))
-from database.suggestions_repository import SuggestionsRepository
+# try:
+#     models = openai.models.list()
+#     print("Available models:", [m.id for m in models.data])
+# except Exception as e:
+#     print("OpenAI connection failed:", str(e))
 
 figma_repository = FigmaFeaturesRepository()       
-suggestion_repository = SuggestionsRepository() 
-recognition_suggestion = RecognitionSuggestions()
+feedback_repository = FeedbackRepository()       
+# suggestion_repository = SuggestionsRepository() 
+# recognition_suggestion = RecognitionSuggestions()
 
 # Initialize Flask
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
@@ -59,7 +60,7 @@ evaluation_folder = data_folder + "/evaluation"
 
 dataset_folder = './data/raw/EGFE'
 main_output_folder = dataset_folder + '/extractedFeatures'
-test_folder = main_output_folder + '/test'
+# test_folder = main_output_folder + '/test'
 if not os.path.exists(data_folder):
     os.makedirs(data_folder)
     print(f"Created folder: {data_folder}")
@@ -137,7 +138,7 @@ def process_elements():
         #Insert data into MongoDB
         print("Attempting to insert data into MongoDB...")
         insert_result = figma_repository.update_or_insert_frame(feature_data)
-        insert_result = suggestion_repository.save_suggested_features(feature_data)
+        # insert_result = suggestion_repository.save_suggested_features(feature_data)
         print("Data inserted successfully.")
         if insert_result.matched_count > 0:
             print(f"Frame added to existing design: {design_name}")
@@ -151,7 +152,6 @@ def process_elements():
         if not latest_saved_data:
             print("Failed to retrieve saved design data from MongoDB")
             return jsonify({"error": "Failed to retrieve saved design data"}), 500
-
 
 
         # Extract elements from the retrieved design data
@@ -171,7 +171,6 @@ def process_elements():
         designs_for_evaluation = [{"elements": elements_db}]
 
 
-
         ####################To Be Removed (DB)####################
         output_data = {
             "screen_size": frame_info,  
@@ -188,8 +187,6 @@ def process_elements():
         else:
             return jsonify({"error": "No elements found in the retrieved frame data"}), 500
         ###########################################################
-
-
 
         # Run heuristic evaluations
         consistency_evaluator = HeuristicFactory.check_rule("consistency")
@@ -209,7 +206,7 @@ def process_elements():
         error_handling_results = error_handling.evaluate_rule(elements_df)
 
         recognition__evaluator = RecognitionTesting()
-        recognition_results = recognition__evaluator.evaluate_rule_test(test_folder , evaluation_folder)
+        # recognition_results = recognition__evaluator.evaluate_rule_test(test_folder , evaluation_folder)
         
         # Prepare human-readable feedback
         consistency_feedback = {
@@ -235,12 +232,12 @@ def process_elements():
         }
         minimalist_feedback_dict = {
             "Feedback": minimalist_feedback,  # List of feedback messages from Minimalist
-            "Score": f"Final Score: {minimalist_score:.2f}%"  # Score from Minimalist
+            # "Score": f"Final Score: {minimalist_score:.2f}%"  # Score from Minimalist
         }
 
-        recognition_feedback = {
-            "Feedback": recognition_results
-        }
+        # recognition_feedback = {
+        #     "Feedback": recognition_results
+        # }
 
         # print(f"Consistency evaluation feedback: {consistency_feedback}")
         # print(f"Error Prevention feedback:{error_feedback}")
@@ -252,11 +249,11 @@ def process_elements():
             "consistency_results": consistency_results,
             "error_handling_results": error_handling_results,
             "minimalist_results": minimalist_feedback_dict,  # Use new dict
-            "recognition_results": recognition_results
+            # "recognition_results": recognition_results
         }
         
 
-        update_result = figma_repository.update_feedback(design_name, frame_name, feedback_data)
+        update_result = feedback_repository.update_feedback(design_name, frame_name, feedback_data)
 
         if update_result.matched_count == 0:
             print("Error updating feedback in MongoDB.")
@@ -272,10 +269,10 @@ def process_elements():
             "consistency_results": consistency_feedback,
             "error_handling_results": error_handling_feedback,
             "minimalist_results": minimalist_feedback_dict,  # Use new dict
-            "recognition_results": recognition_feedback
+            # "recognition_results": recognition_feedback
         }
         print("Sending to Figma:", response_data) 
-        recognition_suggestion.save_updated_elements(design_name, frame_name)
+        # recognition_suggestion.save_updated_elements(design_name, frame_name)
         return jsonify(response_data), 200
     
 

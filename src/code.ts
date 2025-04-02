@@ -233,24 +233,27 @@ figma.ui.onmessage = async (msg) => {
                     return imageBase64 ? { ...rest, imageBase64 } : rest;
                 })
             }) as FeedbackResult;
-
-            if (result) {
+        
+            console.log("API Response:", result); 
+        
+            if (result && result.error_prevention_results) {
                 allFeedback.push({
                     frameName: frame.name,
-                    errorPreventionFeedback: result.error_prevention_results.Feedback,
-                    errorHandlingFeedback: result.error_handling_results.Feedback,
-                    minimalistFeedback: result.minimalist_results.Feedback,
-                    consistencyFeedback: result.consistency_results.Feedback,
-                    recognitionFeedback : result.recognition_results.Feedback,
+                    errorPreventionFeedback: result.error_prevention_results.Feedback ?? "No feedback",
+                    errorHandlingFeedback: result.error_handling_results?.Feedback ?? "No feedback",
+                    minimalistFeedback: result.minimalist_results?.Feedback ?? "No feedback",
+                    consistencyFeedback: result.consistency_results?.Feedback ?? "No feedback",
+                    recognitionFeedback: result.recognition_results?.Feedback ?? "No feedback",
                     screenshot: imageDataUrl
                 });
+            } else {
+                console.warn("Missing expected fields in API response.");
             }
         } catch (error) {
             console.error("Error during fetch:", error);
             figma.notify(`Failed to send elements from ${frame.name} to backend.`);
         }
-    }
-
+        
     // if (allFeedback.length > 0) {
     //     UiService.sendFeedbackToUI(allFeedback);
     // }
