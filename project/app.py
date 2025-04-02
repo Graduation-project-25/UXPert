@@ -30,9 +30,9 @@ from components.Heuristics_Component.heuristic_rules.minimalist import Minimalis
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
 load_dotenv()  
-openai.api_key = os.getenv("OPENAI_API_KEY")
-print(f"OpenAI Key: {openai.api_key}")
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+# print(f"OpenAI Key: {openai.api_key}")
+# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Add this to your Flask app startup
 # try:
 #     models = openai.models.list()

@@ -45,11 +45,10 @@
             <button id="prev" disabled>Previous</button>
             <button id="next" disabled>Next</button>
         </div>
-    <div class="action-buttons">
-          <button id="close">Close</button>
-          <button id="suggest-enhancements" class="button">Suggest Enhancements</button>
-      <button id="show-modified-design" class="button">Show Modified Design</button>
-    </div>
+        <div class="action-buttons">
+            <button id="close">Close</button>
+            <button id="suggest-enhancements" class="button">Suggest Enhancements</button>
+        </div>
     </div>
 
     <!-- Enhancement Suggestions -->
@@ -91,7 +90,6 @@
 <!-- Updated modified design screen -->
 <div id="modified-design-screen" style="display: none;">
     <h1>Design Improvements</h1>
-    
     <div class="design-comparison">
         <div class="design-container">
             <div class="design-label">Original</div>
@@ -102,6 +100,13 @@
             <img id="modified-design-image" crossorigin="anonymous" alt="Modified">
         </div>
     </div>
+    <div class="changes-container">
+        <h3>Changes Made</h3>
+        <ul id="modification-list"></ul>
+    </div>
+    <button id="back-to-feedback-from-mod" class="action-button">Back to Feedback</button>
+</div>
+
     
     <div class="changes-container">
         <h3>Changes Made</h3>
