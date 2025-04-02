@@ -29,12 +29,12 @@ async function trackInstanceTextChanges() {
 
 async function getModifiedDesign(frame: FrameNode) {
     try {
-        // Extract data
+        console.log("Starting design modification...");  // Debug log
         const elements = await FeatureExtractor.extractForAI(frame);
         const imageBytes = await frame.exportAsync({ format: "PNG" });
         const imageBase64 = figma.base64Encode(imageBytes);
         
-        // Call backend
+        console.log("Sending to backend...");  // Debug log
         const response = await fetch("http://localhost:3000/modify-design", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
@@ -45,22 +45,31 @@ async function getModifiedDesign(frame: FrameNode) {
         });
         
         const result = await response.json();
+        console.log("Backend response:", result);  // Debug log
         
+        if (result.error) {
+            throw new Error(result.error);
+        }
+
         // Apply JSON changes to Figma
-        applyJsonChanges(result.modified_json);
+        if (result.modified_json && result.modified_json.length > 0) {
+            await applyJsonChanges(result.modified_json);
+        }
         
         // Show modified image
         figma.ui.postMessage({
             type: 'design-modified',
             original: `data:image/png;base64,${imageBase64}`,
             modified: result.modified_image,
-            changes: result.analysis
+            instructions: result.instructions || ["No specific instructions provided"]
         });
         
     } catch (error) {
-        figma.notify(`AI modification failed: ${error}`);
+        console.error("Design modification failed:", error);  // Debug log
+        figma.notify(`AI modification failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 }
+
 
 function hexToRgb(hex: string): { r: number, g: number, b: number } {
     // Remove # if present
@@ -165,6 +174,10 @@ figma.ui.onmessage = async (msg) => {
     // }
     if (msg.type === 'design-modified') {
         // This will be handled by the UI's JavaScript
+    }
+    if (msg.type === 'apply-changes') {
+        // Handle applying changes if needed
+        figma.notify('Changes applied successfully');
     }
     if (allFeedback.length > 0) {
         UiService.sendFeedbackToUI(allFeedback);

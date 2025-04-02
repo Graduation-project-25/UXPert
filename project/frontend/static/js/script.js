@@ -59,22 +59,75 @@ window.addEventListener("message", (event) => {
     console.log("Received plugin message:", event.data);
 });
 // Handle modified designs
+// window.addEventListener('message', event => {
+//     const msg = event.data.pluginMessage;
+    
+//     if (msg.type === 'design-modified') {
+//         // Show modified design screen
+//         document.getElementById('feedback-screen').style.display = 'none';
+//         const modScreen = document.getElementById('modified-design-screen');
+//         modScreen.style.display = 'block';
+        
+//         // Display images
+//         document.getElementById('original-design-image').src = msg.original;
+//         document.getElementById('modified-design-image').src = msg.modified;
+        
+//         // Display instructions
+//         document.getElementById('modification-instructions-text').innerHTML = 
+//             `<ul>${msg.instructions.map(i => `<li>${i}</li>`).join('')}</ul>`;
+//     }
+// });
+
+// window.addEventListener('message', (event) => {
+//     const msg = event.data.pluginMessage;
+    
+//     if (msg.type === 'design-modified') {
+//         // Show modified design screen
+//         document.getElementById('feedback-screen').style.display = 'none';
+//         const modScreen = document.getElementById('modified-design-screen');
+//         modScreen.style.display = 'block';
+        
+//         // Display images
+//         document.getElementById('original-design-image').src = msg.original;
+//         document.getElementById('modified-design-image').src = msg.modified;
+        
+//         // Display instructions
+//         const instructionsContainer = document.getElementById('modification-instructions-text');
+//         instructionsContainer.innerHTML = msg.instructions 
+//             ? `<ul>${msg.instructions.map(i => `<li>${i}</li>`).join('')}</ul>`
+//             : '<p>No modification instructions provided</p>';
+//     }
+// });
 window.addEventListener('message', event => {
     const msg = event.data.pluginMessage;
+    console.log("Received message:", msg);  // Debug log
     
     if (msg.type === 'design-modified') {
-        // Show modified design screen
+        console.log("Design modification data:", {
+            original: msg.original,
+            modified: msg.modified,
+            instructions: msg.instructions
+        });
+        
         document.getElementById('feedback-screen').style.display = 'none';
         const modScreen = document.getElementById('modified-design-screen');
         modScreen.style.display = 'block';
         
-        // Display images
-        document.getElementById('original-design-image').src = msg.original;
-        document.getElementById('modified-design-image').src = msg.modified;
+        const originalImg = document.getElementById('original-design-image');
+        const modifiedImg = document.getElementById('modified-design-image');
         
-        // Display instructions
-        document.getElementById('modification-instructions-text').innerHTML = 
-            `<ul>${msg.instructions.map(i => `<li>${i}</li>`).join('')}</ul>`;
+        originalImg.src = msg.original;
+        modifiedImg.src = msg.modified;
+        console.log("Image URLs set:", originalImg.src, modifiedImg.src);
+        
+        const instructionsContainer = document.getElementById('modification-instructions-text');
+        if (msg.instructions && msg.instructions.length > 0) {
+            instructionsContainer.innerHTML = `<ul>${
+                msg.instructions.map(i => `<li>${i}</li>`).join('')
+            }</ul>`;
+        } else {
+            instructionsContainer.innerHTML = '<p>No modification instructions provided</p>';
+        }
     }
 });
 
@@ -200,7 +253,23 @@ window.addEventListener('keydown', (event) => {
         document.getElementById('next').click();
     }
 });
+document.getElementById('back-to-feedback-from-mod').addEventListener('click', () => {
+    document.getElementById('modified-design-screen').style.display = 'none';
+    document.getElementById('feedback-screen').style.display = 'block';
+});
 
+document.getElementById('apply-changes').addEventListener('click', () => {
+    parent.postMessage({ 
+        pluginMessage: { 
+            type: 'apply-changes' 
+        } 
+    }, '*');
+});
+
+document.getElementById('discard-changes').addEventListener('click', () => {
+    document.getElementById('modified-design-screen').style.display = 'none';
+    document.getElementById('feedback-screen').style.display = 'block';
+});
 setTimeout(() => {
     document.getElementById('splash-screen').style.display = 'none';
     document.getElementById('initial-screen').style.display = 'block';

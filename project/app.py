@@ -283,34 +283,24 @@ def process_elements():
 @app.route('/modify-design', methods=['POST'])
 def modify_design():
     try:
-        # 1. Validate Input
+        print("Received modify-design request")  # Debug log
         data = request.get_json()
         if not data or 'screenshot' not in data or 'elements' not in data:
+            print("Missing required data")  # Debug log
             return jsonify({"error": "Missing required data"}), 400
 
-        screenshot_b64 = data['screenshot'].split(',')[1]  # Remove header
+        screenshot_b64 = data['screenshot'].split(',')[1]
         figma_json = data['elements']
+        print(f"Elements received: {json.dumps(figma_json, indent=2)[:500]}...")  # Debug log
 
-        # 2. Prepare Nielsen's Heuristics Prompt
-        NIELSEN_PROMPT = """Analyze this UI design against these 10 heuristics:
-        1️⃣ Visibility of System Status: Can users see system status?
-        2️⃣ Match with Real World: Does terminology match user expectations?
-        3️⃣ User Control: Can users undo/escape actions?
-        4️⃣ Consistency: Are patterns predictable?
-        5️⃣ Error Prevention: Are risky actions guarded?
-        6️⃣ Recognition: Is information visible when needed?
-        7️⃣ Flexibility: Are shortcuts available?
-        8️⃣ Minimalism: Is content prioritized?
-        9️⃣ Error Recovery: Are clear error messages shown?
-        🔟 Documentation: Is help easily accessible?
-
+        NIELSEN_PROMPT = """Analyze this UI design against the 10 UI/UX Nielsen's heuristics
         Return JSON with:
         - "issues": [{"heuristic": 1, "element": "button1", "problem": "No loading indicator"}]
         - "changes": [{"element": "button1", "property": "color", "new_value": "#3366FF"}]
         - "dalle_prompt": "Redesign description for DALL-E"
         """
 
-        # 3. Call GPT-4o for Analysis
+        print("Calling GPT-4o...")  # Debug log
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -327,37 +317,37 @@ def modify_design():
         )
         
         ai_response = json.loads(response.choices[0].message.content)
+        print(f"AI Response: {json.dumps(ai_response, indent=2)}")  # Debug log
 
-        # 4. Generate Modified Image
+        print("Generating DALL-E image...")  # Debug log
         img_response = client.images.generate(
             model="dall-e-3",
-            prompt=f"""Redesign this UI to fix Nielsen heuristic violations:
-            {ai_response['dalle_prompt']}
-            Maintain original branding but improve:
-            - Visibility of system status
-            - Error prevention mechanisms
-            - Consistency with platform standards
-            """,
+            prompt=f"Redesign this UI to fix Nielsen heuristic violations: {ai_response.get('dalle_prompt', 'Improve UI based on Nielsen heuristics')}",
             size="1024x1024",
             quality="hd"
         )
+        print(f"DALL-E Response: {img_response}")  # Debug log
 
-        # 5. Return Results
-        # return jsonify({
-        #     "modified_image": img_response.data[0].url,
-        #     "design_changes": ai_response['changes'],
-        #     "heuristic_issues": ai_response['issues'],
-        #     "suggestions": ai_response.get('dalle_prompt', "")
-        # })
+        # Build instructions array
+        instructions = []
+        if 'issues' in ai_response:
+            instructions.extend([f"Heuristic {issue.get('heuristic', '?')}: {issue.get('problem', 'No problem description')}" 
+                               for issue in ai_response['issues']])
+        if 'dalle_prompt' in ai_response:
+            instructions.append(ai_response['dalle_prompt'])
+        if not instructions:
+            instructions.append("No specific instructions provided")
+
         return jsonify({
             "status": "success",
             "modified_image": img_response.data[0].url,
-            "modified_json": ai_response.get('changes', []),  # Changed key
-            "analysis": ai_response.get('issues', []),       # Changed key
-            "instructions": ai_response.get('dalle_prompt', "")
+            "modified_json": ai_response.get('changes', []),
+            "analysis": ai_response.get('issues', []),
+            "instructions": instructions
         })
 
     except Exception as e:
+        print(f"Error: {str(e)}\n{traceback.format_exc()}")  # Debug log
         return jsonify({
             "error": str(e),
             "traceback": traceback.format_exc()
