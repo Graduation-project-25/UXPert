@@ -393,11 +393,15 @@ window.addEventListener('message', (event) => {
         });
     }
     else if (msg.type === 'design-modified') {
-        // Show modified design screen
-        document.getElementById('feedback-screen').style.display = 'none';
-        document.getElementById('modified-design-screen').style.display = 'block';
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.style.display = 'none';
+        });
         
-        // Display images
+        // Then show modified design screen
+        const modScreen = document.getElementById('modified-design-screen');
+        modScreen.style.display = 'block';
+        
+        // Only now populate the data
         document.getElementById('original-design-image').src = msg.original;
         document.getElementById('modified-design-image').src = msg.modified;
         
