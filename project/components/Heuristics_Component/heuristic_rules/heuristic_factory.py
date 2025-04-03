@@ -23,6 +23,4 @@ class HeuristicFactory:
                 raise ValueError(f"Missing required dataset for heuristic: {rule_type}")
 
         
-        
-
     
