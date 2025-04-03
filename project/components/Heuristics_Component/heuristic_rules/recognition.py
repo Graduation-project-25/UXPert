@@ -49,6 +49,8 @@ class Recognition(HeuristicInterface):
             return f"{icon_width} * {icon_height} - Too small icon - Icon Size Should be between 24 & 32" # - Try increasing your icon size"
         elif icon_width > 32 or icon_height > 32:
             return f"{icon_width} * {icon_height} - Too large icon - Icon Size Should be between 24 & 32" # - Try decreasing your icon size"
+        elif icon_width == 24 or icon_height == 32:
+            return f"{icon_width} * {icon_height} - Good Icon Size"
 
     def evaluate_rule(self, element, element_type, screen_width, screen_height, is_icon_labeled, icon_width, icon_height):
         feedback = []
@@ -72,30 +74,3 @@ class Recognition(HeuristicInterface):
             feedback.append(f"Icon Size: {icon_size_feedback}")
 
         return feedback
-        
-    def evaluate_icons_rule(self, element, element_type, screen_width, screen_height, is_icon_labeled, icon_width, icon_height):
-        feedback = []
-
-        # Step 1: Evaluate memory load
-        memory_load_feedback = self.minimized_memory_load(element, element_type, screen_width, screen_height)
-        if memory_load_feedback:
-            feedback.extend(memory_load_feedback)
-
-        # Step 2: Evaluate instruction
-        visible_instructions_feedback = self.visible_instructions(element, element_type)
-        if visible_instructions_feedback:
-            feedback.append(visible_instructions_feedback)
-
-        # Step 3: Evaluate labeled icons and size if it is an icon.
-        if element_type == "symbolInstance":
-            icon_labeling_feedback = self.evaluate_icon_labeling(is_icon_labeled)
-            feedback.append(f"Icon Labeling: {icon_labeling_feedback}")
-
-            # Step 4: Evaluate icons size
-            icon_size_feedback = self.evaluate_icon_size(icon_width, icon_height)
-            feedback.append(f"Icon Size: {icon_size_feedback}")
-
-        return feedback
-        
-
-

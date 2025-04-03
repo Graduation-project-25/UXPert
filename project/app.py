@@ -6,7 +6,6 @@ import pandas as pd
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 import app
-from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from database.feedback_repository import FeedbackRepository
 from database.figma_features_repository import FigmaFeaturesRepository
@@ -139,6 +138,12 @@ def process_elements():
                     "Feedback": recognition_results,  
                 }
                 recognition_feedback_list.append(recognition_feedback)  # Store feedback for each element
+                print("************************************************************************")
+                print(element["name"])
+                print(element["width"])
+                print(element["height"])
+                print(recognition_feedback)
+                print("************************************************************************")
 
 
         # Prepare human-readable feedback
