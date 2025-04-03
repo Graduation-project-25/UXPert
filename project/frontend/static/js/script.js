@@ -14,20 +14,22 @@ document.getElementById('start').onclick = () => {
     document.getElementById('initial-screen').style.display = 'none';
     document.getElementById('processing-screen').style.display = 'block';
 
-    // Start progress animation
     let progress = 0;
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
 
     const progressInterval = setInterval(() => {
-        progress = Math.min(progress + 5, 90);
+        progress = Math.min(progress + 5, 100); // Go all the way to 100%
         progressBar.value = progress;
         progressText.textContent = `${progress}%`;
+        
+        if (progress === 100) {
+            clearInterval(progressInterval);
+            // Only request feedback after progress completes
+            parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+        }
     }, 300);
-
-    parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
 };
-
 // Navigation functions
 function showPage(index) {
     pages.forEach((page, i) => {
@@ -109,9 +111,9 @@ window.addEventListener('message', (event) => {
     if (!msg) return;
 
     if (msg.type === 'collective-feedback') {
-        // Complete progress bar
-        document.getElementById('progress-bar').value = 100;
-        document.getElementById('progress-text').textContent = '100%';
+        // Show feedback screen immediately since progress is already complete
+        document.getElementById('processing-screen').style.display = 'none';
+        document.getElementById('feedback-screen').style.display = 'block';
 
         // Show feedback screen
         setTimeout(() => {
