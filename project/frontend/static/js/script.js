@@ -111,11 +111,9 @@ window.addEventListener('message', (event) => {
     if (!msg) return;
 
     if (msg.type === 'collective-feedback') {
-        // Show feedback screen immediately since progress is already complete
         document.getElementById('processing-screen').style.display = 'none';
         document.getElementById('feedback-screen').style.display = 'block';
 
-        // Show feedback screen
         setTimeout(() => {
             document.getElementById('processing-screen').style.display = 'none';
             document.getElementById('feedback-screen').style.display = 'block';
