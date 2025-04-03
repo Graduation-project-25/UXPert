@@ -45,7 +45,7 @@ class RecognitionEvaluation(HeuristicEvaluationInterface):
                     # print(all_feedback)
 
                 data_to_save[key] = elements
-
+ 
         except (json.JSONDecodeError, KeyError) as e:
             print(f"Error processing: {e}. Skipping file.")
 
