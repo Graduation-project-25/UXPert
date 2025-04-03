@@ -686,7 +686,7 @@ def modify_design():
         PROMPT = """Return JSON with:
         {
             "modifications": [{
-                "node_id": "id",
+                "node_name": "name",
                 "property": "property_name",
                 "value": "new_value",
                 "heuristic": "heuristic_name",
@@ -741,7 +741,7 @@ def modify_design():
             modified_design = design_json.copy()
             for mod in result.get("modifications", []):
                 for elem in modified_design.get("elements", []):
-                    if elem.get("id") == mod.get("node_id"):
+                    if elem.get("id") == mod.get("node_name"):
                         if mod.get("property") in elem:
                             elem[mod["property"]] = mod["value"]
                         break
