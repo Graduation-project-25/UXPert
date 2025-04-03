@@ -30,15 +30,15 @@ from components.Heuristics_Component.heuristic_rules.minimalist import Minimalis
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
 load_dotenv()  
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-# print(f"OpenAI Key: {openai.api_key}")
-# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
+print(f"OpenAI Key: {openai.api_key}")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Add this to your Flask app startup
-# try:
-#     models = openai.models.list()
-#     print("Available models:", [m.id for m in models.data])
-# except Exception as e:
-#     print("OpenAI connection failed:", str(e))
+try:
+    models = openai.models.list()
+    print("Available models:", [m.id for m in models.data])
+except Exception as e:
+    print("OpenAI connection failed:", str(e))
 
 figma_repository = FigmaFeaturesRepository()       
 feedback_repository = FeedbackRepository()       

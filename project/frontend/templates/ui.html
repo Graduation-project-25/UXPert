@@ -8,7 +8,6 @@
     <script src="http://127.0.0.1:3000/static/js/script.js" defer></script>
 </head>
 
-
 <body>
     <div id="splash-screen">
         <h1>
@@ -65,61 +64,33 @@
         <button id="back-to-feedback" class="suggestion-button">Back to Feedback</button>
     </div>
 
-    <!-- Modified Design Screen -->
-     <!-- In your modified-design-screen div -->
-<div class="design-comparison" style="display: none;">
-  <div class="design-container">
-      <div class="design-label"  >Original Design</div>
-      <img id="original-design-image" crossorigin="anonymous" alt="Original">
-  </div>
-  <div class="design-container">
-      <div class="design-label">Modified Design</div>
-      <img id="modified-design-image" crossorigin="anonymous" alt="Modified">
-  </div>
-</div>
- 
-   <!-- Add this error screen -->
-<div id="error-screen" style="display: none;">
-    <h2>Error Modifying Design</h2>
-    <p id="error-message"></p>
-    <pre id="error-details"></pre>
-    <div id="ai-response-debug" style="white-space: pre-wrap;"></div>
-    <button id="retry-button">Try Again</button>
-</div>
+    <!-- Error Screen -->
+    <div id="error-screen" style="display: none;">
+        <h2>Error Modifying Design</h2>
+        <p id="error-message"></p>
+        <pre id="error-details"></pre>
+        <div id="ai-response-debug" style="white-space: pre-wrap;"></div>
+        <button id="retry-button">Try Again</button>
+    </div>
 
-<!-- Updated modified design screen -->
-<div id="modified-design-screen" style="display: none;">
-    <h1>Design Improvements</h1>
-    <div class="design-comparison">
-        <div class="design-container">
-            <div class="design-label">Original</div>
-            <img id="original-design-image" crossorigin="anonymous" alt="Original">
+    <!-- Modified Design Screen (single, properly contained version) -->
+    <div id="modified-design-screen" style="display: none;">
+        <h1>Design Improvements</h1>
+        <div class="design-comparison">
+            <div class="design-container">
+                <div class="design-label">Original</div>
+                <img id="original-design-image" crossorigin="anonymous" alt="Original">
+            </div>
+            <div class="design-container">
+                <div class="design-label">Modified</div>
+                <img id="modified-design-image" crossorigin="anonymous" alt="Modified">
+            </div>
         </div>
-        <div class="design-container">
-            <div class="design-label">Modified</div>
-            <img id="modified-design-image" crossorigin="anonymous" alt="Modified">
+        <div class="changes-container">
+            <h3>Changes Made</h3>
+            <ul id="modification-list"></ul>
         </div>
+        <button id="back-to-feedback-from-mod" class="action-button">Back to Feedback</button>
     </div>
-    <div class="changes-container">
-        <h3>Changes Made</h3>
-        <ul id="modification-list"></ul>
-    </div>
-    <button id="back-to-feedback-from-mod" class="action-button">Back to Feedback</button>
-</div>
-
-    
-    <div class="changes-container">
-        <h3>Changes Made</h3>
-        <ul id="changes-list"></ul>
-    </div>
-    
-    <div class="full-analysis">
-        <h3>Full Analysis</h3>
-        <pre id="full-analysis"></pre>
-    </div>
-    
-    <button id="back-to-feedback">Back to Feedback</button>
-</div>
-</div>
 </body>
 </html>
