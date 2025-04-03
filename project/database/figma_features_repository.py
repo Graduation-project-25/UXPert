@@ -2,7 +2,13 @@ from database.base_repository import BaseRepository
 
 class FigmaFeaturesRepository(BaseRepository):
     def __init__(self):
-        super().__init__("features")  
+        super().__init__("features")
+    def get_frame_data(self, frame_id):
+        """Get specific frame data by frame ID"""
+        return self.collection.find_one(
+            {"frames.id": frame_id},
+            {"frames.$": 1}  # Projection to get only the matching frame
+        )          
 
     def update_or_insert_frame(self, feature_data):
         """
