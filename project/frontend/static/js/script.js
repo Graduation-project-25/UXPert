@@ -7,7 +7,7 @@ let feedbackData = {}; // Store all feedback data per frame
 setTimeout(() => {
     document.getElementById('splash-screen').style.display = 'none';
     document.getElementById('initial-screen').style.display = 'block';
-}, 4000);
+}, 7000);
 
 // Start detection handler
 document.getElementById('start').onclick = () => {
