@@ -55,15 +55,25 @@ function renderFeedback(item, feedbackIndex = 0) {
     const currentFeedback = feedbackTypes[feedbackIndex % feedbackTypes.length];
     let html = `<h3>${currentFeedback.name} </h3><div class='divider'></div><ul>`;
 
-    if (currentFeedback.name == "Recognition Rather than Recall" && Array.isArray(currentFeedback.data)) {
-        // Handle array feedback (e.g., recognitionFeedback)
+    // Handle both recognition and minimalist feedback as arrays
+    if (['Recognition Rather than Recall', 'Aesthetic and Minimalist Design'].includes(currentFeedback.name) && Array.isArray(currentFeedback.data)) {
         currentFeedback.data.forEach(feedbackItem => {
-            html += `
-                <li>
-                    <strong>Element: ${feedbackItem.element_name} </strong><br>
-                    ${feedbackItem.feedback}
-                </li>
-            `;
+            if (typeof feedbackItem === 'string') {
+                // If feedbackItem is a string, display it directly
+                html += `<li>${feedbackItem}</li>`;
+            } else {
+                // Use specific keys for minimalist feedback
+                const issueLabel = feedbackItem.issue === "White Space Ratio" ? "White Space Ratio" :
+                                  feedbackItem.issue === "Number of Elements" ? "Number of Elements" :
+                                  feedbackItem.issue === "Irrelevant Elements" ? "Irrelevant Elements" :
+                                  feedbackItem.issue === "Score" ? "Score" :
+                                  feedbackItem.element_name || 'Issue';
+                html += `
+                    <li>
+                        <strong>${issueLabel}:</strong> ${feedbackItem.feedback}
+                    </li>
+                `;
+            }
         });
     } else {
         // Handle object feedback (e.g., errorPreventionFeedback, consistencyFeedback)
@@ -75,6 +85,7 @@ function renderFeedback(item, feedbackIndex = 0) {
     html += '</ul>';
     return html;
 }
+
 function navigateFeedback(frameId) {
     if (!feedbackData[frameId]) return;
 

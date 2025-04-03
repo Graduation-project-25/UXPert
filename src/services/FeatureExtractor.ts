@@ -3,6 +3,7 @@ export class IconDetector {
     static isIcon(node: SceneNode): boolean {
         // Check if the node is a Frame or Component (which are typical containers for icons)
         if (node.type === "FRAME" || node.type === "INSTANCE"  || node.type === "COMPONENT") {
+
             // Check if the node contains any vector shapes (VECTOR type)
             const containsVectors = node.children?.some(child => child.type === "VECTOR");
 
@@ -13,27 +14,24 @@ export class IconDetector {
         }
         return false;
     }
-    // Checks if the icon is near a text node (based on position and whether they are in the same component/group)
     static isNearText(node: SceneNode, threshold: number = 100): boolean {
         if ('children' in node && (node.type === "FRAME" || node.type === "INSTANCE" || node.type === "COMPONENT")) {
-            for (const child of node.children || []) {
-                if (child.type === "TEXT") {
-                    // Check if the icon and text are close based on their positions
-                    const distance = Math.sqrt(Math.pow(node.x - child.x, 2) + Math.pow(node.y - child.y, 2));
-                    if (distance < threshold) {
-                        return true;
-                    }
-                    
-                    // Check if both icon and text are in the same component or group
-                    if (node.parent && child.parent && node.parent.id === child.parent.id) {
-                        return true;
-                    }
+            for (const child of figma.currentPage.findAll(n => n.type === "TEXT")) {
+                // Get the absolute bounding boxes
+                const iconBounds = node.absoluteBoundingBox;
+                const textBounds = child.absoluteBoundingBox;
+
+                if (!iconBounds || !textBounds) continue; // Skip if we can't get bounds
+
+                // Check if the text is within the threshold distance of the icon
+                const distance = Math.sqrt(Math.pow(iconBounds.x - textBounds.x, 2) + Math.pow(iconBounds.y - textBounds.y, 2));
+                if (distance < threshold) {
+                    return true;
                 }
             }
         }
         return false;
     }
-    
 }
 
 export class FeatureExtractor {
@@ -117,7 +115,7 @@ export class FeatureExtractor {
             if (node.type === "TEXT") {
                 textContent = node.characters;  // Default text from the TextNode
             }
-
+ 
             // Store the extracted node data
             extractedNodes.push({
                 id: node.id ?? "None",

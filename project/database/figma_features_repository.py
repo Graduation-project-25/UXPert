@@ -16,7 +16,7 @@ class FigmaFeaturesRepository(BaseRepository):
         """ 
         filter_query = {
             "design_name": feature_data["design_name"],
-            # "user_name": feature_data["user_name"],
+            "user_name": feature_data["user_name"],
             "frames.frame_name": feature_data["frame_name"]
         }
  
