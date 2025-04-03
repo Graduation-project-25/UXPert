@@ -1,15 +1,14 @@
 from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
-from database.base_repository import BaseRepository
+from database.figma_features_repository import FigmaFeaturesRepository
 
-class ErrorPrevention(HeuristicInterface,BaseRepository):
-    
+class ErrorPrevention(HeuristicInterface):
+     
     # Constants
     CONFIRMATION_KEYWORDS = ["confirm", "are you sure", "proceed", "continue", "ok", "yes", "no"]
     DANGEROUS_ACTION_KEYWORDS = ["delete", "remove", "discard", "erase", "reset", "clear", "cancel", "terminate"]
 
-    def __init__(self, figma_repository):
-        """Initialize with FigmaFeaturesRepository."""
-        self.figma_repository = figma_repository
+    def __init__(self):
+        self.figma_repository = FigmaFeaturesRepository()       
 
     def load_all_design_pages(self):
         """Retrieve all saved designs from the database."""

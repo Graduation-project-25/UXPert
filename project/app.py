@@ -44,41 +44,13 @@ feedback_repository = FeedbackRepository()
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
-
-####################To Be Removed (DB)####################
-# Define output folder
-data_folder = "figma_features"
-output_folder = data_folder + "/extracted"
-evaluation_folder = data_folder + "/evaluation"
-
-
-
-dataset_folder = './data/raw/EGFE'
-main_output_folder = dataset_folder + '/extractedFeatures'
-# test_folder = main_output_folder + '/test'
-if not os.path.exists(data_folder):
-    os.makedirs(data_folder)
-    print(f"Created folder: {data_folder}")
-  # Ensure the folder exists
-os.makedirs(output_folder, exist_ok=True)  # Ensure the folder exists
-os.makedirs(evaluation_folder, exist_ok=True)  # Ensure the folder exists
-
-def get_new_filename():
-    """Generate a unique filename based on existing files in the extracted folder."""
-    existing_files = [f for f in os.listdir(output_folder) if f.endswith(".json")]
-    count = len(existing_files)  # Count current files and use it for a new filename
-    return os.path.join(output_folder, f"design_{count + 1}.json")
-########################################################## 
-
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
     if request.method == 'OPTIONS':
         return '', 200  
-    # print("Raw request body:", request.data)
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data received"}), 400
-
 
     #Extract Design Information
     user_name = data.get("user_name", "Unknown User")
@@ -95,27 +67,6 @@ def process_elements():
     #Convert Elements to DataFrame
     elements_df = pd.DataFrame(elements)
     print(elements_df)
-
-
-
-    ####################To Be Removed (DB)####################
-    # Fetch Latest Minimalist Evaluation
-    def get_latest_minimalist_results():
-        """Fetch the latest minimalist evaluation results from the evaluation folder."""
-        minimalist_file = os.path.join(evaluation_folder, "minimalist_evaluation.json")
-        print(minimalist_file)
-        if os.path.exists(minimalist_file):
-            with open(minimalist_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            for key, elements in data.items():
-                for element in elements:  
-                    evaluation = element.get('evaluation', None)
-                    return evaluation
-
-        return {}  # Return an empty dictionary if the file is missing
-    ##########################################################
-    
-
 
     try:
         # Prepare feature data
@@ -161,40 +112,17 @@ def process_elements():
 
         elements_db = pd.DataFrame(elements_list)
 
-
-        # Convert elements into the expected format for heuristic evaluation
-        designs_for_evaluation = [{"elements": elements_db}]
-
-
-        ####################To Be Removed (DB)####################
-        output_data = {
-            "screen_size": frame_info,  
-            "elements": elements,
-        }
-        output_file = get_new_filename()
-        with open(output_file, "w", encoding="utf-8") as json_file:
-            json.dump(output_data, json_file, indent=4, ensure_ascii=False)
-
-        
-        frame_data = latest_saved_data.get("frames", [])
-        if frame_data:
-            elements_df = pd.DataFrame(frame_data[0].get("elements", []))
-        else:
-            return jsonify({"error": "No elements found in the retrieved frame data"}), 500
-        ###########################################################
-
         # Run heuristic evaluations
         # Get screen width and height
         screen_width = frame_info["screen_width"]  
         screen_height = frame_info["screen_height"]  
-
 
         # Call Rules
         consistency_evaluator = HeuristicFactory.check_rule("consistency")
         minimalist_evaluator = HeuristicFactory.check_rule("minimalist")
         recognition_evaluator = HeuristicFactory.check_rule("recognition")
         error_handling_evaluator = HeuristicFactory.check_rule("errorHandling")
-        error_prevention_evaluator = ErrorPrevention(figma_repository)
+        error_prevention_evaluator = HeuristicFactory.check_rule("errorPrevention")
 
         # Evaluate Rules
         consistency_results = consistency_evaluator.evaluate_rule(elements_df)
@@ -212,7 +140,6 @@ def process_elements():
                 }
                 recognition_feedback_list.append(recognition_feedback)  # Store feedback for each element
 
-        
 
         # Prepare human-readable feedback
         consistency_feedback = {
@@ -267,7 +194,6 @@ def process_elements():
             "consistency_results": consistency_feedback,
             "error_handling_results": error_handling_feedback,
             "minimalist_results": minimalist_feedback,
-            # "recognition_results": recognition_feedback_list
         }
         if recognition_feedback_list:  # Add only if there are results
             response_data["recognition_results"] = recognition_feedback_list
