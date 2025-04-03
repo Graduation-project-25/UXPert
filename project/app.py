@@ -6,6 +6,7 @@ import pandas as pd
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 import app
+from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from database.feedback_repository import FeedbackRepository
 from database.figma_features_repository import FigmaFeaturesRepository
@@ -24,10 +25,10 @@ import json
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
 load_dotenv()  
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-# print(f"OpenAI Key: {openai.api_key}")
-# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-# Add this to your Flask app startup
+openai.api_key = os.getenv("OPENAI_API_KEY")
+print(f"OpenAI Key: {openai.api_key}")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 try:
     models = openai.models.list()
     print("Available models:", [m.id for m in models.data])
@@ -43,10 +44,37 @@ feedback_repository = FeedbackRepository()
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
+####################To Be Removed (DB)####################
+# Define output folder
+data_folder = "figma_features"
+output_folder = data_folder + "/extracted"
+evaluation_folder = data_folder + "/evaluation"
+
+dataset_folder = './data/raw/EGFE'
+main_output_folder = dataset_folder + '/extractedFeatures'
+# test_folder = main_output_folder + '/test'
+if not os.path.exists(data_folder):
+    os.makedirs(data_folder)
+    print(f"Created folder: {data_folder}")
+  # Ensure the folder exists
+os.makedirs(output_folder, exist_ok=True)  # Ensure the folder exists
+os.makedirs(evaluation_folder, exist_ok=True)  # Ensure the folder exists
+
+def get_new_filename():
+    """Generate a unique filename based on existing files in the extracted folder."""
+    existing_files = [f for f in os.listdir(output_folder) if f.endswith(".json")]
+    count = len(existing_files)  # Count current files and use it for a new filename
+    return os.path.join(output_folder, f"design_{count + 1}.json")
+
+def clean_prefix(text):
+    """Remove numeric prefixes like '0:' or '1:' from text."""
+    return re.sub(r'^\d+:\s*', '', str(text))
+
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
     if request.method == 'OPTIONS':
         return '', 200  
+    # print("Raw request body:", request.data)
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data received"}), 400
@@ -66,6 +94,23 @@ def process_elements():
     #Convert Elements to DataFrame
     elements_df = pd.DataFrame(elements)
     print(elements_df)
+
+    ####################To Be Removed (DB)####################
+    # Fetch Latest Minimalist Evaluation
+    def get_latest_minimalist_results():
+        """Fetch the latest minimalist evaluation results from the evaluation folder."""
+        minimalist_file = os.path.join(evaluation_folder, "minimalist_evaluation.json")
+        print(minimalist_file)
+        if os.path.exists(minimalist_file):
+            with open(minimalist_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            for key, elements in data.items():
+                for element in elements:  
+                    evaluation = element.get('evaluation', None)
+                    return evaluation
+
+        return {}  # Return an empty dictionary if the file is missing
+    ##########################################################
 
     try:
         # Prepare feature data
@@ -111,6 +156,25 @@ def process_elements():
 
         elements_db = pd.DataFrame(elements_list)
 
+        # Convert elements into the expected format for heuristic evaluation
+        designs_for_evaluation = [{"elements": elements_db}]
+
+        ####################To Be Removed (DB)####################
+        output_data = {
+            "screen_size": frame_info,  
+            "elements": elements,
+        }
+        output_file = get_new_filename()
+        with open(output_file, "w", encoding="utf-8") as json_file:
+            json.dump(output_data, json_file, indent=4, ensure_ascii=False)
+
+        frame_data = latest_saved_data.get("frames", [])
+        if frame_data:
+            elements_df = pd.DataFrame(frame_data[0].get("elements", []))
+        else:
+            return jsonify({"error": "No elements found in the retrieved frame data"}), 500
+        ###########################################################
+
         # Run heuristic evaluations
         # Get screen width and height
         screen_width = frame_info["screen_width"]  
@@ -139,6 +203,56 @@ def process_elements():
                 }
                 recognition_feedback_list.append(recognition_feedback)  # Store feedback for each element
 
+        # Transform minimalist results to match recognition structure with specific keys
+        cleaned_minimalist_feedback = []
+        if isinstance(minimalist_results, dict):
+            # Map dictionary keys to specific labels
+            for key, value in minimalist_results.items():
+                cleaned_key = clean_prefix(key)
+                if "white space" in cleaned_key.lower():
+                    issue = "White Space Ratio"
+                elif "elements" in cleaned_key.lower() and "irrelevant" not in cleaned_key.lower():
+                    issue = "Number of Elements"
+                elif "irrelevant" in cleaned_key.lower():
+                    issue = "Irrelevant Elements"
+                elif "score" in cleaned_key.lower():
+                    issue = "Score"
+                else:
+                    issue = cleaned_key
+                cleaned_minimalist_feedback.append({
+                    "issue": issue,
+                    "feedback": clean_prefix(value) if isinstance(value, str) else str(value)
+                })
+        elif isinstance(minimalist_results, list):
+            # Map list items to specific labels based on content
+            for i, item in enumerate(minimalist_results):
+                if isinstance(item, str):
+                    cleaned_item = clean_prefix(item)
+                    if "white space" in cleaned_item.lower():
+                        issue = "White Space Ratio"
+                    elif "elements" in cleaned_item.lower() and "irrelevant" not in cleaned_item.lower():
+                        issue = "Number of Elements"
+                    elif "irrelevant" in cleaned_item.lower():
+                        issue = "Irrelevant Elements"
+                    elif "score" in cleaned_item.lower():
+                        issue = "Score"
+                    else:
+                        issue = "Feedback"  # Fallback for unrecognized items
+                    cleaned_minimalist_feedback.append({
+                        "issue": issue,
+                        "feedback": cleaned_item
+                    })
+                elif isinstance(item, dict):
+                    cleaned_minimalist_feedback.append({
+                        "issue": clean_prefix(item.get('issue', '')),
+                        "feedback": clean_prefix(item.get('feedback', '')) if isinstance(item.get('feedback'), str) else str(item.get('feedback', ''))
+                    })
+        else:
+            cleaned_minimalist_feedback.append({
+                "issue": "Score",
+                "feedback": clean_prefix(str(minimalist_results))
+            })
+
         # Prepare human-readable feedback
         consistency_feedback = {
             "ColorConsistency": f"Color consistency is {consistency_results.get('ColorConsistency', 0)}%.",
@@ -162,7 +276,7 @@ def process_elements():
             "Feedback": error_handling_results
         }
         minimalist_feedback = {
-            "Feedback": minimalist_results,  # List of feedback messages from Minimalist
+            "Feedback": cleaned_minimalist_feedback,  # List of feedback messages from Minimalist
             # "Score": f"Final Score: {minimalist_score:.2f}%"  # Score from Minimalist
         }
 
@@ -568,80 +682,115 @@ def modify_design():
         design_json = data['design_json']
         screenshot_b64 = data.get('screenshot', '')
 
-        # Enhanced prompt with specific instructions
-        PROMPT = """You are a UI/UX expert analyzing a design against Nielsen's 10 usability heuristics. 
-        Carefully examine the provided design JSON and identify specific improvements needed.
+        # Safely extract elements list
+        try:
+            elements = design_json.get('elements', [])
+            if isinstance(elements, dict):  # Handle case where elements might be a dict
+                elements = list(elements.values())
+            elements_list = ", ".join([f"{e.get('name', 'unnamed')} ({e.get('type', 'no type')})" 
+                                     for e in elements[:5]]) + ("..." if len(elements) > 5 else "")
+        except Exception as e:
+            print(f"Error processing elements: {str(e)}")
+            elements_list = "Design elements"
 
-        For each issue you find:
-        1. Specify the exact node_id from the design JSON
-        2. Name the specific property to modify (color, text, size, etc.)
-        3. Provide the exact new value
-        4. Explain which heuristic this addresses
-        5. Give a clear reason for the change
+        # Enhanced prompt with safe formatting
+        PROMPT = """You are a UI/UX expert analyzing a Figma design against Nielsen's 10 usability heuristics. 
+        Provide 3-5 specific modifications that would improve the design.
 
-        Return a JSON response with this structure:
+        Return JSON with this EXACT structure:
         {
-            "modifications": [
-                {
-                    "node_id": "I123:45",
-                    "property": "color",
-                    "value": "#4285F4",
-                    "heuristic": "Consistency",
-                    "reason": "Primary buttons should use the brand's primary color consistently"
-                },
-                {
-                    "node_id": "I456:78",
-                    "property": "text",
-                    "value": "Submit Order",
-                    "heuristic": "Match with real world",
-                    "reason": "The label should use familiar terms that match user mental models"
-                }
-            ]
+            "modifications": [{
+                "node_id": "MUST match an element ID from the design",
+                "property": "color|textContent|width|height|position.x|position.y",
+                "value": "new value appropriate for the property",
+                "heuristic": "Which heuristic this addresses",
+                "reason": "How this improves usability"
+            }],
+            "summary": "Brief overall assessment"
         }
 
-        Design JSON:
-        {design_json}""".format(design_json=json.dumps(design_json, indent=2))
+        Important Rules:
+        1. Only suggest changes to existing properties
+        2. For colors: use hex format (#RRGGBB)
+        3. For text: keep under 50 characters
+        4. For sizes: maintain reasonable proportions"""
 
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{
                 "role": "system",
-                "content": "You are a UI/UX expert specializing in applying Nielsen's heuristics to improve designs."
+                "content": "You are a Figma design expert. Return ONLY valid JSON with the exact specified structure."
             }, {
                 "role": "user",
                 "content": PROMPT
             }],
-            response_format={ "type": "json_object" },
-            temperature=0.7,  # Slightly more creative
+            response_format={"type": "json_object"},
+            temperature=0.3,
             max_tokens=2000
         )
         
         # Parse and validate response
-        result = json.loads(response.choices[0].message.content)
-        modifications = result.get("modifications", [])
-        
-        if not modifications:
-            # If no modifications found, provide a default response that makes sense
-            modifications = [{
-                "node_id": "N/A",
-                "property": "N/A",
-                "value": "N/A",
-                "heuristic": "N/A",
-                "reason": "The design already follows Nielsen's heuristics well. No modifications needed."
-            }]
+        response_content = response.choices[0].message.content
+        print("Raw AI Response:", response_content)
 
-        return jsonify({
-            "status": "success",
-            "modifications": modifications,
-            "original_image": screenshot_b64
-        })
+        try:
+            # Clean response
+            cleaned_response = re.sub(r'```(json)?|```', '', response_content).strip()
+            result = json.loads(cleaned_response)
+            
+            # Validate response
+            if not isinstance(result, dict):
+                raise ValueError("Response is not a JSON object")
+                
+            modifications = result.get("modifications", [])
+            if not modifications:
+                return jsonify({
+                    "status": "success",
+                    "message": "No modifications suggested",
+                    "modifications": []
+                })
+                
+            # Validate each modification
+            valid_mods = []
+            for mod in modifications:
+                if not all(k in mod for k in ["node_id", "property", "value"]):
+                    continue
+                valid_mods.append(mod)
+            print("result :")
+            print (result)
+            print("modifications :")
+            print (modifications)
+            return jsonify({
+                "status": "success",
+                "modifications": valid_mods,
+                "summary": result.get("summary", ""),
+                "original_image": screenshot_b64
+            })
+
+        except json.JSONDecodeError as e:
+            print(f"JSON Parse Error: {str(e)}")
+            return jsonify({
+                "error": "Invalid JSON from AI",
+                "ai_response": response_content,
+                "traceback": str(e)
+            }), 500
 
     except Exception as e:
+        print(f"Error: {str(e)}\n{traceback.format_exc()}")
         return jsonify({
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
 
+def rgb_to_hex(rgb_dict):
+    """Convert RGB dictionary to hex string"""
+    try:
+        r = int(rgb_dict.get('r', 0) * 255)
+        g = int(rgb_dict.get('g', 0) * 255)
+        b = int(rgb_dict.get('b', 0) * 255)
+        return "#{:02x}{:02x}{:02x}".format(r, g, b)
+    except:
+        return "#000000"
 @app.route('/proxy-image')
 def proxy_image():
     try:
@@ -654,11 +803,10 @@ def proxy_image():
                       content_type=response.headers['Content-Type'])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 @app.route('/', methods=['GET'])
 def home():
     return "Welcome to the Flask server!", 200
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
-
-
