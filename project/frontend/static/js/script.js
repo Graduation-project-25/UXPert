@@ -13,18 +13,18 @@ setTimeout(() => {
 document.getElementById('start').onclick = () => {
     document.getElementById('initial-screen').style.display = 'none';
     document.getElementById('processing-screen').style.display = 'block';
-    
+
     // Start progress animation
     let progress = 0;
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
-    
+
     const progressInterval = setInterval(() => {
         progress = Math.min(progress + 5, 90);
         progressBar.value = progress;
         progressText.textContent = `${progress}%`;
     }, 300);
-    
+
     parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
 };
 
@@ -51,28 +51,40 @@ function getFeedbackTypes(item) {
 function renderFeedback(item, feedbackIndex = 0) {
     const feedbackTypes = getFeedbackTypes(item);
     if (feedbackTypes.length === 0) return '<p>No feedback available</p>';
-    
+
     const currentFeedback = feedbackTypes[feedbackIndex % feedbackTypes.length];
-    let html = `<h3>${currentFeedback.name} Issues</h3><div class='divider'></div><ul>`;
-    
-    for (const [issue, solution] of Object.entries(currentFeedback.data)) {
-        html += `<li><strong>${issue}:</strong> ${solution}</li>`;
+    let html = `<h3>${currentFeedback.name} </h3><div class='divider'></div><ul>`;
+
+    if (currentFeedback.name == "Recognition" && Array.isArray(currentFeedback.data)) {
+        // Handle array feedback (e.g., recognitionFeedback)
+        currentFeedback.data.forEach(feedbackItem => {
+            html += `
+                <li>
+                    <strong>Element: ${feedbackItem.element_name} </strong><br>
+                    ${feedbackItem.feedback}
+                </li>
+            `;
+        });
+    } else {
+        // Handle object feedback (e.g., errorPreventionFeedback, consistencyFeedback)
+        for (const [issue, solution] of Object.entries(currentFeedback.data)) {
+            html += `<li><strong>${issue}:</strong> ${solution}</li>`;
+        }
     }
+
     html += '</ul>';
-    
     return html;
 }
-
 function navigateFeedback(frameId) {
     if (!feedbackData[frameId]) return;
-    
-    feedbackData[frameId].currentFeedbackIndex = 
+
+    feedbackData[frameId].currentFeedbackIndex =
         (feedbackData[frameId].currentFeedbackIndex + 1) % feedbackData[frameId].feedbackTypes.length;
-    
+
     const feedbackDiv = document.getElementById(`feedback-${frameId}`);
     if (feedbackDiv) {
         feedbackDiv.innerHTML = renderFeedback(
-            feedbackData[frameId].item, 
+            feedbackData[frameId].item,
             feedbackData[frameId].currentFeedbackIndex
         );
     }
@@ -87,28 +99,28 @@ window.addEventListener('message', (event) => {
         // Complete progress bar
         document.getElementById('progress-bar').value = 100;
         document.getElementById('progress-text').textContent = '100%';
-        
+
         // Show feedback screen
         setTimeout(() => {
             document.getElementById('processing-screen').style.display = 'none';
             document.getElementById('feedback-screen').style.display = 'block';
-            
+
             const pagesContainer = document.getElementById('pages-container');
             pagesContainer.innerHTML = '';
             pages.length = 0;
             feedbackData = {};
-            
+
             msg.feedback.forEach((item, index) => {
                 const frameId = item.frameId || `frame-${index}`;
                 const feedbackTypes = getFeedbackTypes(item);
-                
+
                 // Store feedback data for navigation
                 feedbackData[frameId] = {
                     item,
                     feedbackTypes,
                     currentFeedbackIndex: 0
                 };
-                
+
                 const pageSection = document.createElement('div');
                 pageSection.className = 'page-section';
                 pageSection.style.display = index === 0 ? 'block' : 'none';
@@ -120,8 +132,8 @@ window.addEventListener('message', (event) => {
                             <div id="feedback-${frameId}">
                                 ${renderFeedback(item)}
                             </div>
-                            ${feedbackTypes.length > 1 ? 
-                                `<button class="feedback-nav-button" data-frame-id="${frameId}">→</button>` : ''}
+                            ${feedbackTypes.length > 1 ?
+                        `<button class="feedback-nav-button" data-frame-id="${frameId}">→</button>` : ''}
                         </div>
                     </div>
                     <button class="modify-button" data-frame-id="${frameId}">Show Modified Design</button>
@@ -131,7 +143,7 @@ window.addEventListener('message', (event) => {
             });
 
             showPage(0);
-            
+
             // Add event listeners for navigation buttons
             document.querySelectorAll('.feedback-nav-button').forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -139,7 +151,7 @@ window.addEventListener('message', (event) => {
                     navigateFeedback(frameId);
                 });
             });
-            
+
             // Add event listeners for modify buttons
             document.querySelectorAll('.modify-button').forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -158,10 +170,10 @@ window.addEventListener('message', (event) => {
         // Only show modified design when we receive this message
         document.getElementById('feedback-screen').style.display = 'none';
         document.getElementById('modified-design-screen').style.display = 'block';
-        
+
         document.getElementById('original-design-image').src = msg.original;
         document.getElementById('modified-design-image').src = msg.modified;
-        
+
         const modList = document.getElementById('modification-list');
         modList.innerHTML = msg.modifications?.map(mod => `
             <div class="modification">
