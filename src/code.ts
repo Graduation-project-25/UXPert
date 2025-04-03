@@ -202,7 +202,6 @@ figma.ui.onmessage = async (msg) => {
             }) as FeedbackResult;
         
             console.log("API Response:", result); 
-            console.log("Recognition Results:", result.recognition_results);
             const recognitionFeedback = Array.isArray(result.recognition_results) 
             ? result.recognition_results.map(r => ({
                 element_id: r?.element_id ?? "Unknown ID",

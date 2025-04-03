@@ -72,7 +72,7 @@ class Minimalist(HeuristicInterface):
         if self.condition < 2:
             # Step 1: Evaluate white space ratio
             white_space_ratio, white_space_feedback, white_space_failed = self.evaluate_white_space_ratio(elements, screen_width, screen_height)
-            feedback.append(f"White Space Ratio: {white_space_ratio:.2f} - {white_space_feedback}")
+            feedback.append(f"{white_space_ratio:.2f} - {white_space_feedback}")
             if white_space_failed:
                 failed_rules += 1
 
@@ -95,7 +95,7 @@ class Minimalist(HeuristicInterface):
         # Calculate final score (100% - (failed_rules * 33.33%))
         score = max(0, 100 - ((failed_rules / self.total_rules) * 100))
 
-        feedback.append(f"Final Score: {score:.2f}%")
+        feedback.append(f"{score:.2f}%")
 
         self.condition = 0
 

@@ -39,6 +39,8 @@ function showPage(index) {
 }
 
 function getFeedbackTypes(item) {
+    console.log("item.recognitionFeedback");
+    console.log(item.recognitionFeedback);
     return [
         { name: 'Error Prevention', data: item.errorPreventionFeedback, type: 'errorPreventionFeedback' },
         { name: 'Consistency and Standards', data: item.consistencyFeedback, type: 'consistencyFeedback' },
@@ -172,7 +174,7 @@ window.addEventListener('message', (event) => {
                             type: 'request-modified-design',  // Changed from 'show-modified-design'
                             frameId: frameId
                         }
-                    },  '*');
+                    }, '*');
                 });
             });
         }, 300);

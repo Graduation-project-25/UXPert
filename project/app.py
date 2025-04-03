@@ -202,13 +202,6 @@ def process_elements():
                     "Feedback": recognition_results,  
                 }
                 recognition_feedback_list.append(recognition_feedback)  # Store feedback for each element
-                print("************************************************************************")
-                print(element["name"])
-                print(element["width"])
-                print(element["height"])
-                print(recognition_feedback)
-                print("************************************************************************")
-
 
         # Transform minimalist results to match recognition structure with specific keys
         cleaned_minimalist_feedback = []
