@@ -41,10 +41,10 @@ function showPage(index) {
 function getFeedbackTypes(item) {
     return [
         { name: 'Error Prevention', data: item.errorPreventionFeedback, type: 'errorPreventionFeedback' },
-        { name: 'Consistency', data: item.consistencyFeedback, type: 'consistencyFeedback' },
-        { name: 'Error Handling', data: item.errorHandlingFeedback, type: 'errorHandlingFeedback' },
-        { name: 'Minimalism', data: item.minimalistFeedback, type: 'minimalistFeedback' },
-        { name: 'Recognition', data: item.recognitionFeedback, type: 'recognitionFeedback' }
+        { name: 'Consistency and Standards', data: item.consistencyFeedback, type: 'consistencyFeedback' },
+        { name: 'Help Users Recognize, Diagnose, and Recover from Errors', data: item.errorHandlingFeedback, type: 'errorHandlingFeedback' },
+        { name: 'Aesthetic and Minimalist Design', data: item.minimalistFeedback, type: 'minimalistFeedback' },
+        { name: 'Recognition Rather than Recall', data: item.recognitionFeedback, type: 'recognitionFeedback' }
     ].filter(f => f.data && Object.keys(f.data).length > 0);
 }
 
@@ -55,7 +55,7 @@ function renderFeedback(item, feedbackIndex = 0) {
     const currentFeedback = feedbackTypes[feedbackIndex % feedbackTypes.length];
     let html = `<h3>${currentFeedback.name} </h3><div class='divider'></div><ul>`;
 
-    if (currentFeedback.name == "Recognition" && Array.isArray(currentFeedback.data)) {
+    if (currentFeedback.name == "Recognition Rather than Recall" && Array.isArray(currentFeedback.data)) {
         // Handle array feedback (e.g., recognitionFeedback)
         currentFeedback.data.forEach(feedbackItem => {
             html += `
