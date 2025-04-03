@@ -763,7 +763,10 @@ def modify_design():
                 if not all(k in mod for k in ["node_id", "property", "value"]):
                     continue
                 valid_mods.append(mod)
-            
+            print("result :")
+            print (result)
+            print("modifications :")
+            print (modifications)
             return jsonify({
                 "status": "success",
                 "modifications": valid_mods,
