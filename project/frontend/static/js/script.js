@@ -222,5 +222,10 @@ document.getElementById('back-to-feedback-from-mod').onclick = () => {
 };
 
 document.getElementById('close').onclick = () => {
-    parent.postMessage({ pluginMessage: { type: 'close' } }, '*');
+    document.getElementById('processing-screen').style.display = 'none'; 
+    setTimeout(() => {
+        document.getElementById('feedback-screen').style.display = 'block';
+    }, 2000); 
+    
+    parent.postMessage({ pluginMessage: { type: 'close' } }, '*'); 
 };
