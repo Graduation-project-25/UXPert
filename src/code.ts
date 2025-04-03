@@ -218,6 +218,7 @@ figma.ui.onmessage = async (msg) => {
         const serializedNodes = FeatureExtractor.extractElements(frame);
         const user_name = figma.currentUser?.name ?? "Unknown User";
         const design_name = figma.root.name ?? "Untitled Design";
+        
 
         try {
             const result = await ApiService.sendToBackend({
@@ -235,7 +236,15 @@ figma.ui.onmessage = async (msg) => {
             }) as FeedbackResult;
         
             console.log("API Response:", result); 
-        
+            console.log("Recognition Results:", result.recognition_results);
+            const recognitionFeedback = Array.isArray(result.recognition_results) 
+            ? result.recognition_results.map(r => ({
+                element_id: r?.element_id ?? "Unknown ID",
+                element_name: r?.element_name ?? "Unknown Element",
+                feedback: Array.isArray(r?.Feedback) ? r.Feedback.join(", ") : "No recognition feedback"
+              }))
+            : [];
+
             if (result && result.error_prevention_results) {
                 allFeedback.push({
                     frameName: frame.name,
@@ -243,9 +252,11 @@ figma.ui.onmessage = async (msg) => {
                     errorHandlingFeedback: result.error_handling_results?.Feedback ?? "No feedback",
                     minimalistFeedback: result.minimalist_results?.Feedback ?? "No feedback",
                     consistencyFeedback: result.consistency_results?.Feedback ?? "No feedback",
-                    recognitionFeedback: result.recognition_results?.Feedback ?? "No feedback",
+                    recognitionFeedback,
                     screenshot: imageDataUrl
                 });
+                console.log("Sending to UI:", JSON.stringify(allFeedback, null, 2));
+
             } else {
                 console.warn("Missing expected fields in API response.");
             }

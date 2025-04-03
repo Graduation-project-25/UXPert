@@ -19,16 +19,15 @@ from PIL import Image, ImageDraw, ImageFont
 import openai
 from openai import OpenAI 
 import requests
-from flask_limiter import Limiter
+# from flask_limiter import Limiter
 import json 
-from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist  # Added import for Minimalist
 
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
 load_dotenv()  
-openai.api_key = os.getenv("OPENAI_API_KEY")
-print(f"OpenAI Key: {openai.api_key}")
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+# print(f"OpenAI Key: {openai.api_key}")
+# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Add this to your Flask app startup
 try:
     models = openai.models.list()
@@ -254,7 +253,7 @@ def process_elements():
 
 
         print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-        print(recognition_feedback_list)
+        print(feedback_data)
         print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
 
 
@@ -278,7 +277,7 @@ def process_elements():
             # "recognition_results": recognition_feedback_list
         }
         if recognition_feedback_list:  # Add only if there are results
-            feedback_data["recognition_results"] = recognition_feedback_list
+            response_data["recognition_results"] = recognition_feedback_list
 
 
         
