@@ -1,5 +1,6 @@
 import json
 import os
+import textwrap
 import traceback
 import pandas as pd
 from flask import Flask, Response, jsonify, request
@@ -12,24 +13,28 @@ from database.figma_features_repository import FigmaFeaturesRepository
 
 from dotenv import load_dotenv
 import base64, json, traceback
+import re
+from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont
 import openai
 from openai import OpenAI 
 import requests
-# from flask_limiter import Limiter
+from flask_limiter import Limiter
+import json 
+from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist  # Added import for Minimalist
 
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
 load_dotenv()  
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-# print(f"OpenAI Key: {openai.api_key}")
-# client = OpenAI()
-
+openai.api_key = os.getenv("OPENAI_API_KEY")
+print(f"OpenAI Key: {openai.api_key}")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Add this to your Flask app startup
-# try:
-#     models = openai.models.list()
-#     print("Available models:", [m.id for m in models.data])
-# except Exception as e:
-#     print("OpenAI connection failed:", str(e))
+try:
+    models = openai.models.list()
+    print("Available models:", [m.id for m in models.data])
+except Exception as e:
+    print("OpenAI connection failed:", str(e))
 
 figma_repository = FigmaFeaturesRepository()       
 feedback_repository = FeedbackRepository()       
@@ -286,85 +291,403 @@ def process_elements():
         print(f"Error: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
-@app.route('/modify-design', methods=['POST'])
+# @app.route('/modify-design', methods=['POST'])
+# def modify_design():
+#     try:
+#         print("Received modify-design request")  # Debug log
+#         data = request.get_json()
+#         if not data or 'screenshot' not in data or 'elements' not in data:
+#             print("Missing required data")  # Debug log
+#             return jsonify({"error": "Missing required data"}), 400
+
+#         screenshot_b64 = data['screenshot'].split(',')[1]
+#         figma_json = data['elements']
+#         print(f"Elements received: {json.dumps(figma_json, indent=2)[:500]}...")  # Debug log
+
+#         NIELSEN_PROMPT = """Analyze this UI design against the 10 UI/UX Nielsen's heuristics
+#         Return JSON with:
+#         - "issues": [{"heuristic": 1, "element": "button1", "problem": "No loading indicator"}]
+#         - "changes": [{"element": "button1", "property": "color", "new_value": "#3366FF"}]
+#         - "dalle_prompt": "Redesign description for DALL-E"
+#         """
+
+#         print("Calling GPT-4o...")  # Debug log
+#         response = client.chat.completions.create(
+#             model="gpt-4o",
+#             messages=[
+#                 {
+#                     "role": "user", 
+#                     "content": [
+#                         {"type": "text", "text": f"{NIELSEN_PROMPT}\n\nCurrent Design:\n{json.dumps(figma_json)}"},
+#                         {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{screenshot_b64}"}}
+#                     ]
+#                 }
+#             ],
+#             response_format={"type": "json_object"},
+#             max_tokens=2000
+#         )
+        
+#         ai_response = json.loads(response.choices[0].message.content)
+#         print(f"AI Response: {json.dumps(ai_response, indent=2)}")  # Debug log
+
+#         print("Generating DALL-E image...")  # Debug log
+#         img_response = client.images.generate(
+#             model="dall-e-3",
+#             prompt = f"""
+# Create an improved version of THIS EXACT UI DESIGN that fixes the identified heuristic violations.
+# MAINTAIN ALL OF THESE ORIGINAL ELEMENTS:
+# - Color scheme
+# - Layout structure
+# - Typography
+# - Core visual identity
+
+# ONLY MAKE THESE SPECIFIC CHANGES TO IMPROVE USABILITY:
+# {ai_response.get('dalle_prompt')}
+
+# Important constraints:
+# 1. Keep 90% of the original design unchanged
+# 2. Only modify elements that violate heuristics
+# 3. Preserve all branding elements
+# 4. Maintain identical dimensions and proportions
+# """,         
+#             size="1024x1024",
+#             quality="hd"
+#         )
+#         print(f"DALL-E Response: {img_response}")  # Debug log
+#         dalle_url = img_response.data[0].url
+#         image_response = requests.get(dalle_url)
+#         image_bytes = image_response.content
+#         modified_image_b64 = base64.b64encode(image_bytes).decode('utf-8')
+
+       
+#         # Build instructions array
+#         instructions = []
+#         if 'issues' in ai_response:
+#             instructions.extend([f"Heuristic {issue.get('heuristic', '?')}: {issue.get('problem', 'No problem description')}" 
+#                                for issue in ai_response['issues']])
+#         if 'dalle_prompt' in ai_response:
+#             instructions.append(ai_response['dalle_prompt'])
+#         if not instructions:
+#             instructions.append("No specific instructions provided")
+
+#         return jsonify({
+#             "status": "success",
+#             "modified_image": f"data:image/png;base64,{modified_image_b64}",  # Now sending as base64
+#             "modified_json": ai_response.get('changes', []),
+#             "analysis": ai_response.get('issues', []),
+#             "instructions": instructions
+#         })
+
+        
+#     except Exception as e:
+#         print(f"Error: {str(e)}\n{traceback.format_exc()}")  # Debug log
+#         return jsonify({
+#             "error": str(e),
+#             "traceback": traceback.format_exc()
+#         }), 500
+
+# second way 
+# try:
+#     font = ImageFont.load_default()
+# except:
+#     font = None
+
+# def apply_text_modification(draw, x, y, text, font_path="arial.ttf", font_size=12):
+#     """Apply text modification to image"""
+#     try:
+#         font = ImageFont.truetype(font_path, font_size)
+#     except:
+#         font = ImageFont.load_default()
+    
+#     draw.text((x, y), text, fill="#000000", font=font)
+
+# def apply_color_modification(draw, x, y, width, height, color):
+#     """Apply color modification to image"""
+#     try:
+#         if color.startswith("#"):
+#             draw.rectangle([x, y, x+width, y+height], fill=color)
+#         elif color.lower() in ["red", "green", "blue", "yellow"]:
+#             colors = {
+#                 "red": "#FF0000",
+#                 "green": "#00FF00",
+#                 "blue": "#0000FF",
+#                 "yellow": "#FFFF00"
+#             }
+#             draw.rectangle([x, y, x+width, y+height], fill=colors[color.lower()])
+#     except:
+#         print(f"Couldn't apply color: {color}")
+
+# def apply_border_modification(draw, x, y, width, height, border_spec):
+#     """Apply border modification to image"""
+#     try:
+#         if "solid" in border_spec.lower():
+#             color = border_spec.split("solid")[-1].strip()
+#             draw.rectangle([x, y, x+width, y+height], outline=color, width=2)
+#     except:
+#         print(f"Couldn't apply border: {border_spec}")
+
+# @app.route('/modify-design', methods=['POST', 'OPTIONS'])
+# def modify_design():
+#     if request.method == 'OPTIONS':
+#         return Response(status=200)
+    
+#     try:
+#         data = request.get_json()
+#         if not data or 'screenshot' not in data:
+#             return jsonify({"error": "Missing screenshot data"}), 400
+
+#         screenshot_b64 = data['screenshot'].split(',')[-1]
+        
+#         # Step 1: Get precise modification instructions
+#         PROMPT = """Analyze this UI design against Nielsen's 10 heuristics and provide EXACT pixel-level modifications. Return JSON with:
+#         {
+#             "analysis": [{
+#                 "heuristic": "Heuristic name",
+#                 "element": "UI element",
+#                 "problem": "Specific issue",
+#                 "solution": "Precise change needed"
+#             }],
+#             "modifications": [{
+#                 "type": "text/color/border",
+#                 "x": int, "y": int,
+#                 "width": int, "height": int,
+#                 "value": "For text: new text, color: hex code, border: '2px solid #color'",
+#                 "element_id": "optional element identifier"
+#             }]
+#         }"""
+
+#         response = client.chat.completions.create(
+#             model="gpt-4o",
+#             messages=[{
+#                 "role": "user",
+#                 "content": [
+#                     {"type": "text", "text": PROMPT},
+#                     {"type": "image_url", "image_url": {
+#                         "url": f"data:image/png;base64,{screenshot_b64}"
+#                     }}
+#                 ]
+#             }],
+#             response_format={"type": "json_object"},
+#             max_tokens=2000
+#         )
+        
+#         # Parse and validate response
+#         ai_response = json.loads(response.choices[0].message.content)
+#         print("AI Response:", json.dumps(ai_response, indent=2))
+        
+#         if not ai_response.get("modifications"):
+#             raise ValueError("No valid modifications received")
+
+#         # Step 2: Apply modifications precisely
+#         original_img = Image.open(BytesIO(base64.b64decode(screenshot_b64)))
+#         modified_img = original_img.copy()
+#         draw = ImageDraw.Draw(modified_img)
+        
+#         for mod in ai_response["modifications"]:
+#             try:
+#                 if mod["type"] == "text":
+#                     apply_text_modification(
+#                         draw, mod["x"], mod["y"], 
+#                         mod["value"]
+#                     )
+#                 elif mod["type"] == "color":
+#                     apply_color_modification(
+#                         draw, mod["x"], mod["y"],
+#                         mod["width"], mod["height"],
+#                         mod["value"]
+#                     )
+#                 elif mod["type"] == "border":
+#                     apply_border_modification(
+#                         draw, mod["x"], mod["y"],
+#                         mod["width"], mod["height"],
+#                         mod["value"]
+#                     )
+#             except Exception as e:
+#                 print(f"Modification failed: {str(e)}")
+#                 continue
+
+#         # Convert to base64
+#         buffered = BytesIO()
+#         modified_img.save(buffered, format="PNG")
+#         modified_b64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+#         return jsonify({
+#             "status": "success",
+#             "modified_image": f"data:image/png;base64,{modified_b64}",
+#             "analysis": ai_response.get("analysis", []),
+#             "modifications": ai_response.get("modifications", [])
+#         })
+
+#     except Exception as e:
+#         print(f"Error: {str(e)}\n{traceback.format_exc()}")
+#         return jsonify({
+#             "error": str(e),
+#             "traceback": traceback.format_exc()
+#         }), 500
+
+
+
+
+#  the direct gpt-4o image modificaions trial 
+
+# def extract_image_url(text):
+#     """Extract image URL from GPT-4o response"""
+#     # Try to find URL in various formats
+#     url_patterns = [
+#         r'Modified Image:\s*(https?://\S+)',
+#         r'Image URL:\s*(https?://\S+)',
+#         r'(https?://\S+\.(?:png|jpg|jpeg))'
+#     ]
+    
+#     for pattern in url_patterns:
+#         match = re.search(pattern, text)
+#         if match:
+#             return match.group(1)
+#     return None
+
+# @app.route('/modify-design', methods=['POST', 'OPTIONS'])
+# def modify_design():
+#     if request.method == 'OPTIONS':
+#         return Response(status=200)
+    
+#     try:
+#         data = request.get_json()
+#         if not data or 'screenshot' not in data:
+#             return jsonify({"error": "Missing screenshot data"}), 400
+
+#         screenshot_b64 = data['screenshot'].split(',')[-1]
+        
+#         # Enhanced prompt with clear instructions
+#         PROMPT = """Analyze this UI design against Nielsen's 10 usability heuristics and:
+#         1. Generate a modified version with improvements
+#         2. List the specific changes made
+#         3. Provide the modified image URL
+        
+#         Format your response EXACTLY like this:
+        
+#         ### Modified Image ###
+#         [INSERT IMAGE URL HERE]
+        
+#         ### Changes Made ###
+#         - Change 1: [description]
+#         - Change 2: [description]
+#         - etc.
+        
+#         Focus on these heuristics:
+#         1. Visibility of system status
+#         2. Match with real world
+#         3. User control
+#         4. Consistency
+#         5. Error prevention
+#         6. Recognition
+#         7. Flexibility
+#         8. Minimalist design
+#         9. Error recovery
+#         10. Help documentation"""
+
+#         response = client.chat.completions.create(
+#             model="gpt-4o",
+#             messages=[{
+#                 "role": "user",
+#                 "content": [
+#                     {"type": "text", "text": PROMPT},
+#                     {"type": "image_url", "image_url": {
+#                         "url": f"data:image/png;base64,{screenshot_b64}"
+#                     }}
+#                 ]
+#             }],
+#             max_tokens=2000
+#         )
+        
+#         response_text = response.choices[0].message.content
+#         print("AI Response:", response_text)  # Debug output
+        
+#         # Extract image URL
+#         image_url = extract_image_url(response_text)
+#         if not image_url:
+#             raise ValueError("Could not find image URL in AI response")
+        
+#         # Download the image
+#         image_response = requests.get(image_url)
+#         if image_response.status_code != 200:
+#             raise ValueError(f"Failed to download image from {image_url}")
+        
+#         modified_b64 = base64.b64encode(image_response.content).decode('utf-8')
+        
+#         # Extract changes
+#         changes = []
+#         if "### Changes Made ###" in response_text:
+#             changes_section = response_text.split("### Changes Made ###")[1]
+#             changes = [
+#                 line.strip() for line in changes_section.split("\n") 
+#                 if line.startswith("-")
+#             ]
+        
+#         return jsonify({
+#             "status": "success",
+#             "modified_image": f"data:image/png;base64,{modified_b64}",
+#             "changes": changes,
+#             "analysis": response_text
+#         })
+
+#     except Exception as e:
+#         print(f"Error: {str(e)}\n{traceback.format_exc()}")
+#         return jsonify({
+#             "error": str(e),
+#             "traceback": traceback.format_exc(),
+#             "ai_response": response_text if 'response_text' in locals() else None
+#         }), 500
+
+
+@app.route('/modify-design', methods=['POST', 'OPTIONS'])
 def modify_design():
+    if request.method == 'OPTIONS':
+        return Response(status=200)
+    
     try:
-        print("Received modify-design request")  # Debug log
         data = request.get_json()
-        if not data or 'screenshot' not in data or 'elements' not in data:
-            print("Missing required data")  # Debug log
-            return jsonify({"error": "Missing required data"}), 400
+        if not data or 'design_json' not in data:
+            return jsonify({"error": "Missing design data"}), 400
 
-        screenshot_b64 = data['screenshot'].split(',')[1]
-        figma_json = data['elements']
-        print(f"Elements received: {json.dumps(figma_json, indent=2)[:500]}...")  # Debug log
+        design_json = data['design_json']
+        screenshot_b64 = data.get('screenshot', '')
 
-        NIELSEN_PROMPT = """Analyze this UI design against the 10 UI/UX Nielsen's heuristics
-        Return JSON with:
-        - "issues": [{"heuristic": 1, "element": "button1", "problem": "No loading indicator"}]
-        - "changes": [{"element": "button1", "property": "color", "new_value": "#3366FF"}]
-        - "dalle_prompt": "Redesign description for DALL-E"
-        """
+        PROMPT = """Analyze this Figma design JSON and suggest specific modifications to improve it according to 
+        Nielsen's 10 usability heuristics. Return ONLY a JSON array of modification objects with:
+        - "node_id": The target node ID
+        - "property": The property to modify (color, text, size, etc.)
+        - "value": New value
+        - "heuristic": Which heuristic this addresses
+        - "reason": Explanation of the improvement
+        
+        Design JSON: {design_json}""".format(design_json=json.dumps(design_json))
 
-        print("Calling GPT-4o...")  # Debug log
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=[
-                {
-                    "role": "user", 
-                    "content": [
-                        {"type": "text", "text": f"{NIELSEN_PROMPT}\n\nCurrent Design:\n{json.dumps(figma_json)}"},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{screenshot_b64}"}}
-                    ]
-                }
-            ],
-            response_format={"type": "json_object"},
+            messages=[{
+                "role": "user",
+                "content": PROMPT
+            }],
+            response_format={ "type": "json_object" },
             max_tokens=2000
         )
         
-        ai_response = json.loads(response.choices[0].message.content)
-        print(f"AI Response: {json.dumps(ai_response, indent=2)}")  # Debug log
-
-        print("Generating DALL-E image...")  # Debug log
-        img_response = client.images.generate(
-            model="dall-e-3",
-            prompt=f"Redesign this UI to fix Nielsen heuristic violations: {ai_response.get('dalle_prompt', 'Improve UI based on Nielsen heuristics')}",
-            size="1024x1024",
-            quality="hd"
-        )
-        print(f"DALL-E Response: {img_response}")  # Debug log
-        dalle_url = img_response.data[0].url
-        image_response = requests.get(dalle_url)
-        image_bytes = image_response.content
-        modified_image_b64 = base64.b64encode(image_bytes).decode('utf-8')
-
-       
-        # Build instructions array
-        instructions = []
-        if 'issues' in ai_response:
-            instructions.extend([f"Heuristic {issue.get('heuristic', '?')}: {issue.get('problem', 'No problem description')}" 
-                               for issue in ai_response['issues']])
-        if 'dalle_prompt' in ai_response:
-            instructions.append(ai_response['dalle_prompt'])
-        if not instructions:
-            instructions.append("No specific instructions provided")
-
+        modifications = json.loads(response.choices[0].message.content)
+        
         return jsonify({
             "status": "success",
-            "modified_image": f"data:image/png;base64,{modified_image_b64}",  # Now sending as base64
-            "modified_json": ai_response.get('changes', []),
-            "analysis": ai_response.get('issues', []),
-            "instructions": instructions
+            "modifications": modifications.get("changes", []),
+            "original_image": screenshot_b64
         })
 
-        
     except Exception as e:
-        print(f"Error: {str(e)}\n{traceback.format_exc()}")  # Debug log
         return jsonify({
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
-    
+
+
+
 @app.route('/proxy-image')
 def proxy_image():
     try:

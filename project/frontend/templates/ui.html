@@ -8,7 +8,6 @@
     <script src="http://127.0.0.1:3000/static/js/script.js" defer></script>
 </head>
 
-
 <body>
     <div id="splash-screen">
         <h1>
@@ -45,11 +44,10 @@
             <button id="prev" disabled>Previous</button>
             <button id="next" disabled>Next</button>
         </div>
-    <div class="action-buttons">
-          <button id="close">Close</button>
-          <button id="suggest-enhancements" class="button">Suggest Enhancements</button>
-      <button id="show-modified-design" class="button">Show Modified Design</button>
-    </div>
+        <div class="action-buttons">
+            <button id="close">Close</button>
+            <button id="suggest-enhancements" class="button">Suggest Enhancements</button>
+        </div>
     </div>
 
     <!-- Enhancement Suggestions -->
@@ -66,50 +64,33 @@
         <button id="back-to-feedback" class="suggestion-button">Back to Feedback</button>
     </div>
 
-    <!-- Modified Design Screen -->
-     <!-- In your modified-design-screen div -->
-<div class="design-comparison">
-  <div class="design-container">
-      <div class="design-label">Original Design</div>
-      <img id="original-design-image" crossorigin="anonymous" alt="Original">
-  </div>
-  <div class="design-container">
-      <div class="design-label">Modified Design</div>
-      <img id="modified-design-image" crossorigin="anonymous" alt="Modified">
-  </div>
-</div>
-  <div id="modified-design-screen" style="display: none;">
-    <h1>AI-Generated Design Improvements</h1>
-    <p>Based on Nielsen's heuristics, here are suggested improvements for your design:</p>
-    
-    <div class="design-comparison">
-      <div class="design-container">
-        <div class="design-label">Original Design</div>
-        <img id="original-design-image" src="" alt="Original design">
-      </div>
-      <div class="design-container">
-        <div class="design-label">Modified Design</div>
-        <img id="modified-design-image" src="" alt="Modified design">
-      </div>
-    </div>
-    
-    <div class="modification-instructions">
-      <h3>Modification Instructions</h3>
-      <div id="modification-instructions-text"></div>
-    </div>
-    
-    <div class="action-buttons">
-      <button id="back-to-feedback-from-mod" class="action-button">Back to Feedback</button>
-      <button id="apply-changes" class="action-button apply-button">Apply Changes</button>
-      <button id="discard-changes" class="action-button discard-button">Discard Changes</button>
+    <!-- Error Screen -->
+    <div id="error-screen" style="display: none;">
+        <h2>Error Modifying Design</h2>
+        <p id="error-message"></p>
+        <pre id="error-details"></pre>
+        <div id="ai-response-debug" style="white-space: pre-wrap;"></div>
+        <button id="retry-button">Try Again</button>
     </div>
 
-    <div id="modified-designs-container" class="designs-container"></div>
-    <div class="design-navigation">
-        <button id="prev-design">Previous</button>
-        <span id="design-counter">1 of 1</span>
-        <button id="next-design">Next</button>
+    <!-- Modified Design Screen (single, properly contained version) -->
+    <div id="modified-design-screen" style="display: none;">
+        <h1>Design Improvements</h1>
+        <div class="design-comparison">
+            <div class="design-container">
+                <div class="design-label">Original</div>
+                <img id="original-design-image" crossorigin="anonymous" alt="Original">
+            </div>
+            <div class="design-container">
+                <div class="design-label">Modified</div>
+                <img id="modified-design-image" crossorigin="anonymous" alt="Modified">
+            </div>
+        </div>
+        <div class="changes-container">
+            <h3>Changes Made</h3>
+            <ul id="modification-list"></ul>
+        </div>
+        <button id="back-to-feedback-from-mod" class="action-button">Back to Feedback</button>
     </div>
-  </div>
 </body>
 </html>

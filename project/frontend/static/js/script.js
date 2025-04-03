@@ -1,305 +1,35 @@
 let currentPageIndex = 0;
-let currentFeedbackIndex = {};
-let pageCards = {};
-let pageFeedbackData = {};
+const pages = [];
+let modifiedDesigns = [];
+let feedbackData = {}; // Store all feedback data per frame
 
-
-// Splash screen disappears after 2 seconds
+// Initialize UI
 setTimeout(() => {
     document.getElementById('splash-screen').style.display = 'none';
     document.getElementById('initial-screen').style.display = 'block';
-}, 2000);
+}, 4000);
 
+// Start detection handler
 document.getElementById('start').onclick = () => {
     document.getElementById('initial-screen').style.display = 'none';
     document.getElementById('processing-screen').style.display = 'block';
-    document.getElementById('progress-container').style.display = 'block';
-
+    
+    // Start progress animation
     let progress = 0;
-    parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
-
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    
     const progressInterval = setInterval(() => {
-        progress += 5;
-        document.getElementById('progress-bar').value = progress;
-        document.getElementById('progress-text').innerText = `${progress}%`;
-
-        if (progress >= 100) {
-            clearInterval(progressInterval);
-        }
-    }, 1000);
+        progress = Math.min(progress + 5, 90);
+        progressBar.value = progress;
+        progressText.textContent = `${progress}%`;
+    }, 300);
+    
+    parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
 };
 
-document.getElementById('close').onclick = () => {
-    parent.postMessage({ pluginMessage: { type: 'close' } }, '*');
-};
-
-document.getElementById('prev').onclick = () => {
-    if (currentPageIndex > 0) {
-        showPage(currentPageIndex - 1);
-    }
-};
-
-document.getElementById('next').onclick = () => {
-    const pages = document.querySelectorAll('.page-section');
-    if (currentPageIndex < pages.length - 1) {
-        showPage(currentPageIndex + 1);
-    }
-};
-
-document.getElementById('suggest-enhancements').onclick = () => {
-    document.getElementById('feedback-screen').style.display = 'none';
-    document.getElementById('enhancement-screen').style.display = 'block';
-};
-
-document.getElementById('back-to-feedback').onclick = () => {
-    document.getElementById('enhancement-screen').style.display = 'none';
-    document.getElementById('feedback-screen').style.display = 'block';
-};
-
-// window.addEventListener("message", (event) => {
-//     console.log("Received plugin message:", event.data);
-// });
-// Handle modified designs
-// window.addEventListener('message', event => {
-//     const msg = event.data.pluginMessage;
-    
-//     if (msg.type === 'design-modified') {
-//         // Show modified design screen
-//         document.getElementById('feedback-screen').style.display = 'none';
-//         const modScreen = document.getElementById('modified-design-screen');
-//         modScreen.style.display = 'block';
-        
-//         // Display images
-//         document.getElementById('original-design-image').src = msg.original;
-//         document.getElementById('modified-design-image').src = msg.modified;
-        
-//         // Display instructions
-//         document.getElementById('modification-instructions-text').innerHTML = 
-//             `<ul>${msg.instructions.map(i => `<li>${i}</li>`).join('')}</ul>`;
-//     }
-// });
-
-// window.addEventListener('message', (event) => {
-//     const msg = event.data.pluginMessage;
-    
-//     if (msg.type === 'design-modified') {
-//         // Show modified design screen
-//         document.getElementById('feedback-screen').style.display = 'none';
-//         const modScreen = document.getElementById('modified-design-screen');
-//         modScreen.style.display = 'block';
-        
-//         // Display images
-//         document.getElementById('original-design-image').src = msg.original;
-//         document.getElementById('modified-design-image').src = msg.modified;
-        
-//         // Display instructions
-//         const instructionsContainer = document.getElementById('modification-instructions-text');
-//         instructionsContainer.innerHTML = msg.instructions 
-//             ? `<ul>${msg.instructions.map(i => `<li>${i}</li>`).join('')}</ul>`
-//             : '<p>No modification instructions provided</p>';
-//     }
-// });
-
-let modifiedDesigns = [];
-let currentDesignIndex = 0;
-window.addEventListener('message', async (event) => {
-    
-    const msg = event.data.pluginMessage;
-    console.log("Received message:", msg);
-
-    if (!msg) {
-        console.error("No pluginMessage found in event data:", event.data);
-        return;
-    }
-
-    // Handle feedback display
-    if (msg.type === 'collective-feedback') {
-            document.getElementById('processing-screen').style.display = 'none';
-            document.getElementById('feedback-screen').style.display = 'block';
-            const pagesContainer = document.getElementById('pages-container');
-            pagesContainer.innerHTML = '';
-    
-            // Group feedback by frameName (page)
-            const feedbackByPage = {};
-            msg.feedback.forEach(item => {
-                if (!feedbackByPage[item.frameName]) {
-                    feedbackByPage[item.frameName] = [];
-                }
-                const feedbacks = [];
-                ['errorPreventionFeedback', 'consistencyFeedback', 'errorHandlingFeedback', 'minimalistFeedback'].forEach(type => {
-                    if (item[type] && Object.keys(item[type]).length > 0) {
-                        feedbacks.push({ type, data: item[type] });
-                    }
-                });
-                feedbackByPage[item.frameName].push({ screenshot: item.screenshot, feedbacks: feedbacks });
-            });
-    
-            // Create a section for each page
-            Object.keys(feedbackByPage).forEach((pageName, index) => {
-                const pageSection = document.createElement('div');
-                pageSection.className = 'page-section';
-                pageSection.innerHTML = `<h2>${pageName}</h2>`;
-    
-                const feedbackArea = document.createElement('div');
-                feedbackArea.className = 'feedback-area';
-    
-                const screenshot = document.createElement('img');
-                screenshot.src = feedbackByPage[pageName][0].screenshot; // Use the first screenshot
-                screenshot.className = 'screenshot';
-                screenshot.alt = `${pageName} Screenshot`;
-    
-                const contentArea = document.createElement('div');
-                contentArea.className = 'feedback-content';
-    
-                const feedbackDiv = document.createElement('div');
-                feedbackDiv.id = `feedback-${pageName}`;
-    
-                // Initialize with the first feedback
-                if (feedbackByPage[pageName][0].feedbacks.length > 0) {
-                    const firstFeedback = feedbackByPage[pageName][0].feedbacks[0];
-                    let feedbackList = '<ul>';
-                    for (const [issue, solution] of Object.entries(firstFeedback.data)) {
-                        feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
-                    }
-                    feedbackList += '</ul>';
-                    feedbackDiv.innerHTML = `<h3>${firstFeedback.type.replace('Feedback', ' Issues')}</h3><div class='divider'></div>${feedbackList}`;
-                }
-    
-                const navButton = document.createElement('button');
-                navButton.innerHTML = '→'; // Right arrow
-                navButton.className = 'feedback-nav-button';
-                navButton.onclick = () => navigateFeedback(pageName);
-    
-                contentArea.appendChild(feedbackDiv);
-                contentArea.appendChild(navButton);
-    
-                feedbackArea.appendChild(screenshot);
-                feedbackArea.appendChild(contentArea);
-                pageSection.appendChild(feedbackArea);
-                pagesContainer.appendChild(pageSection);
-    
-                // Store feedback data for navigation
-                pageFeedbackData[pageName] = feedbackByPage[pageName][0].feedbacks;
-                if (!currentFeedbackIndex[pageName]) {
-                    currentFeedbackIndex[pageName] = 0;
-                }
-            });
-    
-            // Show the first page
-            showPage(0);
-        }
-    
-    
-    // Handle modified designs
-    else if (msg.type === 'design-modified') {
-        console.log("Design modification data:", {
-            original: msg.original,
-            modified: msg.modified,
-            instructions: msg.instructions
-        });
-
-        // Add to modified designs array
-        modifiedDesigns.push(msg);
-        currentDesignIndex = modifiedDesigns.length - 1;
-        
-        // Show the modified design screen
-        document.getElementById('feedback-screen').style.display = 'none';
-        document.getElementById('modified-design-screen').style.display = 'block';
-        
-        // Display the current design
-        await showModifiedDesign(currentDesignIndex);
-    }
-});
-// Handle back button
-document.getElementById('back-to-feedback-from-mod').addEventListener('click', () => {
-    document.getElementById('modified-design-screen').style.display = 'none';
-    document.getElementById('feedback-screen').style.display = 'block';
-});
-// window.onmessage = (event) => {
-//     const msg = event.data.pluginMessage;
-//     if (!msg) {
-//         console.error("No pluginMessage found in event data:", event.data);
-//         return;
-//     }
-//     if (msg && msg.type === 'collective-feedback') {
-//         document.getElementById('processing-screen').style.display = 'none';
-//         document.getElementById('feedback-screen').style.display = 'block';
-//         const pagesContainer = document.getElementById('pages-container');
-//         pagesContainer.innerHTML = '';
-
-//         // Group feedback by frameName (page)
-//         const feedbackByPage = {};
-//         msg.feedback.forEach(item => {
-//             if (!feedbackByPage[item.frameName]) {
-//                 feedbackByPage[item.frameName] = [];
-//             }
-//             const feedbacks = [];
-//             ['errorPreventionFeedback', 'consistencyFeedback', 'errorHandlingFeedback', 'minimalistFeedback'].forEach(type => {
-//                 if (item[type] && Object.keys(item[type]).length > 0) {
-//                     feedbacks.push({ type, data: item[type] });
-//                 }
-//             });
-//             feedbackByPage[item.frameName].push({ screenshot: item.screenshot, feedbacks: feedbacks });
-//         });
-
-//         // Create a section for each page
-//         Object.keys(feedbackByPage).forEach((pageName, index) => {
-//             const pageSection = document.createElement('div');
-//             pageSection.className = 'page-section';
-//             pageSection.innerHTML = `<h2>${pageName}</h2>`;
-
-//             const feedbackArea = document.createElement('div');
-//             feedbackArea.className = 'feedback-area';
-
-//             const screenshot = document.createElement('img');
-//             screenshot.src = feedbackByPage[pageName][0].screenshot; // Use the first screenshot
-//             screenshot.className = 'screenshot';
-//             screenshot.alt = `${pageName} Screenshot`;
-
-//             const contentArea = document.createElement('div');
-//             contentArea.className = 'feedback-content';
-
-//             const feedbackDiv = document.createElement('div');
-//             feedbackDiv.id = `feedback-${pageName}`;
-
-//             // Initialize with the first feedback
-//             if (feedbackByPage[pageName][0].feedbacks.length > 0) {
-//                 const firstFeedback = feedbackByPage[pageName][0].feedbacks[0];
-//                 let feedbackList = '<ul>';
-//                 for (const [issue, solution] of Object.entries(firstFeedback.data)) {
-//                     feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
-//                 }
-//                 feedbackList += '</ul>';
-//                 feedbackDiv.innerHTML = `<h3>${firstFeedback.type.replace('Feedback', ' Issues')}</h3><div class='divider'></div>${feedbackList}`;
-//             }
-
-//             const navButton = document.createElement('button');
-//             navButton.innerHTML = '→'; // Right arrow
-//             navButton.className = 'feedback-nav-button';
-//             navButton.onclick = () => navigateFeedback(pageName);
-
-//             contentArea.appendChild(feedbackDiv);
-//             contentArea.appendChild(navButton);
-
-//             feedbackArea.appendChild(screenshot);
-//             feedbackArea.appendChild(contentArea);
-//             pageSection.appendChild(feedbackArea);
-//             pagesContainer.appendChild(pageSection);
-
-//             // Store feedback data for navigation
-//             pageFeedbackData[pageName] = feedbackByPage[pageName][0].feedbacks;
-//             if (!currentFeedbackIndex[pageName]) {
-//                 currentFeedbackIndex[pageName] = 0;
-//             }
-//         });
-
-//         // Show the first page
-//         showPage(0);
-//     }
-// };
-
+// Navigation functions
 function showPage(index) {
-    const pages = document.querySelectorAll('.page-section');
     pages.forEach((page, i) => {
         page.style.display = i === index ? 'block' : 'none';
     });
@@ -308,108 +38,163 @@ function showPage(index) {
     document.getElementById('next').disabled = currentPageIndex === pages.length - 1;
 }
 
-function navigateFeedback(pageName) {
-    const feedbacks = pageFeedbackData[pageName];
-    let currentIndex = currentFeedbackIndex[pageName];
-    currentIndex = (currentIndex + 1) % feedbacks.length;
-    currentFeedbackIndex[pageName] = currentIndex;
-
-    const feedbackDiv = document.getElementById(`feedback-${pageName}`);
-    const feedback = feedbacks[currentIndex];
-    let feedbackList = '<ul>';
-    for (const [issue, solution] of Object.entries(feedback.data)) {
-        feedbackList += `<li><strong>${issue}:</strong> ${solution}</li>`;
-    }
-    feedbackList += '</ul>';
-    feedbackDiv.innerHTML = `<h3>${feedback.type.replace('Feedback', ' Issues')}</h3><div class='divider'></div>${feedbackList}`;
+function getFeedbackTypes(item) {
+    return [
+        { name: 'Error Prevention', data: item.errorPreventionFeedback, type: 'errorPreventionFeedback' },
+        { name: 'Consistency', data: item.consistencyFeedback, type: 'consistencyFeedback' },
+        { name: 'Error Handling', data: item.errorHandlingFeedback, type: 'errorHandlingFeedback' },
+        { name: 'Minimalism', data: item.minimalistFeedback, type: 'minimalistFeedback' },
+        { name: 'Recognition', data: item.recognitionFeedback, type: 'recognitionFeedback' }
+    ].filter(f => f.data && Object.keys(f.data).length > 0);
 }
 
-// Enable arrow key navigation for pages
-window.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowLeft') {
-        document.getElementById('prev').click();
-    } else if (event.key === 'ArrowRight') {
-        document.getElementById('next').click();
+function renderFeedback(item, feedbackIndex = 0) {
+    const feedbackTypes = getFeedbackTypes(item);
+    if (feedbackTypes.length === 0) return '<p>No feedback available</p>';
+    
+    const currentFeedback = feedbackTypes[feedbackIndex % feedbackTypes.length];
+    let html = `<h3>${currentFeedback.name} Issues</h3><div class='divider'></div><ul>`;
+    
+    for (const [issue, solution] of Object.entries(currentFeedback.data)) {
+        html += `<li><strong>${issue}:</strong> ${solution}</li>`;
     }
-});
-document.getElementById('back-to-feedback-from-mod').addEventListener('click', () => {
-    document.getElementById('modified-design-screen').style.display = 'none';
-    document.getElementById('feedback-screen').style.display = 'block';
-});
-
-document.getElementById('apply-changes').addEventListener('click', () => {
-    parent.postMessage({ 
-        pluginMessage: { 
-            type: 'apply-changes' 
-        } 
-    }, '*');
-});
-
-document.getElementById('discard-changes').addEventListener('click', () => {
-    document.getElementById('modified-design-screen').style.display = 'none';
-    document.getElementById('feedback-screen').style.display = 'block';
-});
-
-// ... in the message handler ...
-if (msg.type === 'design-modified') {
-    modifiedDesigns.push(msg);
-    showModifiedDesign(currentDesignIndex);
+    html += '</ul>';
+    
+    return html;
 }
 
-async function showModifiedDesign(index) {
-    const design = modifiedDesigns[index];
+function navigateFeedback(frameId) {
+    if (!feedbackData[frameId]) return;
     
-    // Set original image
-    document.getElementById('original-design-image').src = design.original;
+    feedbackData[frameId].currentFeedbackIndex = 
+        (feedbackData[frameId].currentFeedbackIndex + 1) % feedbackData[frameId].feedbackTypes.length;
     
-    // Handle modified image (could be URL or base64)
-    const modifiedImg = document.getElementById('modified-design-image');
-    if (design.modified.startsWith('data:image')) {
-        modifiedImg.src = design.modified;
-    } else {
-        try {
-            // Use our proxy endpoint
-            const proxyUrl = `http://localhost:3000/proxy-image?url=${encodeURIComponent(design.modified)}`;
-            const response = await fetch(proxyUrl);
-            const blob = await response.blob();
-            modifiedImg.src = URL.createObjectURL(blob);
-        } catch (error) {
-            console.error("Failed to load modified image:", error);
-            modifiedImg.src = '';
-            modifiedImg.alt = 'Failed to load modified design';
-        }
+    const feedbackDiv = document.getElementById(`feedback-${frameId}`);
+    if (feedbackDiv) {
+        feedbackDiv.innerHTML = renderFeedback(
+            feedbackData[frameId].item, 
+            feedbackData[frameId].currentFeedbackIndex
+        );
     }
-    
-    // Set instructions
-    const instructionsContainer = document.getElementById('modification-instructions-text');
-    if (design.instructions && design.instructions.length > 0) {
-        instructionsContainer.innerHTML = `<ul>${
-            design.instructions.map(i => `<li>${i}</li>`).join('')
-        }</ul>`;
-    } else {
-        instructionsContainer.innerHTML = '<p>No modification instructions provided</p>';
-    }
-    
-    // Update navigation
-    document.getElementById('design-counter').textContent = 
-        `${index + 1} of ${modifiedDesigns.length}`;
-    document.getElementById('prev-design').disabled = index <= 0;
-    document.getElementById('next-design').disabled = index >= modifiedDesigns.length - 1;
 }
+
+// Message handling
+window.addEventListener('message', (event) => {
+    const msg = event.data.pluginMessage;
+    if (!msg) return;
+
+    if (msg.type === 'collective-feedback') {
+        // Complete progress bar
+        document.getElementById('progress-bar').value = 100;
+        document.getElementById('progress-text').textContent = '100%';
+        
+        // Show feedback screen
+        setTimeout(() => {
+            document.getElementById('processing-screen').style.display = 'none';
+            document.getElementById('feedback-screen').style.display = 'block';
+            
+            const pagesContainer = document.getElementById('pages-container');
+            pagesContainer.innerHTML = '';
+            pages.length = 0;
+            feedbackData = {};
+            
+            msg.feedback.forEach((item, index) => {
+                const frameId = item.frameId || `frame-${index}`;
+                const feedbackTypes = getFeedbackTypes(item);
+                
+                // Store feedback data for navigation
+                feedbackData[frameId] = {
+                    item,
+                    feedbackTypes,
+                    currentFeedbackIndex: 0
+                };
+                
+                const pageSection = document.createElement('div');
+                pageSection.className = 'page-section';
+                pageSection.style.display = index === 0 ? 'block' : 'none';
+                pageSection.innerHTML = `
+                    <h2>${item.frameName}</h2>
+                    <div class="feedback-area">
+                        <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
+                        <div class="feedback-content">
+                            <div id="feedback-${frameId}">
+                                ${renderFeedback(item)}
+                            </div>
+                            ${feedbackTypes.length > 1 ? 
+                                `<button class="feedback-nav-button" data-frame-id="${frameId}">→</button>` : ''}
+                        </div>
+                    </div>
+                    <button class="modify-button" data-frame-id="${frameId}">Show Modified Design</button>
+                `;
+                pagesContainer.appendChild(pageSection);
+                pages.push(pageSection);
+            });
+
+            showPage(0);
+            
+            // Add event listeners for navigation buttons
+            document.querySelectorAll('.feedback-nav-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const frameId = e.currentTarget.getAttribute('data-frame-id');
+                    navigateFeedback(frameId);
+                });
+            });
+            
+            // Add event listeners for modify buttons
+            document.querySelectorAll('.modify-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const frameId = e.currentTarget.getAttribute('data-frame-id');
+                    parent.postMessage({
+                        pluginMessage: {
+                            type: 'show-modified-design',
+                            frameId: frameId
+                        }
+                    }, '*');
+                });
+            });
+        }, 300);
+    }
+    else if (msg.type === 'design-modified') {
+        document.getElementById('feedback-screen').style.display = 'none';
+        document.getElementById('modified-design-screen').style.display = 'block';
+        
+        document.getElementById('original-design-image').src = msg.original;
+        document.getElementById('modified-design-image').src = msg.modified;
+        
+        const modList = document.getElementById('modification-list');
+        modList.innerHTML = msg.modifications?.map(mod => `
+            <div class="modification">
+                <h4>${mod.heuristic || 'Improvement'}</h4>
+                <p><strong>Element:</strong> ${mod.node_id}</p>
+                <p><strong>Change:</strong> ${mod.property} → ${mod.value}</p>
+                <p><strong>Reason:</strong> ${mod.reason}</p>
+            </div>
+        `).join('') || '<p>No modifications details available</p>';
+    }
+});
 
 // Navigation buttons
-document.getElementById('prev-design').addEventListener('click', () => {
-    if (currentDesignIndex > 0) {
-        showModifiedDesign(--currentDesignIndex);
-    }
-});
+document.getElementById('prev').onclick = () => showPage(currentPageIndex - 1);
+document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
-document.getElementById('next-design').addEventListener('click', () => {
-    if (currentDesignIndex < modifiedDesigns.length - 1) {
-        showModifiedDesign(++currentDesignIndex);
-    }
-});
-setTimeout(() => {
-    document.getElementById('splash-screen').style.display = 'none';
-    document.getElementById('initial-screen').style.display = 'block';
-}, 2000);
+// Screen transitions
+document.getElementById('suggest-enhancements').onclick = () => {
+    document.getElementById('feedback-screen').style.display = 'none';
+    document.getElementById('enhancement-screen').style.display = 'block';
+};
+
+document.getElementById('back-to-feedback').onclick = () => {
+    document.getElementById('enhancement-screen').style.display = 'none';
+    document.getElementById('feedback-screen').style.display = 'block';
+    showPage(currentPageIndex);
+};
+
+document.getElementById('back-to-feedback-from-mod').onclick = () => {
+    document.getElementById('modified-design-screen').style.display = 'none';
+    document.getElementById('feedback-screen').style.display = 'block';
+    showPage(currentPageIndex);
+};
+
+document.getElementById('close').onclick = () => {
+    parent.postMessage({ pluginMessage: { type: 'close' } }, '*');
+};
