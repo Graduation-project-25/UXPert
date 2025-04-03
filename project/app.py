@@ -246,16 +246,9 @@ def process_elements():
             "consistency_results": consistency_results,
             "error_handling_results": error_handling_results,
             "minimalist_results": minimalist_feedback,  
-            # "recognition_results": recognition_feedback_list
         }
         if recognition_feedback_list:  # Add only if there are results
             feedback_data["recognition_results"] = recognition_feedback_list
-
-
-        print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-        print(feedback_data)
-        print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-
 
         # Update feedback in database
         update_result = feedback_repository.update_feedback(design_name, frame_name, feedback_data)
