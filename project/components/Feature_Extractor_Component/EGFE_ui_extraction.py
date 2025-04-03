@@ -50,13 +50,11 @@ class EGFE_FeatureExtraction(FeatureExtractorInterface):
     def get_icons_and_texts(self, data):
         icons = []
         text_elements = []
-
         for layer in data.get('layers', []):
             if layer.get('_class', '') == 'symbolInstance':
                 icons.append(layer)
             elif layer.get('_class', '') == 'text':
                 text_elements.append(layer)
-
         return icons, text_elements
 
     def is_icon_labeled(self, icon, text_elements, threshold=50):
@@ -81,21 +79,21 @@ class EGFE_FeatureExtraction(FeatureExtractorInterface):
                 text_y >= shape_y and text_y + text_h <= shape_y + shape_h)
     
 
-    def classify_shapes_as_buttons(layers):
-        buttons = []
+    # def classify_shapes_as_buttons(layers):
+    #     buttons = []
         
-        shapes = [layer for layer in layers if layer["_class"] in ["oval", "rectangle"]]
-        texts = [layer for layer in layers if layer["_class"] == "text"]
+    #     shapes = [layer for layer in layers if layer["_class"] in ["oval", "rectangle"]]
+    #     texts = [layer for layer in layers if layer["_class"] == "text"]
         
-        for shape in shapes:
-            for text in texts:
-                if is_overlapping(shape, text):
-                    shape["_class"] = "button"  # Convert shape to button
-                    buttons.append({
-                        "id": shape["id"],
-                        "name": shape["name"],
-                        "text": text["text"]
-                    })
+    #     for shape in shapes:
+    #         for text in texts:
+    #             if is_overlapping(shape, text):
+    #                 shape["_class"] = "button"  # Convert shape to button
+    #                 buttons.append({
+    #                     "id": shape["id"],
+    #                     "name": shape["name"],
+    #                     "text": text["text"]
+    #                 })
         
-        return buttons
+    #     return buttons
 
