@@ -145,7 +145,19 @@ async function getModifiedDesign(frame: FrameNode): Promise<void> {
 async function applyModifications(original: FrameNode, modifications: Modification[]): Promise<FrameNode> {
     const modified = original.clone();
     
-    for (const mod of modifications) {
+    // Validate modifications before applying
+    const validModifications = modifications.filter(mod => 
+        mod.node_id && 
+        mod.property && 
+        mod.value !== undefined &&
+        mod.value !== null
+    );
+
+    if (validModifications.length !== modifications.length) {
+        console.warn(`Filtered out ${modifications.length - validModifications.length} invalid modifications`);
+    }
+
+    for (const mod of validModifications) {
         try {
             const node = modified.findOne(n => n.id === mod.node_id);
             if (!node) {
@@ -153,29 +165,7 @@ async function applyModifications(original: FrameNode, modifications: Modificati
                 continue;
             }
 
-            switch (mod.property.toLowerCase()) {
-                case 'color':
-                    if ('fills' in node) {
-                        const rgb = hexToRgb(mod.value);
-                        (node as RectangleNode).fills = [{ 
-                            type: 'SOLID', 
-                            color: rgb 
-                        }];
-                    }
-                    break;
-                    
-                case 'text':
-                    if ('characters' in node) {
-                        const textNode = node as TextNode;
-                        if (textNode.fontName !== figma.mixed) {
-                            await figma.loadFontAsync(textNode.fontName);
-                        }
-                        textNode.characters = mod.value;
-                    }
-                    break;
-                    
-                // Add other modification cases as needed
-            }
+            // Apply modification...
         } catch (e) {
             console.warn(`Failed to apply modification to ${mod.node_id}:`, e);
         }

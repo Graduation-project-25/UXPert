@@ -25,10 +25,10 @@ import json
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
 load_dotenv()  
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-# print(f"OpenAI Key: {openai.api_key}")
-# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-# Add this to your Flask app startup
+openai.api_key = os.getenv("OPENAI_API_KEY")
+print(f"OpenAI Key: {openai.api_key}")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 try:
     models = openai.models.list()
     print("Available models:", [m.id for m in models.data])
@@ -644,80 +644,112 @@ def modify_design():
         design_json = data['design_json']
         screenshot_b64 = data.get('screenshot', '')
 
-        # Enhanced prompt with specific instructions
-        PROMPT = """You are a UI/UX expert analyzing a design against Nielsen's 10 usability heuristics. 
-        Carefully examine the provided design JSON and identify specific improvements needed.
+        # Safely extract elements list
+        try:
+            elements = design_json.get('elements', [])
+            if isinstance(elements, dict):  # Handle case where elements might be a dict
+                elements = list(elements.values())
+            elements_list = ", ".join([f"{e.get('name', 'unnamed')} ({e.get('type', 'no type')})" 
+                                     for e in elements[:5]]) + ("..." if len(elements) > 5 else "")
+        except Exception as e:
+            print(f"Error processing elements: {str(e)}")
+            elements_list = "Design elements"
 
-        For each issue you find:
-        1. Specify the exact node_id from the design JSON
-        2. Name the specific property to modify (color, text, size, etc.)
-        3. Provide the exact new value
-        4. Explain which heuristic this addresses
-        5. Give a clear reason for the change
+        # Enhanced prompt with safe formatting
+        PROMPT = """You are a UI/UX expert analyzing a Figma design against Nielsen's 10 usability heuristics. 
+        Provide 3-5 specific modifications that would improve the design.
 
-        Return a JSON response with this structure:
+        Return JSON with this EXACT structure:
         {
-            "modifications": [
-                {
-                    "node_id": "I123:45",
-                    "property": "color",
-                    "value": "#4285F4",
-                    "heuristic": "Consistency",
-                    "reason": "Primary buttons should use the brand's primary color consistently"
-                },
-                {
-                    "node_id": "I456:78",
-                    "property": "text",
-                    "value": "Submit Order",
-                    "heuristic": "Match with real world",
-                    "reason": "The label should use familiar terms that match user mental models"
-                }
-            ]
+            "modifications": [{
+                "node_id": "MUST match an element ID from the design",
+                "property": "color|textContent|width|height|position.x|position.y",
+                "value": "new value appropriate for the property",
+                "heuristic": "Which heuristic this addresses",
+                "reason": "How this improves usability"
+            }],
+            "summary": "Brief overall assessment"
         }
 
-        Design JSON:
-        {design_json}""".format(design_json=json.dumps(design_json, indent=2))
+        Important Rules:
+        1. Only suggest changes to existing properties
+        2. For colors: use hex format (#RRGGBB)
+        3. For text: keep under 50 characters
+        4. For sizes: maintain reasonable proportions"""
 
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{
                 "role": "system",
-                "content": "You are a UI/UX expert specializing in applying Nielsen's heuristics to improve designs."
+                "content": "You are a Figma design expert. Return ONLY valid JSON with the exact specified structure."
             }, {
                 "role": "user",
                 "content": PROMPT
             }],
-            response_format={ "type": "json_object" },
-            temperature=0.7,  # Slightly more creative
+            response_format={"type": "json_object"},
+            temperature=0.3,
             max_tokens=2000
         )
         
         # Parse and validate response
-        result = json.loads(response.choices[0].message.content)
-        modifications = result.get("modifications", [])
-        
-        if not modifications:
-            # If no modifications found, provide a default response that makes sense
-            modifications = [{
-                "node_id": "N/A",
-                "property": "N/A",
-                "value": "N/A",
-                "heuristic": "N/A",
-                "reason": "The design already follows Nielsen's heuristics well. No modifications needed."
-            }]
+        response_content = response.choices[0].message.content
+        print("Raw AI Response:", response_content)
 
-        return jsonify({
-            "status": "success",
-            "modifications": modifications,
-            "original_image": screenshot_b64
-        })
+        try:
+            # Clean response
+            cleaned_response = re.sub(r'```(json)?|```', '', response_content).strip()
+            result = json.loads(cleaned_response)
+            
+            # Validate response
+            if not isinstance(result, dict):
+                raise ValueError("Response is not a JSON object")
+                
+            modifications = result.get("modifications", [])
+            if not modifications:
+                return jsonify({
+                    "status": "success",
+                    "message": "No modifications suggested",
+                    "modifications": []
+                })
+                
+            # Validate each modification
+            valid_mods = []
+            for mod in modifications:
+                if not all(k in mod for k in ["node_id", "property", "value"]):
+                    continue
+                valid_mods.append(mod)
+            
+            return jsonify({
+                "status": "success",
+                "modifications": valid_mods,
+                "summary": result.get("summary", ""),
+                "original_image": screenshot_b64
+            })
+
+        except json.JSONDecodeError as e:
+            print(f"JSON Parse Error: {str(e)}")
+            return jsonify({
+                "error": "Invalid JSON from AI",
+                "ai_response": response_content,
+                "traceback": str(e)
+            }), 500
 
     except Exception as e:
+        print(f"Error: {str(e)}\n{traceback.format_exc()}")
         return jsonify({
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
 
+def rgb_to_hex(rgb_dict):
+    """Convert RGB dictionary to hex string"""
+    try:
+        r = int(rgb_dict.get('r', 0) * 255)
+        g = int(rgb_dict.get('g', 0) * 255)
+        b = int(rgb_dict.get('b', 0) * 255)
+        return "#{:02x}{:02x}{:02x}".format(r, g, b)
+    except:
+        return "#000000"
 @app.route('/proxy-image')
 def proxy_image():
     try:
