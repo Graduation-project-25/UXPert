@@ -146,15 +146,16 @@ window.addEventListener('message', (event) => {
                     const frameId = e.currentTarget.getAttribute('data-frame-id');
                     parent.postMessage({
                         pluginMessage: {
-                            type: 'show-modified-design',
+                            type: 'request-modified-design',  // Changed from 'show-modified-design'
                             frameId: frameId
                         }
-                    }, '*');
+                    },  '*');
                 });
             });
         }, 300);
     }
     else if (msg.type === 'design-modified') {
+        // Only show modified design when we receive this message
         document.getElementById('feedback-screen').style.display = 'none';
         document.getElementById('modified-design-screen').style.display = 'block';
         
