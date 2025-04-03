@@ -6,6 +6,7 @@ import pandas as pd
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 import app
+from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from database.feedback_repository import FeedbackRepository
 from database.figma_features_repository import FigmaFeaturesRepository
@@ -43,10 +44,37 @@ feedback_repository = FeedbackRepository()
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
+####################To Be Removed (DB)####################
+# Define output folder
+data_folder = "figma_features"
+output_folder = data_folder + "/extracted"
+evaluation_folder = data_folder + "/evaluation"
+
+dataset_folder = './data/raw/EGFE'
+main_output_folder = dataset_folder + '/extractedFeatures'
+# test_folder = main_output_folder + '/test'
+if not os.path.exists(data_folder):
+    os.makedirs(data_folder)
+    print(f"Created folder: {data_folder}")
+  # Ensure the folder exists
+os.makedirs(output_folder, exist_ok=True)  # Ensure the folder exists
+os.makedirs(evaluation_folder, exist_ok=True)  # Ensure the folder exists
+
+def get_new_filename():
+    """Generate a unique filename based on existing files in the extracted folder."""
+    existing_files = [f for f in os.listdir(output_folder) if f.endswith(".json")]
+    count = len(existing_files)  # Count current files and use it for a new filename
+    return os.path.join(output_folder, f"design_{count + 1}.json")
+
+def clean_prefix(text):
+    """Remove numeric prefixes like '0:' or '1:' from text."""
+    return re.sub(r'^\d+:\s*', '', str(text))
+
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
     if request.method == 'OPTIONS':
         return '', 200  
+    # print("Raw request body:", request.data)
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data received"}), 400
@@ -66,6 +94,23 @@ def process_elements():
     #Convert Elements to DataFrame
     elements_df = pd.DataFrame(elements)
     print(elements_df)
+
+    ####################To Be Removed (DB)####################
+    # Fetch Latest Minimalist Evaluation
+    def get_latest_minimalist_results():
+        """Fetch the latest minimalist evaluation results from the evaluation folder."""
+        minimalist_file = os.path.join(evaluation_folder, "minimalist_evaluation.json")
+        print(minimalist_file)
+        if os.path.exists(minimalist_file):
+            with open(minimalist_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            for key, elements in data.items():
+                for element in elements:  
+                    evaluation = element.get('evaluation', None)
+                    return evaluation
+
+        return {}  # Return an empty dictionary if the file is missing
+    ##########################################################
 
     try:
         # Prepare feature data
@@ -111,6 +156,25 @@ def process_elements():
 
         elements_db = pd.DataFrame(elements_list)
 
+        # Convert elements into the expected format for heuristic evaluation
+        designs_for_evaluation = [{"elements": elements_db}]
+
+        ####################To Be Removed (DB)####################
+        output_data = {
+            "screen_size": frame_info,  
+            "elements": elements,
+        }
+        output_file = get_new_filename()
+        with open(output_file, "w", encoding="utf-8") as json_file:
+            json.dump(output_data, json_file, indent=4, ensure_ascii=False)
+
+        frame_data = latest_saved_data.get("frames", [])
+        if frame_data:
+            elements_df = pd.DataFrame(frame_data[0].get("elements", []))
+        else:
+            return jsonify({"error": "No elements found in the retrieved frame data"}), 500
+        ###########################################################
+
         # Run heuristic evaluations
         # Get screen width and height
         screen_width = frame_info["screen_width"]  
@@ -145,6 +209,56 @@ def process_elements():
                 print(recognition_feedback)
                 print("************************************************************************")
 
+
+        # Transform minimalist results to match recognition structure with specific keys
+        cleaned_minimalist_feedback = []
+        if isinstance(minimalist_results, dict):
+            # Map dictionary keys to specific labels
+            for key, value in minimalist_results.items():
+                cleaned_key = clean_prefix(key)
+                if "white space" in cleaned_key.lower():
+                    issue = "White Space Ratio"
+                elif "elements" in cleaned_key.lower() and "irrelevant" not in cleaned_key.lower():
+                    issue = "Number of Elements"
+                elif "irrelevant" in cleaned_key.lower():
+                    issue = "Irrelevant Elements"
+                elif "score" in cleaned_key.lower():
+                    issue = "Score"
+                else:
+                    issue = cleaned_key
+                cleaned_minimalist_feedback.append({
+                    "issue": issue,
+                    "feedback": clean_prefix(value) if isinstance(value, str) else str(value)
+                })
+        elif isinstance(minimalist_results, list):
+            # Map list items to specific labels based on content
+            for i, item in enumerate(minimalist_results):
+                if isinstance(item, str):
+                    cleaned_item = clean_prefix(item)
+                    if "white space" in cleaned_item.lower():
+                        issue = "White Space Ratio"
+                    elif "elements" in cleaned_item.lower() and "irrelevant" not in cleaned_item.lower():
+                        issue = "Number of Elements"
+                    elif "irrelevant" in cleaned_item.lower():
+                        issue = "Irrelevant Elements"
+                    elif "score" in cleaned_item.lower():
+                        issue = "Score"
+                    else:
+                        issue = "Feedback"  # Fallback for unrecognized items
+                    cleaned_minimalist_feedback.append({
+                        "issue": issue,
+                        "feedback": cleaned_item
+                    })
+                elif isinstance(item, dict):
+                    cleaned_minimalist_feedback.append({
+                        "issue": clean_prefix(item.get('issue', '')),
+                        "feedback": clean_prefix(item.get('feedback', '')) if isinstance(item.get('feedback'), str) else str(item.get('feedback', ''))
+                    })
+        else:
+            cleaned_minimalist_feedback.append({
+                "issue": "Score",
+                "feedback": clean_prefix(str(minimalist_results))
+            })
 
         # Prepare human-readable feedback
         consistency_feedback = {
@@ -661,11 +775,10 @@ def proxy_image():
                       content_type=response.headers['Content-Type'])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 @app.route('/', methods=['GET'])
 def home():
     return "Welcome to the Flask server!", 200
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
-
-
