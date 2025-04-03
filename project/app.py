@@ -644,31 +644,71 @@ def modify_design():
         design_json = data['design_json']
         screenshot_b64 = data.get('screenshot', '')
 
-        PROMPT = """Analyze this Figma design JSON and suggest specific modifications to improve it according to 
-        Nielsen's 10 usability heuristics. Return ONLY a JSON array of modification objects with:
-        - "node_id": The target node ID
-        - "property": The property to modify (color, text, size, etc.)
-        - "value": New value
-        - "heuristic": Which heuristic this addresses
-        - "reason": Explanation of the improvement
-        
-        Design JSON: {design_json}""".format(design_json=json.dumps(design_json))
+        # Enhanced prompt with specific instructions
+        PROMPT = """You are a UI/UX expert analyzing a design against Nielsen's 10 usability heuristics. 
+        Carefully examine the provided design JSON and identify specific improvements needed.
+
+        For each issue you find:
+        1. Specify the exact node_id from the design JSON
+        2. Name the specific property to modify (color, text, size, etc.)
+        3. Provide the exact new value
+        4. Explain which heuristic this addresses
+        5. Give a clear reason for the change
+
+        Return a JSON response with this structure:
+        {
+            "modifications": [
+                {
+                    "node_id": "I123:45",
+                    "property": "color",
+                    "value": "#4285F4",
+                    "heuristic": "Consistency",
+                    "reason": "Primary buttons should use the brand's primary color consistently"
+                },
+                {
+                    "node_id": "I456:78",
+                    "property": "text",
+                    "value": "Submit Order",
+                    "heuristic": "Match with real world",
+                    "reason": "The label should use familiar terms that match user mental models"
+                }
+            ]
+        }
+
+        Design JSON:
+        {design_json}""".format(design_json=json.dumps(design_json, indent=2))
 
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{
+                "role": "system",
+                "content": "You are a UI/UX expert specializing in applying Nielsen's heuristics to improve designs."
+            }, {
                 "role": "user",
                 "content": PROMPT
             }],
             response_format={ "type": "json_object" },
+            temperature=0.7,  # Slightly more creative
             max_tokens=2000
         )
         
-        modifications = json.loads(response.choices[0].message.content)
+        # Parse and validate response
+        result = json.loads(response.choices[0].message.content)
+        modifications = result.get("modifications", [])
         
+        if not modifications:
+            # If no modifications found, provide a default response that makes sense
+            modifications = [{
+                "node_id": "N/A",
+                "property": "N/A",
+                "value": "N/A",
+                "heuristic": "N/A",
+                "reason": "The design already follows Nielsen's heuristics well. No modifications needed."
+            }]
+
         return jsonify({
             "status": "success",
-            "modifications": modifications.get("changes", []),
+            "modifications": modifications,
             "original_image": screenshot_b64
         })
 
@@ -677,8 +717,6 @@ def modify_design():
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
-
-
 
 @app.route('/proxy-image')
 def proxy_image():

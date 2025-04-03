@@ -91,7 +91,7 @@ export class FeatureExtractor {
             let color = { r: 0, g: 0, b: 0 };
             let buttonText = "";
             let clickDestination: string = "None";
-
+            
             // Process fills to extract color or image details
             if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
                 const firstFill = node.fills[0];
@@ -139,6 +139,7 @@ export class FeatureExtractor {
 
             // Recursively process children nodes (if any)
             if ('children' in node && ["FRAME", "GROUP", "INSTANCE", "VECTOR"].includes(node.type)) {
+                
                 for (const child of node.children) {
                     await processNode(child as SceneNode);
                 }
