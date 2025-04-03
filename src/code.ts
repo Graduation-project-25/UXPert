@@ -79,8 +79,199 @@ interface ModifiedDesign {
 // Track modified designs
 const modifiedDesigns = new Map<string, ModifiedDesign>();
 
+async function renderModifiedDesign(original: FrameNode, modifiedJson: any): Promise<FrameNode> {
+    // Create frame with proper dimensions
+    const modifiedFrame = figma.createFrame();
+    modifiedFrame.name = `Modified ${original.name}`;
+    modifiedFrame.resize(original.width, original.height);
+    modifiedFrame.fills = []; // Transparent background
+    
+    // Create all elements
+    const nodesMap = new Map<string, SceneNode>();
+    for (const element of modifiedJson.elements) {
+        let node: SceneNode | null = null;
+        
+        try {
+            switch (element.type) {
+                case 'RECTANGLE':
+                    node = figma.createRectangle();
+                    if (element.cornerRadius && 'cornerRadius' in node) {
+                        (node as RectangleNode).cornerRadius = element.cornerRadius;
+                    }
+                    break;
+                    
+                case 'TEXT':
+                    node = figma.createText();
+                    await figma.loadFontAsync({ family: "Inter", style: "Regular" });
+                    (node as TextNode).characters = element.text || "";
+                    break;
+                    
+                case 'FRAME':
+                    node = figma.createFrame();
+                    break;
+                    
+                case 'ELLIPSE':
+                    node = figma.createEllipse();
+                    break;
+                    
+                case 'LINE':
+                    node = figma.createLine();
+                    break;
+                    
+                case 'VECTOR':
+                    node = figma.createVector();
+                    break;
+                    
+                case 'INSTANCE':
+                case 'COMPONENT':
+                case 'symbolInstance':
+                    // Try to find the main component by name if ID isn't available
+                    let mainComponent: ComponentNode | null = null;
+                    if (element.mainComponentId) {
+                        const foundNode = figma.getNodeById(element.mainComponentId);
+                        if (foundNode && foundNode.type === 'COMPONENT') {
+                            mainComponent = foundNode;
+                        }
+                    }
+                    
+                    if (!mainComponent && element.name) {
+                        // Search all components in the document
+                        const allComponents = figma.root.findAll(node => 
+                            node.type === 'COMPONENT' && node.name === element.name
+                        ) as ComponentNode[];
+                        if (allComponents.length > 0) {
+                            mainComponent = allComponents[0];
+                        }
+                    }
+                    
+                    if (mainComponent) {
+                        node = mainComponent.createInstance();
+                    } else {
+                        // Fallback to frame if component not found
+                        node = figma.createFrame();
+                        node.name = `${element.type}: ${element.text || element.name || 'Untitled'}`;
+                    }
+                    break;
+                    
+                case 'GROUP':
+                    node = figma.group([], modifiedFrame);
+                    break;
+
+                case 'POLYGON':
+                    node = figma.createPolygon();
+                    if (element.pointCount && 'pointCount' in node) {
+                        (node as PolygonNode).pointCount = element.pointCount;
+                    }
+                    break;
+
+                case 'STAR':
+                    node = figma.createStar();
+                    if (element.pointCount && 'pointCount' in node) {
+                        (node as StarNode).pointCount = element.pointCount;
+                    }
+                    break;
+
+                case 'SLICE':
+                    node = figma.createSlice();
+                    break;
+
+                case 'STICKY':
+                    node = figma.createSticky();
+                    break;
+
+                case 'CONNECTOR':
+                    node = figma.createConnector();
+                    break;
+
+                case 'SHAPE_WITH_TEXT':
+                    node = figma.createShapeWithText();
+                    break;
+
+                default:
+                    // Fallback for unsupported types
+                    node = figma.createFrame();
+                    node.name = `${element.type}: ${element.text || element.name || 'Untitled'}`;
+            }
+
+            if (node) {
+                // Set common properties
+                node.name = element.text || element.name || "Unnamed";
+                node.x = element['position.x'] || 0;
+                node.y = element['position.y'] || 0;
+                
+                // Set size if specified - only for resizable nodes
+                if (element.width && element.height) {
+                    if ('resize' in node) {
+                        (node as BaseFrameMixin).resize(element.width, element.height);
+                    }
+                }
+
+                // Set color if specified
+                if (element.color && 'fills' in node) {
+                    const rgb = hexToRgb(element.color);
+                    (node as MinimalFillsMixin).fills = [{
+                        type: 'SOLID',
+                        color: rgb,
+                        opacity: element.opacity || 1
+                    }];
+                }
+
+                // Set text properties for text nodes
+                if (node.type === 'TEXT') {
+                    const textNode = node as TextNode;
+                    if (element.fontSize) textNode.fontSize = element.fontSize;
+                    if (element.textAlign) textNode.textAlignHorizontal = element.textAlign;
+                    if (element.fontName) {
+                        try {
+                            await figma.loadFontAsync(element.fontName);
+                            textNode.fontName = element.fontName;
+                        } catch (e) {
+                            console.warn(`Couldn't load font ${element.fontName?.family}`);
+                        }
+                    }
+                }
+
+                // Set stroke if specified
+                if (element.stroke && 'strokes' in node) {
+                    const strokeRgb = hexToRgb(element.stroke.color);
+                    (node as MinimalStrokesMixin).strokes = [{
+                        type: 'SOLID',
+                        color: strokeRgb,
+                        opacity: element.stroke.opacity || 1
+                    }];
+                    if (element.stroke.weight && 'strokeWeight' in node) {
+                        (node as MinimalStrokesMixin).strokeWeight = element.stroke.weight;
+                    }
+                }
+
+                nodesMap.set(element.id, node);
+            }
+        } catch (e) {
+            console.error(`Error creating ${element.type}:`, e);
+        }
+    }
+
+    // Second pass: Build hierarchy and handle connections
+    for (const element of modifiedJson.elements) {
+        const node = nodesMap.get(element.id);
+        if (!node) continue;
+
+        // Ensure proper positioning
+        node.x = element['position.x'] || 0;
+        node.y = element['position.y'] || 0;
+        
+        // Add to frame
+        modifiedFrame.appendChild(node);
+    }
+
+    return modifiedFrame;
+}
+
 async function getModifiedDesign(frame: FrameNode): Promise<void> {
     try {
+        figma.ui.postMessage({ type: 'processing-started' });
+
+        // 1. Prepare and send data
         const designData = await FeatureExtractor.extractForAI(frame);
         const imageBytes = await frame.exportAsync({ format: "PNG" });
         const imageBase64 = figma.base64Encode(imageBytes);
@@ -94,30 +285,109 @@ async function getModifiedDesign(frame: FrameNode): Promise<void> {
             }),
         });
 
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
         const result = await response.json();
         
-        // Store both the modifications and full modified design
-        modifiedDesigns.set(frame.id, {
-            original: `data:image/png;base64,${imageBase64}`,
-            modified: result.modified_design,  // Now contains full design JSON
-            modifications: result.modifications
-        });
+        if (result.status === "error") {
+            throw new Error(result.error || "Unknown backend error");
+        }
 
+        // 2. Render the modified design
+        const modifiedFrame = await renderModifiedDesign(frame, result.modified_design);
+        
+        // CRITICAL: Add to current page and force render
+        figma.currentPage.appendChild(modifiedFrame);
+        await new Promise(resolve => { 
+            modifiedFrame.exportAsync({ format: 'PNG' }).then(resolve); 
+        });
+        
+        // Export with proper settings
+        const modifiedBytes = await modifiedFrame.exportAsync({
+            format: "PNG",
+            constraint: { type: 'SCALE', value: 1 },
+            contentsOnly: true // This is key to avoid black squares
+        });
+        
+        // Convert to displayable image
+        const modifiedBase64 = figma.base64Encode(modifiedBytes);
+        
+        // Verify we got actual image data
+        if (modifiedBase64.length < 1000) {
+            throw new Error("Image export failed - insufficient data");
+        }
+
+        // Send to UI
         figma.ui.postMessage({
             type: 'design-modified',
             frameId: frame.id,
             original: `data:image/png;base64,${imageBase64}`,
-            modifiedDesign: result.modified_design,  // Send full design to UI
-            modifications: result.modifications,
-            summary: result.summary
+            modified: `data:image/png;base64,${modifiedBase64}`,
+            modifications: result.modifications || []
         });
 
+        // Cleanup
+        modifiedFrame.remove();
+        
     } catch (error) {
-        console.error("Modification error:", error);
-        figma.notify(`Failed to generate modified design: ${error instanceof Error ? error.message : String(error)}`);
+        console.error("Modification Error:", error);
+        
+        // Export original as fallback
+        const imageBytes = await frame.exportAsync({ format: "PNG" });
+        const imageBase64 = figma.base64Encode(imageBytes);
+
+        figma.ui.postMessage({
+            type: 'modification-error',
+            error: error instanceof Error ? error.message : String(error),
+            original: `data:image/png;base64,${imageBase64}`
+        });
+    } finally {
+        figma.ui.postMessage({ type: 'processing-finished' });
     }
 }
 
+// Type guard for valid connector endpoint nodes
+function isConnectorEndpoint(node: SceneNode): node is 
+    VectorNode | BooleanOperationNode | ComponentNode | InstanceNode | TextNode {
+    return (
+        node.type === 'VECTOR' ||
+        node.type === 'BOOLEAN_OPERATION' ||
+        node.type === 'COMPONENT' ||
+        node.type === 'INSTANCE' ||
+        node.type === 'TEXT'
+    );
+}
+
+function hexToRgb(hex: string): RGB {
+    // Remove # if present
+    hex = hex.replace('#', '');
+    
+    // Parse r, g, b values
+    let r, g, b;
+    if (hex.length === 3) {
+        r = parseInt(hex[0] + hex[0], 16) / 255;
+        g = parseInt(hex[1] + hex[1], 16) / 255;
+        b = parseInt(hex[2] + hex[2], 16) / 255;
+    } else if (hex.length === 6) {
+        r = parseInt(hex.substring(0, 2), 16) / 255;
+        g = parseInt(hex.substring(2, 4), 16) / 255;
+        b = parseInt(hex.substring(4, 6), 16) / 255;
+    } else {
+        // Default to black if invalid
+        return { r: 0, g: 0, b: 0 };
+    }
+    
+    return { r, g, b };
+}
+async function safeLoadFont(fontName: FontName): Promise<boolean> {
+    try {
+        await figma.loadFontAsync(fontName);
+        return true;
+    } catch (e) {
+        console.warn(`Failed to load font ${fontName.family} ${fontName.style}:`, e);
+        return false;
+    }
+}
 async function applyModifications(original: FrameNode, modifications: Modification[]): Promise<FrameNode> {
     const modified = original.clone();
     
@@ -149,13 +419,7 @@ async function applyModifications(original: FrameNode, modifications: Modificati
     
     return modified;
 }
-function hexToRgb(hex: string): { r: number, g: number, b: number } {
-    hex = hex.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16) / 255;
-    const g = parseInt(hex.substring(2, 4), 16) / 255;
-    const b = parseInt(hex.substring(4, 6), 16) / 255;
-    return { r, g, b };
-}
+
 // Update the applyModifications function
 
 trackInstanceTextChanges();
@@ -297,7 +561,7 @@ else if (msg.type === 'show-modified-design') {
             modifications: result.modifications,
             status: result.status || "success"
         });
-
+      
         // Cleanup
         modifiedFrame.remove();
 

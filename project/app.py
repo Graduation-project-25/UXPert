@@ -677,100 +677,154 @@ def modify_design():
     try:
         data = request.get_json()
         if not data or 'design_json' not in data:
-            return jsonify({"error": "Missing design data"}), 400
+            return jsonify({
+                "status": "error",
+                "error": "Missing design data",
+                "original_image": data.get('screenshot', '')
+            }), 400
 
         design_json = data['design_json']
         screenshot_b64 = data.get('screenshot', '')
 
-        # Simplified prompt with strict JSON requirements
-        PROMPT = """Return JSON with:
+        # Validate input structure
+        if 'elements' not in design_json:
+            return jsonify({
+                "status": "error",
+                "error": "Input design missing 'elements' array",
+                "original_image": screenshot_b64
+            }), 400
+
+        # Strict prompt with JSON formatting requirements
+        PROMPT = """Return ONLY valid JSON with this EXACT structure:
         {
             "modifications": [{
-                "node_name": "name",
-                "property": "property_name",
+                "node_id": "valid_node_id",
+                "property": "color|text|size|position",
                 "value": "new_value",
                 "heuristic": "heuristic_name",
-                "reason": "reason_text"
+                "reason": "improvement_explanation"
             }],
-            "summary": "brief_summary"
+            "modified_design": {
+                "elements": [
+                    // MUST maintain original structure
+                ]
+            }
         }
 
-        Rules:
-        1. Only return this JSON structure
-        2. No additional text
-        3. All strings must be quoted
-        4. Keep responses under 2000 tokens"""
+        Important rules:
+        1. NEVER truncate the JSON
+        2. Ensure all strings are properly escaped
+        3. Close all brackets and quotes
+        4. Don't include any markdown formatting
+        5. Don't include any explanatory text outside the JSON
 
-        try:
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{
-                    "role": "system",
-                    "content": "You are a JSON generator. Return ONLY valid JSON."
-                }, {
-                    "role": "user",
-                    "content": PROMPT + "\n\nDesign JSON:\n" + json.dumps(design_json, indent=2)
-                }],
-                response_format={"type": "json_object"},
-                temperature=0.3,
-                max_tokens=2000
-            )
-            
-            # Parse with multiple fallbacks
-            response_text = response.choices[0].message.content
-            
-            # Attempt 1: Direct parse
+        Analyze this design against Nielsen's 10 heuristics:
+        1. Visibility of system status
+        2. Match between system and real world
+        3. User control and freedom
+        4. Consistency and standards
+        5. Error prevention
+        6. Recognition rather than recall
+        7. Flexibility and efficiency of use
+        8. Aesthetic and minimalist design
+        9. Help users recognize, diagnose and recover from errors
+        10. Help and documentation
+
+        Current Design:\n""" + json.dumps(design_json, indent=2)
+
+        # Call GPT-4o with strict JSON response format
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{
+                "role": "system",
+                "content": "You are a JSON generator. Return ONLY complete, valid JSON. Never truncate the response."
+            }, {
+                "role": "user",
+                "content": PROMPT
+            }],
+            response_format={"type": "json_object"},
+            temperature=0.3,  # Lower temperature for more deterministic output
+            max_tokens=4000   # Increased token limit for complete responses
+        )
+
+        # Get and log the raw response
+        response_content = response.choices[0].message.content
+        print("Full AI Response:", response_content)
+
+        def safe_parse(json_str: str):
+            """Robust JSON parsing with multiple fallbacks"""
             try:
-                result = json.loads(response_text)
-            except json.JSONDecodeError as e:
-                # Attempt 2: Clean common issues
-                cleaned = response_text.strip()
-                if cleaned.startswith('```json'):
-                    cleaned = cleaned[7:]
-                if cleaned.endswith('```'):
-                    cleaned = cleaned[:-3]
+                # First try direct parse
+                return json.loads(json_str)
+            except json.JSONDecodeError as e1:
+                print(f"First parse failed: {str(e1)}")
+                # Try cleaning common issues
+                cleaned = json_str.strip()
+                cleaned = re.sub(r'^```json|```$', '', cleaned)  # Remove markdown
                 try:
-                    result = json.loads(cleaned)
-                except:
-                    # Attempt 3: Extract JSON portion
-                    start = cleaned.find('{')
+                    return json.loads(cleaned)
+                except json.JSONDecodeError as e2:
+                    print(f"Second parse failed: {str(e2)}")
+                    # Try to extract valid JSON portion
+                    start = max(0, cleaned.find('{'))
                     end = cleaned.rfind('}') + 1
-                    result = json.loads(cleaned[start:end])
+                    if start >= 0 and end > start:
+                        try:
+                            return json.loads(cleaned[start:end])
+                        except json.JSONDecodeError as e3:
+                            print(f"Partial parse failed: {str(e3)}")
+                            raise ValueError(f"Could not parse JSON: {str(e3)}")
+                    raise ValueError(f"Could not parse JSON: {str(e2)}")
 
-            # Apply modifications to original design
-            modified_design = design_json.copy()
-            for mod in result.get("modifications", []):
-                for elem in modified_design.get("elements", []):
-                    if elem.get("id") == mod.get("node_name"):
-                        if mod.get("property") in elem:
-                            elem[mod["property"]] = mod["value"]
-                        break
+        # Parse with robust error handling
+        try:
+            result = safe_parse(response_content)
+            
+            # Validate response structure
+            if not isinstance(result.get('modified_design', {}).get('elements', None), list):
+                raise ValueError("Modified design missing elements array")
+                
+            if not isinstance(result.get('modifications', None), list):
+                raise ValueError("Modifications missing or invalid")
 
             return jsonify({
                 "status": "success",
                 "modifications": result.get("modifications", []),
-                "modified_design": modified_design,
-                "summary": result.get("summary", ""),
+                "modified_design": result["modified_design"],
                 "original_image": screenshot_b64
             })
 
-        except Exception as e:
-            print(f"Processing Error: {str(e)}")
+        except Exception as parse_error:
+            print(f"JSON Processing Error: {str(parse_error)}\n{traceback.format_exc()}")
+            # Fallback - apply modifications manually if possible
+            modified = design_json.copy()
+            try:
+                if 'modifications' in result:  # Use result if available despite parse error
+                    for change in result['modifications']:
+                        for elem in modified['elements']:
+                            if elem['id'] == change['node_id']:
+                                elem[change['property']] = change['value']
+                                break
+            except:
+                pass
+            
             return jsonify({
                 "status": "partial",
-                "modifications": [],
-                "modified_design": design_json,  # Return original as fallback
-                "summary": "Could not process modifications",
-                "original_image": screenshot_b64
+                "modifications": result.get("modifications", []) if 'result' in locals() else [],
+                "modified_design": modified,
+                "original_image": screenshot_b64,
+                "warning": f"Used fallback method: {str(parse_error)}"
             })
 
     except Exception as e:
-        print(f"Server Error: {str(e)}")
+        print(f"Server Error: {str(e)}\n{traceback.format_exc()}")
         return jsonify({
             "status": "error",
             "error": str(e),
-            "original_image": screenshot_b64
+            "original_image": screenshot_b64 if 'screenshot_b64' in locals() else "",
+            "ai_response": response_content if 'response_content' in locals() else None
         }), 500
+    
     
 def rgb_to_hex(rgb_dict):
     """Convert RGB dictionary to hex string"""
