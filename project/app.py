@@ -689,106 +689,96 @@ def modify_design():
         design_json = data['design_json']
         screenshot_b64 = data.get('screenshot', '')
 
-        # Safely extract elements list
-        try:
-            elements = design_json.get('elements', [])
-            if isinstance(elements, dict):  # Handle case where elements might be a dict
-                elements = list(elements.values())
-            elements_list = ", ".join([f"{e.get('name', 'unnamed')} ({e.get('type', 'no type')})" 
-                                     for e in elements[:5]]) + ("..." if len(elements) > 5 else "")
-        except Exception as e:
-            print(f"Error processing elements: {str(e)}")
-            elements_list = "Design elements"
-
-        # Enhanced prompt with safe formatting
-        PROMPT = """You are a UI/UX expert analyzing a Figma design against Nielsen's 10 usability heuristics. 
-        Provide 3-5 specific modifications that would improve the design.
-
-        Return JSON with this EXACT structure:
+        # Simplified prompt with strict JSON requirements
+        PROMPT = """Return JSON with:
         {
             "modifications": [{
-                "node_id": "MUST match an element ID from the design",
-                "property": "color|textContent|width|height|position.x|position.y",
-                "value": "new value appropriate for the property",
-                "heuristic": "Which heuristic this addresses",
-                "reason": "How this improves usability"
+                "node_id": "id",
+                "property": "property_name",
+                "value": "new_value",
+                "heuristic": "heuristic_name",
+                "reason": "reason_text"
             }],
-            "summary": "Brief overall assessment"
+            "summary": "brief_summary"
         }
 
-        Important Rules:
-        1. Only suggest changes to existing properties
-        2. For colors: use hex format (#RRGGBB)
-        3. For text: keep under 50 characters
-        4. For sizes: maintain reasonable proportions"""
-
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{
-                "role": "system",
-                "content": "You are a Figma design expert. Return ONLY valid JSON with the exact specified structure."
-            }, {
-                "role": "user",
-                "content": PROMPT
-            }],
-            response_format={"type": "json_object"},
-            temperature=0.3,
-            max_tokens=2000
-        )
-        
-        # Parse and validate response
-        response_content = response.choices[0].message.content
-        print("Raw AI Response:", response_content)
+        Rules:
+        1. Only return this JSON structure
+        2. No additional text
+        3. All strings must be quoted
+        4. Keep responses under 2000 tokens"""
 
         try:
-            # Clean response
-            cleaned_response = re.sub(r'```(json)?|```', '', response_content).strip()
-            result = json.loads(cleaned_response)
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{
+                    "role": "system",
+                    "content": "You are a JSON generator. Return ONLY valid JSON."
+                }, {
+                    "role": "user",
+                    "content": PROMPT + "\n\nDesign JSON:\n" + json.dumps(design_json, indent=2)
+                }],
+                response_format={"type": "json_object"},
+                temperature=0.3,
+                max_tokens=2000
+            )
             
-            # Validate response
-            if not isinstance(result, dict):
-                raise ValueError("Response is not a JSON object")
-                
-            modifications = result.get("modifications", [])
-            if not modifications:
-                return jsonify({
-                    "status": "success",
-                    "message": "No modifications suggested",
-                    "modifications": []
-                })
-                
-            # Validate each modification
-            valid_mods = []
-            for mod in modifications:
-                if not all(k in mod for k in ["node_id", "property", "value"]):
-                    continue
-                valid_mods.append(mod)
-            print("result :")
-            print (result)
-            print("modifications :")
-            print (modifications)
+            # Parse with multiple fallbacks
+            response_text = response.choices[0].message.content
+            
+            # Attempt 1: Direct parse
+            try:
+                result = json.loads(response_text)
+            except json.JSONDecodeError as e:
+                # Attempt 2: Clean common issues
+                cleaned = response_text.strip()
+                if cleaned.startswith('```json'):
+                    cleaned = cleaned[7:]
+                if cleaned.endswith('```'):
+                    cleaned = cleaned[:-3]
+                try:
+                    result = json.loads(cleaned)
+                except:
+                    # Attempt 3: Extract JSON portion
+                    start = cleaned.find('{')
+                    end = cleaned.rfind('}') + 1
+                    result = json.loads(cleaned[start:end])
+
+            # Apply modifications to original design
+            modified_design = design_json.copy()
+            for mod in result.get("modifications", []):
+                for elem in modified_design.get("elements", []):
+                    if elem.get("id") == mod.get("node_id"):
+                        if mod.get("property") in elem:
+                            elem[mod["property"]] = mod["value"]
+                        break
+
             return jsonify({
                 "status": "success",
-                "modifications": valid_mods,
+                "modifications": result.get("modifications", []),
+                "modified_design": modified_design,
                 "summary": result.get("summary", ""),
                 "original_image": screenshot_b64
             })
 
-        except json.JSONDecodeError as e:
-            print(f"JSON Parse Error: {str(e)}")
+        except Exception as e:
+            print(f"Processing Error: {str(e)}")
             return jsonify({
-                "error": "Invalid JSON from AI",
-                "ai_response": response_content,
-                "traceback": str(e)
-            }), 500
+                "status": "partial",
+                "modifications": [],
+                "modified_design": design_json,  # Return original as fallback
+                "summary": "Could not process modifications",
+                "original_image": screenshot_b64
+            })
 
     except Exception as e:
-        print(f"Error: {str(e)}\n{traceback.format_exc()}")
+        print(f"Server Error: {str(e)}")
         return jsonify({
+            "status": "error",
             "error": str(e),
-            "traceback": traceback.format_exc()
+            "original_image": screenshot_b64
         }), 500
-
+    
 def rgb_to_hex(rgb_dict):
     """Convert RGB dictionary to hex string"""
     try:

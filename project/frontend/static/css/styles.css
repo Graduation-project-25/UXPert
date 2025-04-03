@@ -342,6 +342,7 @@ progress::-moz-progress-bar {
   max-width: 100%;
   height: auto;
   border: 1px solid #eee;
+  background: white;
 }
 
 #modification-instructions-text {
@@ -407,6 +408,8 @@ progress::-moz-progress-bar {
   display: flex;
   gap: 20px;
   margin-bottom: 30px;
+  position: relative;
+  background: none !important;
 }
 
 .design-container {
@@ -414,6 +417,7 @@ progress::-moz-progress-bar {
   border: 1px solid #ddd;
   padding: 10px;
   border-radius: 8px;
+  background: transparent;
 }
 
 .design-label {

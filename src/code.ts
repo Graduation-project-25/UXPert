@@ -81,14 +81,10 @@ const modifiedDesigns = new Map<string, ModifiedDesign>();
 
 async function getModifiedDesign(frame: FrameNode): Promise<void> {
     try {
-        console.log(`Generating modified design for frame ${frame.id}`);
-        
-        // 1. Extract design data
         const designData = await FeatureExtractor.extractForAI(frame);
         const imageBytes = await frame.exportAsync({ format: "PNG" });
         const imageBase64 = figma.base64Encode(imageBytes);
 
-        // 2. Call modification endpoint
         const response = await fetch("http://localhost:3000/modify-design", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
@@ -98,47 +94,27 @@ async function getModifiedDesign(frame: FrameNode): Promise<void> {
             }),
         });
 
-        if (!response.ok) throw new Error(await response.text());
-
-        // 3. Get modifications from backend
         const result = await response.json();
-        if (!result.modifications) {
-            throw new Error("No modifications received from server");
-        }
-
-        // 4. Apply modifications
-        const modifiedFrame = await applyModifications(frame, result.modifications);
         
-        // 5. Export modified design
-        const modifiedBytes = await modifiedFrame.exportAsync({ format: "PNG" });
-        const modifiedBase64 = figma.base64Encode(modifiedBytes);
-
-        // 6. Store modified design
+        // Store both the modifications and full modified design
         modifiedDesigns.set(frame.id, {
             original: `data:image/png;base64,${imageBase64}`,
-            modified: `data:image/png;base64,${modifiedBase64}`,
+            modified: result.modified_design,  // Now contains full design JSON
             modifications: result.modifications
         });
 
-        // 7. Send to UI
         figma.ui.postMessage({
             type: 'design-modified',
             frameId: frame.id,
             original: `data:image/png;base64,${imageBase64}`,
-            modified: `data:image/png;base64,${modifiedBase64}`,
-            modifications: result.modifications
+            modifiedDesign: result.modified_design,  // Send full design to UI
+            modifications: result.modifications,
+            summary: result.summary
         });
-
-        // 8. Cleanup
-        modifiedFrame.remove();
 
     } catch (error) {
         console.error("Modification error:", error);
         figma.notify(`Failed to generate modified design: ${error instanceof Error ? error.message : String(error)}`);
-        figma.ui.postMessage({
-            type: 'modification-error',
-            error: error instanceof Error ? error.message : String(error)
-        });
     }
 }
 
@@ -318,8 +294,9 @@ else if (msg.type === 'show-modified-design') {
             type: 'design-modified',
             frameId: frameId,
             original: `data:image/png;base64,${imageBase64}`,
-            modified: `data:image/png;base64,${modifiedBase64}`,
-            modifications: result.modifications
+            modifiedDesign: result.modified_design,
+            modifications: result.modifications,
+            status: result.status || "success"
         });
 
         // Cleanup
