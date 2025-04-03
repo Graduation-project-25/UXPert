@@ -8,12 +8,8 @@ from flask_cors import CORS
 import app
 from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
-from components.Suggestion_Component.recognition_suggestion import RecognitionSuggestions
-from components.Heuristics_Component.heuristics_testing.recognition_testing import RecognitionTesting
-from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist  # Added import for Minimalist
 from database.feedback_repository import FeedbackRepository
 from database.figma_features_repository import FigmaFeaturesRepository
-from database.suggestions_repository import SuggestionsRepository
 
 from dotenv import load_dotenv
 import base64, json, traceback
@@ -75,8 +71,6 @@ def get_new_filename():
     return os.path.join(output_folder, f"design_{count + 1}.json")
 ########################################################## 
 
-
-
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
     if request.method == 'OPTIONS':
@@ -134,6 +128,8 @@ def process_elements():
             "screen_size": frame_info,
             "elements": elements
         }
+        recognition_feedback_list = []  # Store feedback for all elements
+
 
         #Insert data into MongoDB
         print("Attempting to insert data into MongoDB...")
@@ -189,25 +185,36 @@ def process_elements():
         ###########################################################
 
         # Run heuristic evaluations
+        # Get screen width and height
+        screen_width = frame_info["screen_width"]  
+        screen_height = frame_info["screen_height"]  
+
+
+        # Call Rules
         consistency_evaluator = HeuristicFactory.check_rule("consistency")
-        consistency_results = consistency_evaluator.evaluate_rule(elements_df)
-
+        minimalist_evaluator = HeuristicFactory.check_rule("minimalist")
+        recognition_evaluator = HeuristicFactory.check_rule("recognition")
+        error_handling_evaluator = HeuristicFactory.check_rule("errorHandling")
         error_prevention_evaluator = ErrorPrevention(figma_repository)
+
+        # Evaluate Rules
+        consistency_results = consistency_evaluator.evaluate_rule(elements_df)
+        minimalist_results, minimalist_score = minimalist_evaluator.evaluate_rule({"elements": elements}, screen_width, screen_height)
+        error_handling_results = error_handling_evaluator.evaluate_rule(elements_df)
         error_prevention_results = error_prevention_evaluator.evaluate_rule(elements_db)
-        print("Error Prevention Results:", error_prevention_results)
+        for element in elements:
+            recognition_results = recognition_evaluator.evaluate_rule(element, element["type"], screen_width, screen_height, element["isIconLabeled"], element["width"], element["height"])
+            if recognition_results:  
+                recognition_feedback = {
+                    "element_id": element["id"],
+                    "element_name": element["name"],
+                    "element_type": element["type"],
+                    "Feedback": recognition_results,  
+                }
+                recognition_feedback_list.append(recognition_feedback)  # Store feedback for each element
 
-        # Use Minimalist class directly instead of MinimalistEvaluation
-        screen_width = frame_info.get("width", 1920)  # Default screen width
-        screen_height = frame_info.get("height", 1080)  # Default screen height
-        minimalist_evaluator = Minimalist()  # Initialize Minimalist
-        minimalist_feedback, minimalist_score = minimalist_evaluator.evaluate_rule({"elements": elements}, screen_width, screen_height)  # Evaluate directly
-
-        error_handling = HeuristicFactory.check_rule("errorHandling")
-        error_handling_results = error_handling.evaluate_rule(elements_df)
-
-        recognition__evaluator = RecognitionTesting()
-        # recognition_results = recognition__evaluator.evaluate_rule_test(test_folder , evaluation_folder)
         
+
         # Prepare human-readable feedback
         consistency_feedback = {
             "ColorConsistency": f"Color consistency is {consistency_results.get('ColorConsistency', 0)}%.",
@@ -230,36 +237,35 @@ def process_elements():
             "RecoveryIssues": error_handling_results.get("RecoveryIssues", []),
             "Feedback": error_handling_results
         }
-        minimalist_feedback_dict = {
-            "Feedback": minimalist_feedback,  # List of feedback messages from Minimalist
+        minimalist_feedback = {
+            "Feedback": minimalist_results,  # List of feedback messages from Minimalist
             # "Score": f"Final Score: {minimalist_score:.2f}%"  # Score from Minimalist
         }
 
-        # recognition_feedback = {
-        #     "Feedback": recognition_results
-        # }
-
-        # print(f"Consistency evaluation feedback: {consistency_feedback}")
-        # print(f"Error Prevention feedback:{error_feedback}")
-        # print(f"Error handlying feedback: {error_handling_feedback}")
-        # print(f"minimalist evaluation feedback: {minimalist_feedback}")    
-   
         feedback_data = {
             "error_prevention_results": error_prevention_results,
             "consistency_results": consistency_results,
             "error_handling_results": error_handling_results,
-            "minimalist_results": minimalist_feedback_dict,  # Use new dict
-            # "recognition_results": recognition_results
+            "minimalist_results": minimalist_feedback,  
+            # "recognition_results": recognition_feedback_list
         }
-        
+        if recognition_feedback_list:  # Add only if there are results
+            feedback_data["recognition_results"] = recognition_feedback_list
 
+
+        print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        print(recognition_feedback_list)
+        print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+
+
+        # Update feedback in database
         update_result = feedback_repository.update_feedback(design_name, frame_name, feedback_data)
 
         if update_result.matched_count == 0:
             print("Error updating feedback in MongoDB.")
             return jsonify({"error": "Failed to update feedback in database"}), 500
-
         print("Feedback saved successfully.")
+
 
         # Prepare final response
         response_data = {
@@ -268,9 +274,14 @@ def process_elements():
             "error_prevention_results": error_feedback,
             "consistency_results": consistency_feedback,
             "error_handling_results": error_handling_feedback,
-            "minimalist_results": minimalist_feedback_dict,  # Use new dict
-            # "recognition_results": recognition_feedback
+            "minimalist_results": minimalist_feedback,
+            # "recognition_results": recognition_feedback_list
         }
+        if recognition_feedback_list:  # Add only if there are results
+            feedback_data["recognition_results"] = recognition_feedback_list
+
+
+        
         print("Sending to Figma:", response_data) 
         # recognition_suggestion.save_updated_elements(design_name, frame_name)
         return jsonify(response_data), 200
