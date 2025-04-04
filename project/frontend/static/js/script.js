@@ -22,16 +22,83 @@ document.getElementById('start').onclick = () => {
     // Start feature extraction immediately
     parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
 
+    // No automatic progress increment. We'll wait for messages from the parent.
     const progressInterval = setInterval(() => {
-        progress = Math.min(progress + 5, 100);
-        progressBar.value = progress;
-        progressText.textContent = `${progress}%`;
-        
-        if (progress === 100) {
-            clearInterval(progressInterval);
-            // No need to send start-detection here anymore, as it's already sent
+        // This interval will now just keep the UI responsive, but won't increment progress
+        if (progress < 100) {
+            progressText.textContent = `${progress}%`;
+            progressBar.value = progress;
         }
     }, 300);
+
+    // Listen for progress or completion messages with debugging
+    const messageHandler = (event) => {
+        console.log('Message received:', event.data); // Debug: Log all messages
+        const msg = event.data.pluginMessage;
+        if (!msg) return;
+
+        if (msg.type === 'progress-update') {
+            progress = Math.min(msg.progress || 0, 100); // Update progress based on parent's message
+            progressBar.value = progress;
+            progressText.textContent = `${progress}%`;
+            console.log(`Progress updated to: ${progress}%`);
+
+            if (progress >= 100) {
+                clearInterval(progressInterval);
+                window.removeEventListener('message', messageHandler); // Clean up listener
+                handleDetectionComplete();
+            }
+        } else if (msg.type === 'detection-complete') {
+            clearInterval(progressInterval);
+            window.removeEventListener('message', messageHandler); // Clean up listener
+            handleDetectionComplete(msg.feedback);
+            console.log('Detection complete, moving to feedback');
+        }
+    };
+
+    window.addEventListener('message', messageHandler);
+
+    // Fallback: Increment progress every 2 seconds if no messages are received, up to 100%
+    let fallbackProgress = 0;
+    const fallbackInterval = setInterval(() => {
+        if (fallbackProgress < 100) {
+            fallbackProgress += 10; // Increment by 10% every 2 seconds
+            progress = Math.min(fallbackProgress, 100);
+            progressBar.value = progress;
+            progressText.textContent = `${progress}%`;
+            console.log(`Fallback progress: ${progress}%`);
+        } else {
+            clearInterval(fallbackInterval);
+            clearInterval(progressInterval);
+            window.removeEventListener('message', messageHandler);
+            handleDetectionComplete(); // Force transition
+            console.log('Fallback triggered, moving to feedback');
+        }
+    }, 2000); // 2 seconds interval for fallback
+
+    // Fallback timeout: If no completion after 30 seconds, force transition
+    const timeout = setTimeout(() => {
+        clearInterval(progressInterval);
+        clearInterval(fallbackInterval);
+        window.removeEventListener('message', messageHandler);
+        handleDetectionComplete(); // Force transition even without message
+        console.log('Timeout triggered, forcing transition to feedback');
+    }, 30000); // 30 seconds timeout
+
+    function handleDetectionComplete(feedback = null) {
+        clearTimeout(timeout); // Clear the fallback timer
+        clearInterval(fallbackInterval); // Clear fallback progress
+        document.getElementById('processing-screen').style.display = 'none';
+        document.getElementById('feedback-screen').style.display = 'block';
+
+        if (feedback) {
+            handleCollectiveFeedback(feedback);
+        } else {
+            // If no feedback was provided in detection-complete, request it
+            parent.postMessage({ pluginMessage: { type: 'request-feedback' } }, '*');
+            console.log('Requesting feedback from parent');
+        }
+    }
 };
 
 // Navigation functions
@@ -103,85 +170,85 @@ function navigateFeedback(frameId) {
     }
 }
 
+// Function to handle collective feedback
+function handleCollectiveFeedback(feedback) {
+    const pagesContainer = document.getElementById('pages-container');
+    pagesContainer.innerHTML = '';
+    pages.length = 0;
+    feedbackData = {};
+
+    feedback.forEach((item, index) => {
+        const frameId = item.frameId || `frame-${index}`;
+        const feedbackTypes = getFeedbackTypes(item);
+
+        feedbackData[frameId] = {
+            item,
+            feedbackTypes,
+            currentFeedbackIndex: 0,
+            hasModifiedDesign: false
+        };
+
+        const pageSection = document.createElement('div');
+        pageSection.className = 'page-section';
+        pageSection.style.display = index === 0 ? 'block' : 'none';
+        pageSection.innerHTML = `
+            <h2>${item.frameName}</h2>
+            <div class="feedback-area">
+                <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
+                <div class="feedback-content">
+                    <div id="feedback-${frameId}">
+                        ${renderFeedback(item)}
+                    </div>
+                    ${feedbackTypes.length > 1 ?
+                        `<button class="feedback-nav-button" data-frame-id="${frameId}">→</button>` : ''}
+                </div>
+            </div>
+            <button class="modify-button" data-frame-id="${frameId}">Show Modified Design</button>
+            <div id="loading-${frameId}" class="loading" style="display:none;">
+                Loading improvements...
+            </div>
+        `;
+        pagesContainer.appendChild(pageSection);
+        pages.push(pageSection);
+    });
+
+    showPage(0);
+
+    document.querySelectorAll('.feedback-nav-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const frameId = e.currentTarget.getAttribute('data-frame-id');
+            navigateFeedback(frameId);
+        });
+    });
+
+    document.querySelectorAll('.modify-button').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const frameId = e.currentTarget.getAttribute('data-frame-id');
+            const button = e.currentTarget;
+            const loadingIndicator = document.getElementById(`loading-${frameId}`);
+            
+            button.disabled = true;
+            loadingIndicator.style.display = 'block';
+            
+            parent.postMessage({
+                pluginMessage: {
+                    type: 'request-modified-design',
+                    frameId: frameId
+                }
+            }, '*');
+        });
+    });
+}
+
 // Message handling
 window.addEventListener('message', (event) => {
+    console.log('Global message received:', event.data); // Debug: Log all global messages
     const msg = event.data.pluginMessage;
     if (!msg) return;
 
     if (msg.type === 'collective-feedback') {
-        document.getElementById('processing-screen').style.display = 'none';
-        document.getElementById('feedback-screen').style.display = 'block';
-
-        const pagesContainer = document.getElementById('pages-container');
-        pagesContainer.innerHTML = '';
-        pages.length = 0;
-        feedbackData = {};
-
-        msg.feedback.forEach((item, index) => {
-            const frameId = item.frameId || `frame-${index}`;
-            const feedbackTypes = getFeedbackTypes(item);
-
-            feedbackData[frameId] = {
-                item,
-                feedbackTypes,
-                currentFeedbackIndex: 0,
-                hasModifiedDesign: false // Track if modified design has been loaded
-            };
-
-            const pageSection = document.createElement('div');
-            pageSection.className = 'page-section';
-            pageSection.style.display = index === 0 ? 'block' : 'none';
-            pageSection.innerHTML = `
-                <h2>${item.frameName}</h2>
-                <div class="feedback-area">
-                    <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
-                    <div class="feedback-content">
-                        <div id="feedback-${frameId}">
-                            ${renderFeedback(item)}
-                        </div>
-                        ${feedbackTypes.length > 1 ?
-                            `<button class="feedback-nav-button" data-frame-id="${frameId}">→</button>` : ''}
-                    </div>
-                </div>
-                <button class="modify-button" data-frame-id="${frameId}">Show Modified Design</button>
-                <div id="loading-${frameId}" class="loading" style="display:none;">
-                    Loading improvements...
-                </div>
-            `;
-            pagesContainer.appendChild(pageSection);
-            pages.push(pageSection);
-        });
-
-        showPage(0);
-
-        document.querySelectorAll('.feedback-nav-button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const frameId = e.currentTarget.getAttribute('data-frame-id');
-                navigateFeedback(frameId);
-            });
-        });
-
-        document.querySelectorAll('.modify-button').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                const frameId = e.currentTarget.getAttribute('data-frame-id');
-                const button = e.currentTarget;
-                const loadingIndicator = document.getElementById(`loading-${frameId}`);
-                
-                // Show loading state
-                button.disabled = true;
-                loadingIndicator.style.display = 'block';
-                
-                // Request modified design for this specific frame
-                parent.postMessage({
-                    pluginMessage: {
-                        type: 'request-modified-design',
-                        frameId: frameId
-                    }
-                }, '*');
-            });
-        });
-    }
-    else if (msg.type === 'design-modified') {
+        handleCollectiveFeedback(msg.feedback);
+    } else if (msg.type === 'design-modified') {
         // Handle the modified design response for a specific frame
         const frameId = msg.frameId;
         const loadingIndicator = document.getElementById(`loading-${frameId}`);
