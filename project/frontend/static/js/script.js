@@ -19,6 +19,9 @@ document.getElementById('start').onclick = () => {
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
 
+    // Start feature extraction immediately
+    parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+
     const progressInterval = setInterval(() => {
         progress = Math.min(progress + 5, 100);
         progressBar.value = progress;
@@ -26,7 +29,7 @@ document.getElementById('start').onclick = () => {
         
         if (progress === 100) {
             clearInterval(progressInterval);
-            parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+            // No need to send start-detection here anymore, as it's already sent
         }
     }, 300);
 };
