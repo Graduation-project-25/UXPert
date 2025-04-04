@@ -383,6 +383,12 @@ async function applyModifications(original: FrameNode, modifications: Modificati
     
     return modified;
 }
+async function getModifiedImage(frame: FrameNode, modifications: any[]): Promise<string> {
+    const modifiedFrame = await applyModifications(frame, modifications);
+    const modifiedBytes = await modifiedFrame.exportAsync({ format: "PNG" });
+    modifiedFrame.remove();
+    return figma.base64Encode(modifiedBytes);
+}   
 
 // Update the applyModifications function
 
@@ -463,72 +469,90 @@ figma.ui.onmessage = async (msg) => {
         UiService.sendFeedbackToUI(allFeedback);
     }
 
-else if (msg.type === 'show-modified-design') {
-    try {
-        const frameId = msg.frameId;
-        const frame = figma.getNodeById(frameId) as FrameNode;
-        
-        if (!frame || frame.type !== 'FRAME') {
-            throw new Error("Original frame not found");
-        }
+    else if (msg.type === 'show-modified-design') {
+        try {
+            const frameId = msg.frameId;
+            const frame = figma.getNodeById(frameId) as FrameNode;
+            
+            if (!frame || frame.type !== 'FRAME') {
+                throw new Error("Original frame not found");
+            }
+            // // Check if we already modified this frame
+            // if (modifiedFrames.has(frameId)) {
+            //     const { original, modified, modifications } = modifiedFrames.get(frameId)!;
+            //     figma.ui.postMessage({
+            //         type: 'design-modified',
+            //         frameId: frameId,
+            //         original: original,
+            //         modified: modified,
+            //         modifications: modifications
+            //     });
+            //     return;
+            // }
+                // Process new modification
+            const designData = await FeatureExtractor.extractForAI(frame);
+            const imageBytes = await frame.exportAsync({ format: "PNG" });
+            const imageBase64 = figma.base64Encode(imageBytes);
+    
+            const response = await fetch("http://localhost:3000/modify-design", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    design_json: designData,
+                    screenshot: `data:image/png;base64,${imageBase64}`
+                }),
+            });
+    
+            if (!response.ok) throw new Error(await response.text());
+    
+            const result = await response.json();
 
-        // Check if we already modified this frame
-        if (modifiedFrames.has(frameId)) {
-            const { original, modified, modifications } = modifiedFrames.get(frameId)!;
+            // const modifiedFrame = await applyModifications(frame, result.modifications);
+        
+            // const modifiedBytes = await modifiedFrame.exportAsync({ format: "PNG" });
+            // const modifiedBase64 = figma.base64Encode(modifiedBytes);
+            
+            // modifiedFrames.set(frameId, {
+            //     original: `data:image/png;base64,${imageBase64}`,
+            //     modified: `data:image/png;base64,${modifiedBase64}`,
+            //     modifications: result.modifications
+            // });
+            // Store modified design
+            modifiedFrames.set(frameId, {
+                original: `data:image/png;base64,${imageBase64}`,
+                modified: `data:image/png;base64,${await getModifiedImage(frame, result.modifications)}`,
+                modifications: result.modifications
+            });
+    
+            // Send all modified designs to UI
+            const allModifiedDesigns = Array.from(modifiedFrames.values());
             figma.ui.postMessage({
                 type: 'design-modified',
-                frameId: frameId,
-                original: original,
-                modified: modified,
-                modifications: modifications
+                results: allModifiedDesigns,
+                currentIndex: Array.from(modifiedFrames.keys()).indexOf(frameId)
             });
-            return;
+          
+        } catch (error) {
+            console.error("Modification error:", error);
+            figma.notify(`Failed to show modified design: ${error instanceof Error ? error.message : String(error)}`);
         }
 
-        // Process new modification
-        const designData = await FeatureExtractor.extractForAI(frame);
-        const imageBytes = await frame.exportAsync({ format: "PNG" });
-        const imageBase64 = figma.base64Encode(imageBytes);
-
-        const response = await fetch("http://localhost:3000/modify-design", {
-            method: "POST",
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                design_json: designData,
-                screenshot: `data:image/png;base64,${imageBase64}`
-            }),
-        });
-
-        if (!response.ok) throw new Error(await response.text());
-
-        const result = await response.json();
-        const modifiedFrame = await applyModifications(frame, result.modifications);
-        
-        const modifiedBytes = await modifiedFrame.exportAsync({ format: "PNG" });
-        const modifiedBase64 = figma.base64Encode(modifiedBytes);
-
-        // Store modified design
-        modifiedFrames.set(frameId, {
-            original: `data:image/png;base64,${imageBase64}`,
-            modified: `data:image/png;base64,${modifiedBase64}`,
-            modifications: result.modifications
-        });
-
-        figma.ui.postMessage({
-            type: 'design-modified',
-            frameId: frameId,
-            original: `data:image/png;base64,${imageBase64}`,
-            modifiedDesign: result.modified_design,
-            modifications: result.modifications,
-            status: result.status || "success"
-        });
+    //     figma.ui.postMessage({
+    //         type: 'design-modified',
+    //         frameId: frameId,
+    //         original: `data:image/png;base64,${imageBase64}`,
+    //         modifiedDesign: result.modified_design,
+    //         modifications: result.modifications,
+    //         status: result.status || "success"
+    //     });
       
-        // Cleanup
-        modifiedFrame.remove();
+    //     // Cleanup
+    //     modifiedFrame.remove();
 
-    } catch (error) {
-        console.error("Modification error:", error);
-        figma.notify(`Failed to show modified design: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    // } catch (error) {
+    //     console.error("Modification error:", error);
+    //     figma.notify(`Failed to show modified design: ${error instanceof Error ? error.message : String(error)}`);
+    // }
 
+    
 }}}

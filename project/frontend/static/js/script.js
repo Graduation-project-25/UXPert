@@ -1,7 +1,9 @@
 let currentPageIndex = 0;
 const pages = [];
 let modifiedDesigns = [];
-let feedbackData = {}; // Store all feedback data per frame
+let feedbackData = {};
+let currentModifiedDesignIndex = 0;
+ // Store all feedback data per frame
 
 // Initialize UI
 setTimeout(() => {
@@ -180,25 +182,131 @@ window.addEventListener('message', (event) => {
         }, 300);
     }
     else if (msg.type === 'design-modified') {
-        // Only show modified design when we receive this message
+        // Store all modified designs (support both single design and array of designs)
+        modifiedDesigns = Array.isArray(msg.results) ? msg.results : [{
+            original: msg.original,
+            modified: msg.modified,
+            modifications: msg.modifications || [],
+            design_name: msg.design_name,
+            frame_name: msg.frame_name
+        }];
+        
+        currentModifiedDesignIndex = Array.isArray(msg.results) ? (msg.currentIndex || 0) : 0;
+        
+        // Show the modified design screen
         document.getElementById('feedback-screen').style.display = 'none';
         document.getElementById('modified-design-screen').style.display = 'block';
-
-        document.getElementById('original-design-image').src = msg.original;
-        document.getElementById('modified-design-image').src = msg.modified;
-
+        
+        // Create navigation controls if they don't exist
+        if (!document.getElementById('mod-design-navigation')) {
+            const navDiv = document.createElement('div');
+            navDiv.id = 'mod-design-navigation';
+            navDiv.style.display = 'none';
+            navDiv.style.justifyContent = 'center';
+            navDiv.style.gap = '10px';
+            navDiv.style.margin = '10px 0';
+            navDiv.innerHTML = `
+                <button id="mod-prev">← Previous</button>
+                <span id="mod-design-counter"></span>
+                <button id="mod-next">Next →</button>
+                <span id="mod-design-name" style="margin-left:10px"></span>
+            `;
+            document.getElementById('modified-design-screen').prepend(navDiv);
+            
+            // Add event listeners
+            document.getElementById('mod-prev').onclick = () => {
+                showModifiedDesign(currentModifiedDesignIndex - 1);
+            };
+            document.getElementById('mod-next').onclick = () => {
+                showModifiedDesign(currentModifiedDesignIndex + 1);
+            };
+        }
+        
+        // Show navigation if multiple designs exist
+        const nav = document.getElementById('mod-design-navigation');
+        nav.style.display = modifiedDesigns.length > 1 ? 'flex' : 'none';
+        
+        // Show the current design
+        showModifiedDesign(currentModifiedDesignIndex);
+    }
+    
+    function showModifiedDesign(index) {
+        // Validate index
+        if (index < 0) index = modifiedDesigns.length - 1;
+        if (index >= modifiedDesigns.length) index = 0;
+        currentModifiedDesignIndex = index;
+        
+        const design = modifiedDesigns[index];
+        
+        // Update images
+        document.getElementById('original-design-image').src = design.original;
+        document.getElementById('modified-design-image').src = design.modified || design.original;
+        
+        // Update modifications list
         const modList = document.getElementById('modification-list');
-        modList.innerHTML = msg.modifications?.map(mod => `
-            <div class="modification">
-                <h4>${mod.heuristic || 'Improvement'}</h4>
-                <p><strong>Element:</strong> ${mod.node_id}</p>
-                <p><strong>Change:</strong> ${mod.property} → ${mod.value}</p>
-                <p><strong>Reason:</strong> ${mod.reason}</p>
+        modList.innerHTML = design.modifications?.map(mod => `
+            <div class="modification" style="margin:10px 0; padding:10px; border-left:3px solid #4285F4">
+                <h4 style="margin:0 0 5px 0; color:#4285F4">${mod.heuristic || 'Improvement'}</h4>
+                <p style="margin:5px 0"><strong>Element:</strong> ${mod.node_id}</p>
+                <p style="margin:5px 0"><strong>Change:</strong> ${mod.property} → ${mod.value}</p>
+                <p style="margin:5px 0"><strong>Reason:</strong> ${mod.reason}</p>
             </div>
         `).join('') || '<p>No modifications details available</p>';
+        
+        // Update navigation info
+        if (document.getElementById('mod-design-counter')) {
+            document.getElementById('mod-design-counter').textContent = 
+                `Design ${index + 1} of ${modifiedDesigns.length}`;
+        }
+        if (document.getElementById('mod-design-name')) {
+            document.getElementById('mod-design-name').textContent = 
+                design.design_name || design.frame_name || '';
+        }
     }
 });
+function showModifiedDesign(index) {
+    if (index < 0 || index >= modifiedDesigns.length) return;
+    
+    currentModifiedDesignIndex = index;
+    const design = modifiedDesigns[index];
+    
+    // Update UI
+    document.getElementById('feedback-screen').style.display = 'none';
+    document.getElementById('modified-design-screen').style.display = 'block';
+    
+    // Update design info
+    document.getElementById('mod-design-counter').textContent = 
+        `Design ${index + 1} of ${modifiedDesigns.length}`;
+    document.getElementById('mod-design-name').textContent = 
+        design.design_name || design.frameName || `Design ${index + 1}`;
+    
+    // Update images
+    document.getElementById('original-design-image').src = design.original || design.original_image;
+    document.getElementById('modified-design-image').src = design.modified || design.modified_image || design.original;
+    
+    // Update modifications list
+    const modList = document.getElementById('modification-list');
+    modList.innerHTML = design.modifications?.map(mod => `
+        <div class="modification">
+            <h4>${mod.heuristic || 'Improvement'}</h4>
+            <p><strong>Element:</strong> ${mod.node_id}</p>
+            <p><strong>Change:</strong> ${mod.property} → ${mod.value}</p>
+            <p><strong>Reason:</strong> ${mod.reason}</p>
+        </div>
+    `).join('') || '<p>No modifications details available</p>';
+}
 
+function showNextModifiedDesign() {
+    showModifiedDesign(currentModifiedDesignIndex + 1);
+}
+
+function showPrevModifiedDesign() {
+    showModifiedDesign(currentModifiedDesignIndex - 1);
+}
+
+// Add event listeners
+document.getElementById('mod-next').onclick = showNextModifiedDesign;
+document.getElementById('mod-prev').onclick = showPrevModifiedDesign;
 // Navigation buttons
 document.getElementById('prev').onclick = () => showPage(currentPageIndex - 1);
 document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);

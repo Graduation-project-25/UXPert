@@ -445,6 +445,7 @@ def modify_design():
                 "modifications": result.get("modifications", []),
                 "modified_design": result["modified_design"],
                 "original_image": screenshot_b64
+
             })
 
         except Exception as parse_error:
