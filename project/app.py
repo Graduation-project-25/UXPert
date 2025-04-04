@@ -46,6 +46,20 @@ def clean_prefix(text):
     """Remove numeric prefixes like '0:' or '1:' from text."""
     return re.sub(r'^\d+:\s*', '', str(text))
 
+def get_latest_minimalist_results():
+    """Fetch the latest minimalist evaluation results from the evaluation folder."""
+    minimalist_file = os.path.join(evaluation_folder, "minimalist_evaluation.json")
+    print(minimalist_file)
+    if os.path.exists(minimalist_file):
+        with open(minimalist_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        for key, elements in data.items():
+            for element in elements:  
+                evaluation = element.get('evaluation', None)
+                return evaluation
+
+    return {}  # Return an empty dictionary if the file is missing
+
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
     if request.method == 'OPTIONS':
@@ -252,7 +266,6 @@ def process_elements():
         }
         if recognition_feedback_list:  # Add only if there are results
             response_data["recognition_results"] = recognition_feedback_list
-
 
         
         print("Sending to Figma:", response_data) 
