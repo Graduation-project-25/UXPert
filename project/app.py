@@ -23,9 +23,6 @@ import json
 
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
-load_dotenv()  
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # load_dotenv()  
 # openai.api_key = os.getenv("OPENAI_API_KEY")
 # print(f"OpenAI Key: {openai.api_key}")
