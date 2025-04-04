@@ -1,13 +1,7 @@
 let currentPageIndex = 0;
 const pages = [];
 let modifiedDesigns = [];
-let feedbackData = {}; 
-let currentDesignState = {
-    original: '',
-    modified: '',
-    modifications: []
-};
-// Store all feedback data per frame
+let feedbackData = {}; // Store all feedback data per frame
 
 // Initialize UI
 setTimeout(() => {
@@ -20,20 +14,22 @@ document.getElementById('start').onclick = () => {
     document.getElementById('initial-screen').style.display = 'none';
     document.getElementById('processing-screen').style.display = 'block';
 
-    // Start progress animation
     let progress = 0;
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
 
     const progressInterval = setInterval(() => {
-        progress = Math.min(progress + 5, 90);
+        progress = Math.min(progress + 5, 100); // Go all the way to 100%
         progressBar.value = progress;
         progressText.textContent = `${progress}%`;
+        
+        if (progress === 100) {
+            clearInterval(progressInterval);
+            // Only request feedback after progress completes
+            parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+        }
     }, 300);
-
-    parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
 };
-
 // Navigation functions
 function showPage(index) {
     pages.forEach((page, i) => {
@@ -114,136 +110,95 @@ window.addEventListener('message', (event) => {
     const msg = event.data.pluginMessage;
     if (!msg) return;
 
-    // Hide all screens first
-    document.querySelectorAll('.screen').forEach(el => {
-        el.style.display = 'none';
-    });
+    if (msg.type === 'collective-feedback') {
+        document.getElementById('processing-screen').style.display = 'none';
+        document.getElementById('feedback-screen').style.display = 'block';
 
-    switch (msg.type) {
-        case 'processing-started':
-            document.getElementById('processing-screen').style.display = 'block';
-            break;
+        setTimeout(() => {
+            document.getElementById('processing-screen').style.display = 'none';
+            document.getElementById('feedback-screen').style.display = 'block';
 
-        case 'collective-feedback':
-            handleFeedbackScreen(msg);
-            break;
+            const pagesContainer = document.getElementById('pages-container');
+            pagesContainer.innerHTML = '';
+            pages.length = 0;
+            feedbackData = {};
 
-        case 'design-modified':
-            currentDesignState = {
-                original: msg.original,
-                modified: msg.modified,
-                modifications: msg.modifications || []
-            };
-            showModifiedDesignScreen();
-            break;
+            msg.feedback.forEach((item, index) => {
+                const frameId = item.frameId || `frame-${index}`;
+                const feedbackTypes = getFeedbackTypes(item);
 
-        case 'modification-error':
-            showErrorScreen(msg);
-            break;
+                // Store feedback data for navigation
+                feedbackData[frameId] = {
+                    item,
+                    feedbackTypes,
+                    currentFeedbackIndex: 0
+                };
 
-        case 'processing-finished':
-            // No need to handle separately as other screens will show
-            break;
+                const pageSection = document.createElement('div');
+                pageSection.className = 'page-section';
+                pageSection.style.display = index === 0 ? 'block' : 'none';
+                pageSection.innerHTML = `
+                    <h2>${item.frameName}</h2>
+                    <div class="feedback-area">
+                        <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
+                        <div class="feedback-content">
+                            <div id="feedback-${frameId}">
+                                ${renderFeedback(item)}
+                            </div>
+                            ${feedbackTypes.length > 1 ?
+                        `<button class="feedback-nav-button" data-frame-id="${frameId}">→</button>` : ''}
+                        </div>
+                    </div>
+                    <button class="modify-button" data-frame-id="${frameId}">Show Modified Design</button>
+                `;
+                pagesContainer.appendChild(pageSection);
+                pages.push(pageSection);
+            });
+
+            showPage(0);
+
+            // Add event listeners for navigation buttons
+            document.querySelectorAll('.feedback-nav-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const frameId = e.currentTarget.getAttribute('data-frame-id');
+                    navigateFeedback(frameId);
+                });
+            });
+
+            // Add event listeners for modify buttons
+            document.querySelectorAll('.modify-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const frameId = e.currentTarget.getAttribute('data-frame-id');
+                    parent.postMessage({
+                        pluginMessage: {
+                            type: 'request-modified-design',  // Changed from 'show-modified-design'
+                            frameId: frameId
+                        }
+                    }, '*');
+                });
+            });
+        }, 300);
+    }
+    else if (msg.type === 'design-modified') {
+        // Only show modified design when we receive this message
+        document.getElementById('feedback-screen').style.display = 'none';
+        document.getElementById('modified-design-screen').style.display = 'block';
+
+        document.getElementById('original-design-image').src = msg.original;
+        document.getElementById('modified-design-image').src = msg.modified;
+
+        const modList = document.getElementById('modification-list');
+        modList.innerHTML = msg.modifications?.map(mod => `
+            <div class="modification">
+                <h4>${mod.heuristic || 'Improvement'}</h4>
+                <p><strong>Element:</strong> ${mod.node_id}</p>
+                <p><strong>Change:</strong> ${mod.property} → ${mod.value}</p>
+                <p><strong>Reason:</strong> ${mod.reason}</p>
+            </div>
+        `).join('') || '<p>No modifications details available</p>';
     }
 });
 
-function handleFeedbackScreen(msg) {
-    // Complete progress bar
-    document.getElementById('progress-bar').value = 100;
-    document.getElementById('progress-text').textContent = '100%';
-
-    const pagesContainer = document.getElementById('pages-container');
-    pagesContainer.innerHTML = '';
-    pages.length = 0;
-    feedbackData = {};
-
-    msg.feedback.forEach((item, index) => {
-        const frameId = item.frameId || `frame-${index}`;
-        const feedbackTypes = getFeedbackTypes(item);
-
-        feedbackData[frameId] = {
-            item,
-            feedbackTypes,
-            currentFeedbackIndex: 0
-        };
-
-        const pageSection = document.createElement('div');
-        pageSection.className = 'page-section';
-        pageSection.style.display = index === 0 ? 'block' : 'none';
-        pageSection.innerHTML = `
-            <h2>${item.frameName}</h2>
-            <div class="feedback-area">
-                <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
-                <div class="feedback-content">
-                    <div id="feedback-${frameId}">
-                        ${renderFeedback(item)}
-                    </div>
-                    ${feedbackTypes.length > 1 ?
-                    `<button class="feedback-nav-button" data-frame-id="${frameId}">→</button>` : ''}
-                </div>
-            </div>
-            <button class="modify-button" data-frame-id="${frameId}">Show Modified Design</button>
-        `;
-        pagesContainer.appendChild(pageSection);
-        pages.push(pageSection);
-    });
-
-    showPage(0);
-    document.getElementById('feedback-screen').style.display = 'block';
-
-    // Add event listeners
-    document.querySelectorAll('.feedback-nav-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const frameId = e.currentTarget.getAttribute('data-frame-id');
-            navigateFeedback(frameId);
-        });
-    });
-
-    document.querySelectorAll('.modify-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const frameId = e.currentTarget.getAttribute('data-frame-id');
-            parent.postMessage({
-                pluginMessage: {
-                    type: 'request-modified-design',
-                    frameId: frameId
-                }
-            }, '*');
-        });
-    });
-}
-
-function showModifiedDesignScreen() {
-    document.getElementById('original-design-image').src = currentDesignState.original;
-    document.getElementById('modified-design-image').src = currentDesignState.modified;
-    
-    const modList = document.getElementById('modification-list');
-    modList.innerHTML = currentDesignState.modifications.length > 0
-        ? currentDesignState.modifications.map(mod => `
-            <li class="modification-item">
-                <strong>${mod.heuristic || 'Improvement'}:</strong>
-                <p>${mod.reason || 'No reason provided'}</p>
-                <small>${mod.node_id} • ${mod.property} → ${mod.value}</small>
-            </li>
-        `).join('')
-        : '<li>No modifications suggested</li>';
-    
-    document.getElementById('modified-design-screen').style.display = 'block';
-}
-
-function showErrorScreen(msg) {
-    document.getElementById('error-message').textContent = msg.error;
-    if (msg.original) {
-        document.getElementById('original-design-image').src = msg.original;
-    }
-    document.getElementById('error-screen').style.display = 'block';
-}
-
-// Update your navigation functions
-document.getElementById('back-to-feedback-from-mod').onclick = () => {
-    document.getElementById('modified-design-screen').style.display = 'none';
-    document.getElementById('feedback-screen').style.display = 'block';
-    showPage(currentPageIndex);
-};
 // Navigation buttons
 document.getElementById('prev').onclick = () => showPage(currentPageIndex - 1);
 document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
@@ -267,5 +222,10 @@ document.getElementById('back-to-feedback-from-mod').onclick = () => {
 };
 
 document.getElementById('close').onclick = () => {
-    parent.postMessage({ pluginMessage: { type: 'close' } }, '*');
+    document.getElementById('processing-screen').style.display = 'none'; 
+    setTimeout(() => {
+        document.getElementById('feedback-screen').style.display = 'block';
+    }, 2000); 
+    
+    parent.postMessage({ pluginMessage: { type: 'close' } }, '*'); 
 };

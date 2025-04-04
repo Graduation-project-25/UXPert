@@ -26,42 +26,6 @@ async function trackInstanceTextChanges() {
 }
 
 
-
-// async function getModifiedDesign(frame: FrameNode) {
-//     try {
-//         const elements = await FeatureExtractor.extractForAI(frame);
-//         const imageBytes = await frame.exportAsync({ format: "PNG" });
-//         const imageBase64 = figma.base64Encode(imageBytes);
-        
-//         const response = await fetch("http://localhost:3000/modify-design", {
-//             method: "POST",
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify({
-//                 screenshot: `data:image/png;base64,${imageBase64}`,
-//                 elements
-//             }),
-//         });
-        
-//         const result = await response.json();
-        
-//         if (result.error) {
-//             throw new Error(result.error);
-//         }
-
-//         // Show modified image
-//         figma.ui.postMessage({
-//             type: 'design-modified',
-//             original: `data:image/png;base64,${imageBase64}`,
-//             modified: result.modified_image,
-//             instructions: result.instructions || ["No specific instructions provided"]
-//         });
-        
-//     } catch (error) {
-//         console.error("Design modification failed:", error);
-//         figma.notify(`AI modification failed: ${error instanceof Error ? error.message : String(error)}`);
-//     }
-// }
-// In your code.ts
 interface Modification {
     node_id: string;
     property: string;
@@ -494,15 +458,12 @@ figma.ui.onmessage = async (msg) => {
             figma.notify(`Failed to send elements from ${frame.name} to backend.`);
         }
         
-    // if (allFeedback.length > 0) {
-    //     UiService.sendFeedbackToUI(allFeedback);
-    // }
+
     if (allFeedback.length > 0) {
         UiService.sendFeedbackToUI(allFeedback);
     }
 
 else if (msg.type === 'show-modified-design') {
-    // Only call model when this button is clicked
     try {
         const frameId = msg.frameId;
         const frame = figma.getNodeById(frameId) as FrameNode;
