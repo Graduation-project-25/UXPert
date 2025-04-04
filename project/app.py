@@ -23,6 +23,9 @@ import json
 
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
+load_dotenv()  
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # load_dotenv()  
 # openai.api_key = os.getenv("OPENAI_API_KEY")
 # print(f"OpenAI Key: {openai.api_key}")
@@ -42,28 +45,6 @@ feedback_repository = FeedbackRepository()
 # Initialize Flask
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
-
-####################To Be Removed (DB)####################
-# Define output folder
-data_folder = "figma_features"
-output_folder = data_folder + "/extracted"
-evaluation_folder = data_folder + "/evaluation"
-
-dataset_folder = './data/raw/EGFE'
-main_output_folder = dataset_folder + '/extractedFeatures'
-# test_folder = main_output_folder + '/test'
-if not os.path.exists(data_folder):
-    os.makedirs(data_folder)
-    print(f"Created folder: {data_folder}")
-  # Ensure the folder exists
-os.makedirs(output_folder, exist_ok=True)  # Ensure the folder exists
-os.makedirs(evaluation_folder, exist_ok=True)  # Ensure the folder exists
-
-def get_new_filename():
-    """Generate a unique filename based on existing files in the extracted folder."""
-    existing_files = [f for f in os.listdir(output_folder) if f.endswith(".json")]
-    count = len(existing_files)  # Count current files and use it for a new filename
-    return os.path.join(output_folder, f"design_{count + 1}.json")
 
 def clean_prefix(text):
     """Remove numeric prefixes like '0:' or '1:' from text."""
@@ -107,23 +88,6 @@ def process_elements():
     #Convert Elements to DataFrame
     elements_df = pd.DataFrame(elements)
     print(elements_df)
-
-    ####################To Be Removed (DB)####################
-    # Fetch Latest Minimalist Evaluation
-    def get_latest_minimalist_results():
-        """Fetch the latest minimalist evaluation results from the evaluation folder."""
-        minimalist_file = os.path.join(evaluation_folder, "minimalist_evaluation.json")
-        print(minimalist_file)
-        if os.path.exists(minimalist_file):
-            with open(minimalist_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            for key, elements in data.items():
-                for element in elements:  
-                    evaluation = element.get('evaluation', None)
-                    return evaluation
-
-        return {}  # Return an empty dictionary if the file is missing
-    ##########################################################
 
     try:
         # Prepare feature data
@@ -171,22 +135,6 @@ def process_elements():
 
         # Convert elements into the expected format for heuristic evaluation
         designs_for_evaluation = [{"elements": elements_db}]
-
-        ####################To Be Removed (DB)####################
-        output_data = {
-            "screen_size": frame_info,  
-            "elements": elements,
-        }
-        output_file = get_new_filename()
-        with open(output_file, "w", encoding="utf-8") as json_file:
-            json.dump(output_data, json_file, indent=4, ensure_ascii=False)
-
-        frame_data = latest_saved_data.get("frames", [])
-        if frame_data:
-            elements_df = pd.DataFrame(frame_data[0].get("elements", []))
-        else:
-            return jsonify({"error": "No elements found in the retrieved frame data"}), 500
-        ###########################################################
 
         # Run heuristic evaluations
         # Get screen width and height
