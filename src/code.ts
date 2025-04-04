@@ -34,15 +34,6 @@ interface Modification {
     reason?: string;
 }
 
-interface ModifiedDesign {
-    original: string;
-    modified: string;
-    modifications: Modification[];
-}
-
-// Track modified designs
-const modifiedDesigns = new Map<string, ModifiedDesign>();
-
 async function renderModifiedDesign(original: FrameNode, modifiedJson: any): Promise<FrameNode> {
     // Create frame with proper dimensions
     const modifiedFrame = figma.createFrame();
@@ -310,17 +301,6 @@ async function getModifiedDesign(frame: FrameNode): Promise<void> {
     }
 }
 
-// Type guard for valid connector endpoint nodes
-function isConnectorEndpoint(node: SceneNode): node is 
-    VectorNode | BooleanOperationNode | ComponentNode | InstanceNode | TextNode {
-    return (
-        node.type === 'VECTOR' ||
-        node.type === 'BOOLEAN_OPERATION' ||
-        node.type === 'COMPONENT' ||
-        node.type === 'INSTANCE' ||
-        node.type === 'TEXT'
-    );
-}
 
 function hexToRgb(hex: string): RGB {
     // Remove # if present
@@ -342,15 +322,6 @@ function hexToRgb(hex: string): RGB {
     }
     
     return { r, g, b };
-}
-async function safeLoadFont(fontName: FontName): Promise<boolean> {
-    try {
-        await figma.loadFontAsync(fontName);
-        return true;
-    } catch (e) {
-        console.warn(`Failed to load font ${fontName.family} ${fontName.style}:`, e);
-        return false;
-    }
 }
 async function applyModifications(original: FrameNode, modifications: Modification[]): Promise<FrameNode> {
     const modified = original.clone();
