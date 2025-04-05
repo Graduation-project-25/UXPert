@@ -31,6 +31,18 @@ document.getElementById('start').onclick = () => {
         }
     }, 300);
 
+    // Fallback: Increment progress every 2 seconds if no messages are received, up to 100%
+    let fallbackProgress = 0;
+    const fallbackInterval = setInterval(() => {
+        if (fallbackProgress < 100 && progress < 100) { // Only increment if neither progress is at 100
+            fallbackProgress += 10; // Increment by 10% every 2 seconds
+            progress = Math.min(fallbackProgress, 100);
+            progressBar.value = progress;
+            progressText.textContent = `${progress}%`;
+            console.log(`Fallback progress: ${progress}%`);
+        }
+    }, 2000); // 2 seconds interval for fallback
+
     // Listen for progress or completion messages with debugging
     const messageHandler = (event) => {
         console.log('Message received:', event.data); // Debug: Log all messages
@@ -44,50 +56,39 @@ document.getElementById('start').onclick = () => {
             console.log(`Progress updated to: ${progress}%`);
 
             if (progress >= 100) {
-                clearInterval(progressInterval);
-                window.removeEventListener('message', messageHandler); // Clean up listener
-                handleDetectionComplete();
+                clearAllIntervalsAndListeners(progressInterval, fallbackInterval, messageHandler);
+                jumpToCompletion();
             }
         } else if (msg.type === 'detection-complete') {
-            clearInterval(progressInterval);
-            window.removeEventListener('message', messageHandler); // Clean up listener
-            handleDetectionComplete(msg.feedback);
-            console.log('Detection complete, moving to feedback');
+            clearAllIntervalsAndListeners(progressInterval, fallbackInterval, messageHandler);
+            jumpToCompletion(msg.feedback);
+            console.log('Detection complete, jumping to feedback');
         }
     };
 
     window.addEventListener('message', messageHandler);
 
-    // Fallback: Increment progress every 2 seconds if no messages are received, up to 100%
-    let fallbackProgress = 0;
-    const fallbackInterval = setInterval(() => {
-        if (fallbackProgress < 100) {
-            fallbackProgress += 10; // Increment by 10% every 2 seconds
-            progress = Math.min(fallbackProgress, 100);
-            progressBar.value = progress;
-            progressText.textContent = `${progress}%`;
-            console.log(`Fallback progress: ${progress}%`);
-        } else {
-            clearInterval(fallbackInterval);
-            clearInterval(progressInterval);
-            window.removeEventListener('message', messageHandler);
-            handleDetectionComplete(); // Force transition
-            console.log('Fallback triggered, moving to feedback');
-        }
-    }, 2000); // 2 seconds interval for fallback
-
-    // Fallback timeout: If no completion after 30 seconds, force transition
+    // Fallback timeout: If no completion after 15 seconds, force transition
     const timeout = setTimeout(() => {
-        clearInterval(progressInterval);
-        clearInterval(fallbackInterval);
-        window.removeEventListener('message', messageHandler);
-        handleDetectionComplete(); // Force transition even without message
-        console.log('Timeout triggered, forcing transition to feedback');
-    }, 30000); // 30 seconds timeout
+        clearAllIntervalsAndListeners(progressInterval, fallbackInterval, messageHandler);
+        jumpToCompletion(); // Force transition even without message
+        console.log('Timeout triggered, jumping to feedback');
+    }, 15000); // 15 seconds timeout
 
-    function handleDetectionComplete(feedback = null) {
-        clearTimeout(timeout); // Clear the fallback timer
-        clearInterval(fallbackInterval); // Clear fallback progress
+    function clearAllIntervalsAndListeners(progressInt, fallbackInt, handler) {
+        clearInterval(progressInt);
+        clearInterval(fallbackInt);
+        clearTimeout(timeout); // Clear any pending timeout
+        window.removeEventListener('message', handler); // Clean up listener
+    }
+
+    function jumpToCompletion(feedback = null) {
+        // Immediately jump progress to 100% and transition
+        progress = 100;
+        progressBar.value = progress;
+        progressText.textContent = `${progress}%`;
+
+        clearAllIntervalsAndListeners(progressInterval, fallbackInterval, messageHandler); // Ensure everything stops
         document.getElementById('processing-screen').style.display = 'none';
         document.getElementById('feedback-screen').style.display = 'block';
 
