@@ -1,31 +1,24 @@
 import json
-import os
-import textwrap
 import traceback
 import pandas as pd
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 import app
+from dotenv import load_dotenv
+import json, traceback
+import re
+import openai
+from openai import OpenAI 
+import requests
+
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from database.feedback_repository import FeedbackRepository
 from database.figma_features_repository import FigmaFeaturesRepository
 
-from dotenv import load_dotenv
-import base64, json, traceback
-import re
-from io import BytesIO
-from PIL import Image, ImageDraw, ImageFont
-import openai
-from openai import OpenAI 
-import requests
-# from flask_limiter import Limiter
-import json 
-
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
-# load_dotenv()  
+load_dotenv()  
 # openai.api_key = os.getenv("OPENAI_API_KEY")
-# print(f"OpenAI Key: {openai.api_key}")
 # client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 try:
@@ -46,20 +39,6 @@ CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 def clean_prefix(text):
     """Remove numeric prefixes like '0:' or '1:' from text."""
     return re.sub(r'^\d+:\s*', '', str(text))
-
-def get_latest_minimalist_results():
-    """Fetch the latest minimalist evaluation results from the evaluation folder."""
-    minimalist_file = os.path.join(evaluation_folder, "minimalist_evaluation.json")
-    print(minimalist_file)
-    if os.path.exists(minimalist_file):
-        with open(minimalist_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        for key, elements in data.items():
-            for element in elements:  
-                evaluation = element.get('evaluation', None)
-                return evaluation
-
-    return {}  # Return an empty dictionary if the file is missing
 
 @app.route('/process', methods=['POST', 'OPTIONS'])
 def process_elements():
