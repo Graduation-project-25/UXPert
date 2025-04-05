@@ -10,6 +10,8 @@ import re
 import openai
 from openai import OpenAI 
 import requests
+import os
+
 
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from database.feedback_repository import FeedbackRepository
@@ -18,8 +20,8 @@ from database.figma_features_repository import FigmaFeaturesRepository
 # limiter = Limiter(app1, key_func=lambda: 'global')
 
 load_dotenv()  
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 try:
     models = openai.models.list()
