@@ -1,7 +1,5 @@
 import json
 import os
-import textwrap
-import traceback
 import pandas as pd
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
@@ -9,15 +7,10 @@ import app
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from database.feedback_repository import FeedbackRepository
 from database.figma_features_repository import FigmaFeaturesRepository
-
 from dotenv import load_dotenv
-import base64, json, traceback
 import re
-from io import BytesIO
-from PIL import Image, ImageDraw, ImageFont
 import openai
 from openai import OpenAI 
-import requests
 import json 
 
 

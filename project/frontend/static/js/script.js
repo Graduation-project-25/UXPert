@@ -117,15 +117,6 @@ function showModifications(data) {
     document.getElementById('feedback-screen').style.display = 'none';
     document.getElementById('modifications-screen').style.display = 'block';
 }
-// function showError(message) {
-//     const errorScreen = document.getElementById('error-screen');
-//     errorScreen.style.display = 'block';
-//     document.getElementById('error-message').textContent = message;
-    
-//     // Hide other screens
-//     document.getElementById('feedback-screen').style.display = 'none';
-//     document.getElementById('modifications-screen').style.display = 'none';
-// }
 
 function showLoading() {
     document.getElementById('processing-screen').style.display = 'block';
@@ -249,20 +240,12 @@ if (msg.type === 'progress-update') {
     document.getElementById('progress-text').textContent = `${msg.progress}%`;
     return;
 }
-// if (msg.type === 'error') {
-//     showError(msg.message);
-//     return;
-// }
+
 });
 // Navigation buttons
 document.getElementById('prev').onclick = () => showPage(currentPageIndex - 1);
 document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
-// Screen transitions
-// document.getElementById('suggest-enhancements').onclick = () => {
-//     document.getElementById('feedback-screen').style.display = 'none';
-//     document.getElementById('enhancement-screen').style.display = 'block';
-// };
 
 
 document.getElementById('modify-button').onclick = async () => {
