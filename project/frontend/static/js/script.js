@@ -23,7 +23,7 @@ document.getElementById('start').onclick = () => {
         progressBar.value = progress;
         progressText.textContent = `${progress}%`;
         
-        if (progress === 100) {
+        if (progress === 50) {
             clearInterval(progressInterval);
             // Only request feedback after progress completes
             parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
@@ -89,7 +89,51 @@ function renderFeedback(item, feedbackIndex = 0) {
     html += '</ul>';
     return html;
 }
+function showModifications(data) {
+    const modList = document.getElementById('modification-list');
+    modList.innerHTML = '';
+    
+    if (data.modifications && data.modifications.length > 0) {
+        data.modifications.forEach(mod => {
+            const item = document.createElement('div');
+            item.className = 'modification-item';
+            item.innerHTML = `
+                <h4>${mod.element_name || mod.element_id || 'Element'}</h4>
+                ${mod.issues ? mod.issues.map(issue => `
+                    <div class="issue">
+                        <p><strong>Heuristic:</strong> ${issue.heuristic}</p>
+                        <p><strong>Problem:</strong> ${issue.problem}</p>
+                        <p><strong>Solution:</strong> ${issue.solution}</p>
+                        <p><strong>Priority:</strong> ${issue.priority}</p>
+                    </div>
+                `).join('') : ''}
+            `;
+            modList.appendChild(item);
+        });
+    } else {
+        modList.innerHTML = '<p>No modifications suggested for this frame</p>';
+    }
+    
+    document.getElementById('feedback-screen').style.display = 'none';
+    document.getElementById('modifications-screen').style.display = 'block';
+}
+// function showError(message) {
+//     const errorScreen = document.getElementById('error-screen');
+//     errorScreen.style.display = 'block';
+//     document.getElementById('error-message').textContent = message;
+    
+//     // Hide other screens
+//     document.getElementById('feedback-screen').style.display = 'none';
+//     document.getElementById('modifications-screen').style.display = 'none';
+// }
 
+function showLoading() {
+    document.getElementById('processing-screen').style.display = 'block';
+}
+
+function hideLoading() {
+    document.getElementById('processing-screen').style.display = 'none';
+}
 function navigateFeedback(frameId) {
     if (!feedbackData[frameId]) return;
 
@@ -149,7 +193,6 @@ window.addEventListener('message', (event) => {
                         `<button class="feedback-nav-button" data-frame-id="${frameId}">→</button>` : ''}
                         </div>
                     </div>
-                    <button class="modify-button" data-frame-id="${frameId}">Show Modified Design</button>
                 `;
                 pagesContainer.appendChild(pageSection);
                 pages.push(pageSection);
@@ -166,57 +209,87 @@ window.addEventListener('message', (event) => {
             });
 
             // Add event listeners for modify buttons
-            document.querySelectorAll('.modify-button').forEach(button => {
+            document.querySelectorAll('modify-button-query').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const frameId = e.currentTarget.getAttribute('data-frame-id');
+                    console.log('Requesting modifications for frame:', frameId);
+                    
+                    // Show loading state
+                    document.getElementById('processing-screen').style.display = 'block';
+                    
                     parent.postMessage({
                         pluginMessage: {
-                            type: 'request-modified-design',  // Changed from 'show-modified-design'
+                            type: 'request-modifications',
                             frameId: frameId
                         }
                     }, '*');
-                });
-            });
+                }
+            );
+            }
+        );
         }, 300);
-    }
-    else if (msg.type === 'design-modified') {
-        // Only show modified design when we receive this message
-        document.getElementById('feedback-screen').style.display = 'none';
-        document.getElementById('modified-design-screen').style.display = 'block';
+    
+    return;
+}
 
-        document.getElementById('original-design-image').src = msg.original;
-        document.getElementById('modified-design-image').src = msg.modified;
 
-        const modList = document.getElementById('modification-list');
-        modList.innerHTML = msg.modifications?.map(mod => `
-            <div class="modification">
-                <h4>${mod.heuristic || 'Improvement'}</h4>
-                <p><strong>Element:</strong> ${mod.node_id}</p>
-                <p><strong>Change:</strong> ${mod.property} → ${mod.value}</p>
-                <p><strong>Reason:</strong> ${mod.reason}</p>
-            </div>
-        `).join('') || '<p>No modifications details available</p>';
+if (msg.type === 'design-modifications') {
+    hideLoading();
+    console.log('Received modifications:', msg);
+    
+    if (msg.modifications && msg.modifications.length > 0) {
+        showModifications(msg);
+    } else {
+        showError('No modifications suggested for this frame');
     }
+    return;
+}
+if (msg.type === 'progress-update') {
+    document.getElementById('progress-bar').value = msg.progress;
+    document.getElementById('progress-text').textContent = `${msg.progress}%`;
+    return;
+}
+// if (msg.type === 'error') {
+//     showError(msg.message);
+//     return;
+// }
 });
-
 // Navigation buttons
 document.getElementById('prev').onclick = () => showPage(currentPageIndex - 1);
 document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
 // Screen transitions
-document.getElementById('suggest-enhancements').onclick = () => {
-    document.getElementById('feedback-screen').style.display = 'none';
-    document.getElementById('enhancement-screen').style.display = 'block';
+// document.getElementById('suggest-enhancements').onclick = () => {
+//     document.getElementById('feedback-screen').style.display = 'none';
+//     document.getElementById('enhancement-screen').style.display = 'block';
+// };
+
+
+document.getElementById('modify-button').onclick = async () => {
+    showLoading();
+    
+    try {
+        const currentFrame = pages[currentPageIndex];
+        const frameName = currentFrame.querySelector('h2')?.textContent;
+        
+        const response = await new Promise((resolve, reject) => {
+            parent.postMessage({
+                pluginMessage: {
+                    type: 'request-modifications',
+                    frameName: frameName
+                }
+            }, '*');
+                 setTimeout(() => reject(new Error("Request timeout")), 30000);
+        });
+        
+    } catch (error) {
+        console.error("Modification error:", error);
+        showError(`Failed to get modifications: ${error.message}`);
+    }
 };
 
-document.getElementById('back-to-feedback').onclick = () => {
-    document.getElementById('enhancement-screen').style.display = 'none';
-    document.getElementById('feedback-screen').style.display = 'block';
-    showPage(currentPageIndex);
-};
-
-document.getElementById('back-to-feedback-from-mod').onclick = () => {
-    document.getElementById('modified-design-screen').style.display = 'none';
+document.getElementById('back-to-feedback-from-mods').onclick = () => {
+    document.getElementById('modifications-screen').style.display = 'none';
     document.getElementById('feedback-screen').style.display = 'block';
     showPage(currentPageIndex);
 };

@@ -27,7 +27,7 @@ export class UiService {
         
         // Send to UI
         figma.ui.postMessage({
-            type: 'design-modified',
+            type: 'design-modifications',
             frameId,
             original,
             modified,
