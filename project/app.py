@@ -15,11 +15,8 @@ import json
 
 
 load_dotenv()  
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 figma_repository = FigmaFeaturesRepository()       
 feedback_repository = FeedbackRepository()       
@@ -30,25 +27,9 @@ app = Flask(__name__, static_folder="frontend/static", template_folder="frontend
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
 # Define output folder
-data_folder = "figma_features"
-output_folder = data_folder + "/extracted"
-evaluation_folder = data_folder + "/evaluation"
-
 dataset_folder = './data/raw/EGFE'
 main_output_folder = dataset_folder + '/extractedFeatures'
 
-if not os.path.exists(data_folder):
-    os.makedirs(data_folder)
-    print(f"Created folder: {data_folder}")
-  #
-os.makedirs(output_folder, exist_ok=True)  
-os.makedirs(evaluation_folder, exist_ok=True)  
-
-def get_new_filename():
-    """Generate a unique filename based on existing files in the extracted folder."""
-    existing_files = [f for f in os.listdir(output_folder) if f.endswith(".json")]
-    count = len(existing_files) 
-    return os.path.join(output_folder, f"design_{count + 1}.json")
 
 def clean_prefix(text):
     """Remove numeric prefixes like '0:' or '1:' from text."""
@@ -76,20 +57,6 @@ def process_elements():
    
     elements_df = pd.DataFrame(elements)
   
-    def get_latest_minimalist_results():
-        """Fetch the latest minimalist evaluation results from the evaluation folder."""
-        minimalist_file = os.path.join(evaluation_folder, "minimalist_evaluation.json")
-        print(minimalist_file)
-        if os.path.exists(minimalist_file):
-            with open(minimalist_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            for key, elements in data.items():
-                for element in elements:  
-                    evaluation = element.get('evaluation', None)
-                    return evaluation
-
-        return {}  
-
     try:
       
         feature_data = {
@@ -139,9 +106,6 @@ def process_elements():
             "screen_size": frame_info,  
             "elements": elements,
         }
-        output_file = get_new_filename()
-        with open(output_file, "w", encoding="utf-8") as json_file:
-            json.dump(output_data, json_file, indent=4, ensure_ascii=False)
 
         frame_data = latest_saved_data.get("frames", [])
         if frame_data:

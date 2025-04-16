@@ -23,7 +23,7 @@ document.getElementById('start').onclick = () => {
         progressBar.value = progress;
         progressText.textContent = `${progress}%`;
         
-        if (progress === 50) {
+        if (progress === 100) {
             clearInterval(progressInterval);
             // Only request feedback after progress completes
             parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
