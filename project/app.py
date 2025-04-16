@@ -15,8 +15,8 @@ import json
 
 
 load_dotenv()  
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 figma_repository = FigmaFeaturesRepository()       
 feedback_repository = FeedbackRepository()       

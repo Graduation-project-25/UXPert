@@ -54,6 +54,7 @@
     "mongoose": "^8.10.1",
     "node": "^18.20.6",
     "openai": "^4.91.1",
+    "pytest": "^1.0.0",
     "UXPert": "file:"
   }
 }
