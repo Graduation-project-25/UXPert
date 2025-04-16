@@ -9,6 +9,7 @@ from database.feedback_repository import FeedbackRepository
 from database.figma_features_repository import FigmaFeaturesRepository
 from dotenv import load_dotenv
 import re
+from json.decoder import JSONDecodeError
 import openai
 from openai import OpenAI 
 import json
@@ -271,21 +272,55 @@ NIELSEN_HEURISTICS = {
 }
 
 def extract_json_from_response(text):
-    """Extract JSON from potentially malformed AI response"""
+    """Robust JSON extraction that handles truncated responses"""
+    text = text.strip()
+    
+    # First try parsing directly
     try:
-        # First try direct parse
         return json.loads(text)
+    except JSONDecodeError as e:
+        pass  # We'll try other methods
+        
+    # Try to find complete JSON object (handles truncated responses)
+    try:
+        # Look for complete objects within curly braces
+        json_str = re.search(r'\{.*\}', text, re.DOTALL)
+        if json_str:
+            # Count braces to ensure we have balanced pairs
+            open_braces = json_str.group().count('{')
+            close_braces = json_str.group().count('}')
+            
+            # If unbalanced, try to fix by adding missing braces
+            if open_braces > close_braces:
+                fixed_json = json_str.group() + '}' * (open_braces - close_braces)
+                return json.loads(fixed_json)
+            elif close_braces > open_braces:
+                fixed_json = '{' * (close_braces - open_braces) + json_str.group()
+                return json.loads(fixed_json)
+            return json.loads(json_str.group())
     except json.JSONDecodeError:
-        # If failed, try to extract JSON from markdown or other formats
-        json_match = re.search(r'```json\n(.*?)\n```', text, re.DOTALL)
+        pass
+        
+    # Try extracting from markdown code blocks
+    try:
+        json_match = re.search(r'```(?:json)?\n(.*?)\n```', text, re.DOTALL)
         if json_match:
             return json.loads(json_match.group(1))
-        # Try to find outermost curly braces
-        json_match = re.search(r'\{.*\}', text, re.DOTALL)
-        if json_match:
-            return json.loads(json_match.group(0))
-    raise ValueError("No valid JSON found in response")
-
+    except JSONDecodeError:
+        pass
+        
+    # Final fallback - try parsing as much as possible
+    try:
+        # Find the longest valid JSON prefix
+        for i in range(len(text), 0, -1):
+            try:
+                return json.loads(text[:i])
+            except JSONDecodeError:
+                continue
+    except Exception:
+        pass
+        
+    raise ValueError(f"Could not extract valid JSON from response. Content:\n{text[:500]}...")
 
 @app.route('/modify-design', methods=['POST'])
 def modify_design():
@@ -296,51 +331,29 @@ def modify_design():
         if not data or 'design_json' not in data:
             return jsonify({"status": "error", "message": "No design data provided"}), 400
 
-        # More constrained system message
-        system_message = """You are a UX analyzer and json parser that MUST respond with perfect JSON.
-        Analyze Figma elements against these 10 Nielsen heuristics:
-        1. Visibility of system status
-        2. Match between system and real world
-        3. User control and freedom
-        4. Consistency and standards
-        5. Error prevention
-        6. Recognition rather than recall
-        7. Flexibility and efficiency
-        8. Aesthetic and minimalist design
-        9. Help users recognize errors
-        10. Help and documentation
+        # Simplify the design JSON to reduce token usage
+        simplified_design = {
+            "metadata": data['design_json'].get('metadata', {}),
+            "elements": [
+                {k: v for k, v in elem.items() if k in ['id', 'type', 'text', 'color']}
+                for elem in data['design_json'].get('elements', [])[:50]  # Limit to first 50 elements
+            ]
+        }
 
-        Response format template:
-        {
-            "status": "success",
-            "summary": "Brief assessment",
-            "modifications": [{
-                "element_id": "string",
-                "element_name": "string",
-                "issues": [{
-                    "heuristic": "string (1-10 from above)",
-                    "problem": "string",
-                    "solution": "string",
-                    "priority": "high/medium/low"
-                }]
-            }]
-        }"""
+        system_message = """You are a UX analyzer that returns perfect JSON with:
+        - "status": "success"
+        - "summary": "brief assessment"
+        - "modified_design": {original JSON with fixes}
+        - "modifications": [list of changes made]
+        Return ONLY the JSON object."""
 
-        # Simplified user prompt
-        prompt = f"""
-        Analyze this design against Nielsen's heuristics:
-        Designer: {data.get('user_name', 'Unknown')}
-        Project: {data.get('design_name', 'Untitled')}
-        
-        Design Elements:
-        {json.dumps({k: v for k, v in data['design_json'].items() if k != 'metadata'}, indent=2)}
+        prompt = f"""Analyze and improve this design:
+        {json.dumps(simplified_design, indent=2)}
         
         Instructions:
-        - Return ONLY valid JSON
-        - Analyze each element against relevant heuristics
-        - Provide specific solutions
-        - Prioritize by severity
-        """
+        1. Keep responses under 3000 tokens
+        2. Return complete JSON (no truncation)
+        3. Focus on key usability issues"""
 
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -348,46 +361,43 @@ def modify_design():
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3,  # Lower for more consistent JSON
-            max_tokens=2000,
-            response_format={"type": "json_object"}  # Enforce JSON mode
+            temperature=0.3,
+            max_tokens=3000,  # Increased token limit
+            response_format={"type": "json_object"}
         )
 
         content = response.choices[0].message.content
         
-        try:
-            modifications = extract_json_from_response(content)
-            if not isinstance(modifications, dict):
-                raise ValueError("Response is not a JSON object")
-                
-            # Ensure required fields exist
-            if 'modifications' not in modifications:
-                modifications['modifications'] = []
+        # Debug: Check response completeness
+        if not content.strip().endswith('}'):
+            print("Warning: Response may be truncated")
+            content = content + '}"}'  # Attempt to fix
 
-              # Save to database and file system
-            doc_id, (original_filename, modified_filename) = modified_designs_repo.save_modified_design(data, modifications)
+        try:
+            modifications = json.loads(content)
             
-            # Enhance the response with saving information
-            response_data = {
-                **modifications,
-                "storage_info": {
-                    "document_id": doc_id,
-                    "original_saved": original_filename is not None,
-                    "modified_saved": modified_filename is not None,
-                    "original_filename": original_filename,
-                    "modified_filename": modified_filename
-                }
-            }
-            
+            # Validate response structure
+            if not all(k in modifications for k in ['modified_design', 'modifications']):
+                raise ValueError("Missing required fields in response")
                 
-            return jsonify(modifications)
+            # Save to database
+            doc_id = modified_designs_repo.save_modification_record(
+                original_data=data,
+                modified_json=modifications
+            )
             
-        except Exception as e:
-            print(f"JSON Parsing Error: {str(e)}\nAI Response:\n{content}")
+            return jsonify({
+                "status": "success",
+                "document_id": doc_id,
+                "result": modifications
+            })
+            
+        except json.JSONDecodeError as e:
+            print(f"JSON Parse Error: {e}\nContent:\n{content[:500]}...")
             return jsonify({
                 "status": "error",
-                "message": "Failed to parse AI response",
-                "content": content  # For debugging
+                "message": "Invalid JSON from AI",
+                "content": content[:500] + "..." if len(content) > 500 else content
             }), 500
             
     except Exception as e:
