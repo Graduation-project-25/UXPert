@@ -8,42 +8,64 @@ class ModifiedDesignsRepository(BaseRepository):
     def __init__(self):
         super().__init__("modified_designs")
         
-    def save_modified_design(self, original_data, modifications):
-        """Save modified design to database and file system"""
-        # Create document structure
+    def save_modified_design(self, original_data, modified_json):
+        """
+        Save both original design and modified JSON to database and file system
+        Returns:
+            tuple: (document_id, filename)
+        """
+        # Create comprehensive document structure
         document = {
-            "original_design_name": original_data.get('design_name', 'Untitled'),
-            "original_user_name": original_data.get('user_name', 'Unknown'),
-            "original_design_json": original_data['design_json'],
-            "modifications": modifications,
-            "timestamp": datetime.utcnow(),
-            "saved_files": []
+            "original": {
+                "design_name": original_data.get('design_name', 'Untitled'),
+                "user_name": original_data.get('user_name', 'Unknown'),
+                "design_json": original_data['design_json'],
+                "timestamp": datetime.utcnow()
+            },
+            "modified": modified_json,  # This is the AI's response JSON
+            "files": {
+                "original_saved": False,
+                "modified_saved": False
+            }
         }
         
-        # Save to database
+        # First save to database
         result = self.add(document)
         document_id = str(result.inserted_id)
         
-        # Save to file system
+        # Then save to file system
         try:
             os.makedirs("modified_designs", exist_ok=True)
-            filename = f"modified_designs/modified_{document_id}.json"
-            with open(filename, 'w') as f:
-                json.dump({
-                    "original": original_data,
-                    "modifications": modifications
-                }, f, indent=2)
+            
+            # Save original and modified as separate files
+            original_filename = f"modified_designs/original_{document_id}.json"
+            modified_filename = f"modified_designs/modified_{document_id}.json"
+            
+            # Save original design
+            with open(original_filename, 'w') as f:
+                json.dump(original_data, f, indent=2)
+            
+            # Save modified JSON
+            with open(modified_filename, 'w') as f:
+                json.dump(modified_json, f, indent=2)
             
             # Update document with file info
             self.update(
                 {"_id": result.inserted_id},
-                {"$push": {"saved_files": filename}}
+                {"$set": {
+                    "files": {
+                        "original_saved": original_filename,
+                        "modified_saved": modified_filename
+                    }
+                }}
             )
             
-            return document_id, filename
+            return document_id, (original_filename, modified_filename)
+            
         except Exception as e:
-            print(f"Error saving to file: {e}")
-            return document_id, None
+            print(f"Error saving to files: {e}")
+            # Even if file save fails, we still have the data in DB
+            return document_id, (None, None)
         
     def get_modification_by_id(self, modification_id):
         """Get a single modification by its ID"""

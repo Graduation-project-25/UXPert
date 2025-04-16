@@ -11,7 +11,9 @@ from dotenv import load_dotenv
 import re
 import openai
 from openai import OpenAI 
-import json 
+import json
+
+from database.modified_design_repository import ModifiedDesignsRepository 
 
 
 load_dotenv()  
@@ -254,6 +256,7 @@ def process_elements():
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 
+modified_designs_repo = ModifiedDesignsRepository()
 NIELSEN_HEURISTICS = {
     "Visibility of system status": "The system should always keep users informed about what is going on",
     "Match between system and real world": "The system should speak the users' language",
@@ -282,6 +285,7 @@ def extract_json_from_response(text):
         if json_match:
             return json.loads(json_match.group(0))
     raise ValueError("No valid JSON found in response")
+
 
 @app.route('/modify-design', methods=['POST'])
 def modify_design():
@@ -359,6 +363,12 @@ def modify_design():
             # Ensure required fields exist
             if 'modifications' not in modifications:
                 modifications['modifications'] = []
+                
+            # Save to database and file system
+            doc_id, filename = modified_designs_repo.save_modified_design(data, modifications)
+            modifications['document_id'] = doc_id
+            if filename:
+                modifications['saved_filename'] = filename
                 
             return jsonify(modifications)
             
