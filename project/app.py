@@ -363,12 +363,22 @@ def modify_design():
             # Ensure required fields exist
             if 'modifications' not in modifications:
                 modifications['modifications'] = []
-                
-            # Save to database and file system
-            doc_id, filename = modified_designs_repo.save_modified_design(data, modifications)
-            modifications['document_id'] = doc_id
-            if filename:
-                modifications['saved_filename'] = filename
+
+              # Save to database and file system
+            doc_id, (original_filename, modified_filename) = modified_designs_repo.save_modified_design(data, modifications)
+            
+            # Enhance the response with saving information
+            response_data = {
+                **modifications,
+                "storage_info": {
+                    "document_id": doc_id,
+                    "original_saved": original_filename is not None,
+                    "modified_saved": modified_filename is not None,
+                    "original_filename": original_filename,
+                    "modified_filename": modified_filename
+                }
+            }
+            
                 
             return jsonify(modifications)
             
