@@ -89,33 +89,103 @@ function renderFeedback(item, feedbackIndex = 0) {
     html += '</ul>';
     return html;
 }
+
 function showModifications(data) {
-    const modList = document.getElementById('modification-list');
-    modList.innerHTML = '';
-    
-    if (data.modifications && data.modifications.length > 0) {
-        data.modifications.forEach(mod => {
-            const item = document.createElement('div');
-            item.className = 'modification-item';
-            item.innerHTML = `
-                <h4>${mod.element_name || mod.element_id || 'Element'}</h4>
-                ${mod.issues ? mod.issues.map(issue => `
-                    <div class="issue">
-                        <p><strong>Heuristic:</strong> ${issue.heuristic}</p>
-                        <p><strong>Problem:</strong> ${issue.problem}</p>
-                        <p><strong>Solution:</strong> ${issue.solution}</p>
-                        <p><strong>Priority:</strong> ${issue.priority}</p>
-                    </div>
-                `).join('') : ''}
+    try {
+        console.log("Modifications data received:", data); // Debug log
+        
+        // Hide other screens
+        document.getElementById('processing-screen').style.display = 'none';
+        document.getElementById('feedback-screen').style.display = 'none';
+        
+        const modScreen = document.getElementById('modifications-screen');
+        const modList = document.getElementById('modification-list');
+        const summaryEl = document.getElementById('modification-summary');
+        
+        // Clear previous content
+        modList.innerHTML = '';
+        summaryEl.innerHTML = '';
+
+        // Display the summary
+        if (data.summary) {
+            summaryEl.innerHTML = `
+                <div class="summary-box">
+                    <h3>Design Assessment Summary</h3>
+                    <p>${data.summary}</p>
+                </div>
             `;
-            modList.appendChild(item);
-        });
-    } else {
-        modList.innerHTML = '<p>No modifications suggested for this frame</p>';
+        } else {
+            summaryEl.innerHTML = '<div class="summary-box"><p>No summary available</p></div>';
+        }
+
+        // Display modifications if available
+        if (data.modifications && data.modifications.length > 0) {
+            console.log("Modifications found:", data.modifications); // Debug log
+            
+            const fragment = document.createDocumentFragment();
+            
+            data.modifications.forEach(mod => {
+                console.log("Processing modification:", mod); // Debug log
+                
+                const modItem = document.createElement('div');
+                modItem.className = 'modification-item';
+                
+                // Extract element details with fallbacks
+                const elementId = mod.element_id || mod.id || 'unknown';
+                const elementType = mod.type || 'element';
+                const elementName = mod.element_name || mod.text || `Untitled ${elementType}`;
+                const changes = mod.changes || mod.modifications || [];
+                
+                modItem.innerHTML = `
+                    <div class="element-header">
+                        <h4>${elementName}</h4>
+                        <span class="element-type">${elementType}</span>
+                        <span class="element-id">ID: ${elementId}</span>
+                    </div>
+                    <div class="modification-details">
+                        ${changes.length > 0 ? 
+                            changes.map(change => `
+                                <div class="change-item">
+                                    <div class="change-property">${change.property || 'Property'}:</div>
+                                    <div class="change-from-to">
+                                        <span class="from">${change.from || 'Current'}</span>
+                                        <span class="arrow">→</span>
+                                        <span class="to">${change.to || 'Suggested'}</span>
+                                    </div>
+                                    ${change.reason ? `<div class="change-reason">${change.reason}</div>` : ''}
+                                </div>
+                            `).join('') :
+                            `<div class="no-changes">No specific changes suggested for this element</div>`
+                        }
+                    </div>
+                `;
+                
+                fragment.appendChild(modItem);
+            });
+            
+            modList.appendChild(fragment);
+        } else {
+            console.log("No modifications found in data"); // Debug log
+            modList.innerHTML = `
+                <div class="no-modifications">
+                    <p>No specific modifications suggested.</p>
+                    ${data.modified_design ? 
+                        '<p>The AI may have made direct changes to the design.</p>' : 
+                        '<p>Try analyzing the design again.</p>'
+                    }
+                </div>
+            `;
+        }
+        
+        modScreen.style.display = 'block';
+        
+    } catch (error) {
+        console.error("Error showing modifications:", error);
+        // Show error details in the UI for debugging
+        document.getElementById('error-message').textContent = "Could not display modifications";
+        document.getElementById('error-details').textContent = error.stack;
+        document.getElementById('error-screen').style.display = 'block';
     }
-    
-    document.getElementById('feedback-screen').style.display = 'none';
-    document.getElementById('modifications-screen').style.display = 'block';
 }
 
 function showLoading() {
@@ -200,24 +270,25 @@ window.addEventListener('message', (event) => {
             });
 
             // Add event listeners for modify buttons
-            document.querySelectorAll('modify-button-query').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const frameId = e.currentTarget.getAttribute('data-frame-id');
-                    console.log('Requesting modifications for frame:', frameId);
+
+        //     document.querySelectorAll('modify-button').forEach(button => {
+        //         button.addEventListener('click', (e) => {
+        //             const frameId = e.currentTarget.getAttribute('data-frame-id');
+        //             console.log('Requesting modifications for frame:', frameId);
                     
-                    // Show loading state
-                    document.getElementById('processing-screen').style.display = 'block';
+        //             // Show loading state
+        //             document.getElementById('processing-screen').style.display = 'block';
                     
-                    parent.postMessage({
-                        pluginMessage: {
-                            type: 'request-modifications',
-                            frameId: frameId
-                        }
-                    }, '*');
-                }
-            );
-            }
-        );
+        //             parent.postMessage({
+        //                 pluginMessage: {
+        //                     type: 'request-modifications',
+        //                     frameId: frameId
+        //                 }
+        //             }, '*');
+        //         }
+        //     );
+        //     }
+        // );
         }, 300);
     
     return;
@@ -228,13 +299,17 @@ if (msg.type === 'design-modifications') {
     hideLoading();
     console.log('Received modifications:', msg);
     
-    if (msg.modifications && msg.modifications.length > 0) {
-        showModifications(msg);
-    } else {
-        showError('No modifications suggested for this frame');
-    }
+    // Ensure we have the data in the expected format
+    const modificationsData = {
+        summary: msg.summary || "Design analysis completed",
+        modifications: msg.modifications || [],
+        modified_design: msg.modifiedDesign || null
+    };
+    
+    showModifications(modificationsData);
     return;
 }
+
 if (msg.type === 'progress-update') {
     document.getElementById('progress-bar').value = msg.progress;
     document.getElementById('progress-text').textContent = `${msg.progress}%`;
@@ -250,20 +325,19 @@ document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
 document.getElementById('modify-button').onclick = async () => {
     showLoading();
+    console.log("Modify button clicked"); 
     
     try {
         const currentFrame = pages[currentPageIndex];
         const frameName = currentFrame.querySelector('h2')?.textContent;
+        console.log("Requesting modifications for frame:", frameName); // Debug log
         
-        const response = await new Promise((resolve, reject) => {
-            parent.postMessage({
-                pluginMessage: {
-                    type: 'request-modifications',
-                    frameName: frameName
-                }
-            }, '*');
-                 setTimeout(() => reject(new Error("Request timeout")), 30000);
-        });
+        parent.postMessage({
+            pluginMessage: {
+                type: 'request-modifications',
+                frameName: frameName
+            }
+        }, '*');
         
     } catch (error) {
         console.error("Modification error:", error);

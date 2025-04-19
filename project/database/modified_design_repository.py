@@ -8,7 +8,15 @@ class ModifiedDesignsRepository(BaseRepository):
     def __init__(self):
         super().__init__("modified_designs")
         
-    def save_modification_record(self, original_data, modified_json):  # Changed parameter name
+    def save_modification_record(self, original_data, modified_json):
+        """
+        Save complete modification record including:
+        - Original design
+        - AI analysis (modifications)
+        - Modified design (with changes applied)
+        Returns:
+            tuple: (document_id, files_dict) where files_dict contains string paths
+        """
         document = {
             "original": {
                 "design_name": original_data.get('design_name', 'Untitled'),
@@ -16,8 +24,8 @@ class ModifiedDesignsRepository(BaseRepository):
                 "design_json": original_data['design_json'],
                 "timestamp": datetime.utcnow()
             },
-            "analysis": modified_json.get('modifications', []),  # Updated reference
-            "modified_design": modified_json.get('modified_design', {}),  # Updated reference
+            "analysis": modified_json.get('modifications', []),
+            "modified_design": modified_json.get('modified_design', {}),
             "files": {
                 "original_saved": False,
                 "modified_saved": False,
@@ -29,44 +37,44 @@ class ModifiedDesignsRepository(BaseRepository):
         result = self.add(document)
         document_id = str(result.inserted_id)
         
+        # Prepare files dictionary (strings only)
+        files_dict = {
+            "original": None,
+            "modified": None,
+            "analysis": None
+        }
+        
         # Save to filesystem
         try:
             os.makedirs("modified_designs", exist_ok=True)
             base_path = f"modified_designs/{document_id}"
             
-            files = {
-                "original": f"{base_path}_original.json",
-                "modified": f"{base_path}_modified.json",
-                "analysis": f"{base_path}_analysis.json"
-            }
-            
-            # Save all components
-            with open(files["original"], 'w') as f:
+            # Save and record paths
+            original_path = f"{base_path}_original.json"
+            with open(original_path, 'w') as f:
                 json.dump(original_data, f, indent=2)
-                
-            with open(files["modified"], 'w') as f:
-                json.dump(modified_json['modified_design'], f, indent=2)
-                
-            with open(files["analysis"], 'w') as f:
-                json.dump(modified_json['modifications'], f, indent=2)
+            files_dict["original"] = original_path
             
-            # Update document with file paths
+            modified_path = f"{base_path}_modified.json"
+            with open(modified_path, 'w') as f:
+                json.dump(modified_json['modified_design'], f, indent=2)
+            files_dict["modified"] = modified_path
+            
+            analysis_path = f"{base_path}_analysis.json"
+            with open(analysis_path, 'w') as f:
+                json.dump(modified_json['modifications'], f, indent=2)
+            files_dict["analysis"] = analysis_path
+            
+            # Update document with string paths only
             self.update(
                 {"_id": result.inserted_id},
-                {"$set": {
-                    "files": {
-                        "original_saved": files["original"],
-                        "modified_saved": files["modified"],
-                        "analysis_saved": files["analysis"]
-                    }
-                }}
+                {"$set": {"files": files_dict}}
             )
-            
-            return document_id, files
             
         except Exception as e:
             print(f"File save error: {e}")
-            return document_id, None
+    
+        return document_id, files_dict  # Now returns strings only
         
     def get_modification_by_id(self, modification_id):
         """Get a single modification by its ID"""

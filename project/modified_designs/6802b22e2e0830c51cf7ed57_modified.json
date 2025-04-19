@@ -1,0 +1,146 @@
+{
+  "metadata": {
+    "screenWidth": 110,
+    "screenHeight": 160
+  },
+  "elements": [
+    {
+      "id": "1:2",
+      "type": "FRAME",
+      "text": "poster",
+      "color": "rgb(255,255,243)"
+    },
+    {
+      "id": "6:12",
+      "type": "GROUP",
+      "text": "Group 1",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "5:3",
+      "type": "RECTANGLE",
+      "text": "Rectangle 1",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "6:8",
+      "type": "TEXT",
+      "text": "UXPERT",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "6:9",
+      "type": "TEXT",
+      "text": "automated UI/UX design analysis and review tool",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "6:17",
+      "type": "GROUP",
+      "text": "Group 3",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "6:11",
+      "type": "TEXT",
+      "text": "Swe-07",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "6:16",
+      "type": "GROUP",
+      "text": "Group 2",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "6:14",
+      "type": "TEXT",
+      "text": "Asmaa Maher, Minna Hani, Nermein Mohamed, Sara Yasser",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "6:15",
+      "type": "TEXT",
+      "text": "Dr. Reham Kamal, Eng. Yasmine Kandil",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "6:19",
+      "type": "RECTANGLE",
+      "text": "Rectangle 3",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "7:32",
+      "type": "TEXT",
+      "text": "Introduction",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "6:27",
+      "type": "RECTANGLE",
+      "text": "Rectangle 7",
+      "color": "rgb(140,138,138)"
+    },
+    {
+      "id": "6:25",
+      "type": "RECTANGLE",
+      "text": "Rectangle 6",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "6:23",
+      "type": "RECTANGLE",
+      "text": "Rectangle 5",
+      "color": "rgb(36,125,157)"
+    },
+    {
+      "id": "6:21",
+      "type": "RECTANGLE",
+      "text": "Rectangle 4",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "7:29",
+      "type": "TEXT",
+      "text": "Abstract",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "7:36",
+      "type": "TEXT",
+      "text": "Methodology",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "8:37",
+      "type": "TEXT",
+      "text": "Objectives",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "9:38",
+      "type": "TEXT",
+      "text": "Results",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "19:5",
+      "type": "GROUP",
+      "text": "Group 4",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "19:3",
+      "type": "RECTANGLE",
+      "text": "logo-miu 1",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "19:4",
+      "type": "TEXT",
+      "text": "Faculty of Computer Science 2024/2025",
+      "color": "rgb(255,255,255)"
+    }
+  ]
+}

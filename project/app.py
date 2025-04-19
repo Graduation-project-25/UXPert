@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 import re
 from json.decoder import JSONDecodeError
 import openai
-from openai import OpenAI 
+from openai import OpenAI, files 
 import json
 
 from database.modified_design_repository import ModifiedDesignsRepository 
@@ -341,11 +341,21 @@ def modify_design():
         }
 
         system_message = """You are a UX analyzer that returns perfect JSON with:
-        - "status": "success"
-        - "summary": "brief assessment"
-        - "modified_design": {original JSON with fixes}
-        - "modifications": [list of changes made]
-        Return ONLY the JSON object."""
+            - "status": "success"
+            - "summary": "brief assessment"
+            - "modified_design": {original JSON with fixes}
+            - "modifications": [{
+                "element_id": "element identifier",
+                "element_name": "human-readable name",
+                "type": "element type",
+                "changes": [{
+                    "property": "which property was changed",
+                    "from": "original value",
+                    "to": "new value",
+                    "reason": "why this change improves UX"
+                }]
+            }]
+            Return ONLY the JSON object."""
 
         prompt = f"""Analyze and improve this design:
         {json.dumps(simplified_design, indent=2)}
@@ -381,15 +391,18 @@ def modify_design():
                 raise ValueError("Missing required fields in response")
                 
             # Save to database
-            doc_id = modified_designs_repo.save_modification_record(
+            doc_id, files = modified_designs_repo.save_modification_record(
                 original_data=data,
                 modified_json=modifications
             )
             
             return jsonify({
-                "status": "success",
+               "status": "success",
                 "document_id": doc_id,
-                "result": modifications
+                "modified_design": modifications['modified_design'],
+                "modifications": modifications.get('modifications', []), 
+                "summary": modifications.get('summary', 'Design analysis complete'),
+                "files": files
             })
             
         except json.JSONDecodeError as e:

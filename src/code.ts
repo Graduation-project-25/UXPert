@@ -125,8 +125,10 @@ else if (msg.type === 'request-modifications') {
             type: 'design-modifications',
             frameId: frame.id,
             frameName: frame.name,
+            
             modifications: result.modifications || [],
-            summary: result.summary || ""
+            summary: result.summary || "",
+            modifiedDesign: result.modified_design || null
         });
         
     } catch (error) {
