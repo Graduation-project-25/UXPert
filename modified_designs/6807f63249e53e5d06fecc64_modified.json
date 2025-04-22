@@ -1,0 +1,122 @@
+{
+  "metadata": {
+    "screenWidth": 1440,
+    "screenHeight": 717
+  },
+  "elements": [
+    {
+      "id": "1057:1496",
+      "type": "FRAME",
+      "text": "Forget Password",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "1057:1497",
+      "type": "RECTANGLE",
+      "text": "Rectangle 58",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "1057:1498",
+      "type": "GROUP",
+      "text": "Group 41",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "1057:1499",
+      "type": "FRAME",
+      "text": "Frame 151",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "1057:1500",
+      "type": "TEXT",
+      "text": "Reset Password",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "1057:1501",
+      "type": "INSTANCE",
+      "text": "Password input",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "I1057:1501;1057:2146",
+      "type": "FRAME",
+      "text": "Frame 77",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "I1057:1501;1057:2147",
+      "type": "FRAME",
+      "text": "Frame 22",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "I1057:1501;1057:2148",
+      "type": "TEXT",
+      "text": "New Password",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "I1057:1501;1057:2149",
+      "type": "INSTANCE",
+      "text": "eye",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "I1057:1501;1057:2149;1057:2174",
+      "type": "GROUP",
+      "text": "Group",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "1057:1502",
+      "type": "INSTANCE",
+      "text": "Password input",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "I1057:1502;1057:2146",
+      "type": "FRAME",
+      "text": "Frame 77",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "I1057:1502;1057:2147",
+      "type": "FRAME",
+      "text": "Frame 22",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "I1057:1502;1057:2148",
+      "type": "TEXT",
+      "text": "Confirm New Password",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "I1057:1502;1057:2149",
+      "type": "INSTANCE",
+      "text": "eye",
+      "color": "rgb(255,255,255)"
+    },
+    {
+      "id": "I1057:1502;1057:2149;1057:2174",
+      "type": "GROUP",
+      "text": "Group",
+      "color": "rgb(0,0,0)"
+    },
+    {
+      "id": "1057:1503",
+      "type": "INSTANCE",
+      "text": "brown btn",
+      "color": "rgb(175,149,108)"
+    },
+    {
+      "id": "I1057:1503;1057:2152",
+      "type": "TEXT",
+      "text": "Reset Password",
+      "color": "rgb(255,255,255)"
+    }
+  ]
+}

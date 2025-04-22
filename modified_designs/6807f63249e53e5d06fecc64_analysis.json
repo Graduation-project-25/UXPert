@@ -1,0 +1,47 @@
+[
+  {
+    "element_id": "1057:1500",
+    "element_name": "Reset Password Text",
+    "type": "TEXT",
+    "changes": [
+      {
+        "property": "color",
+        "from": "rgb(0,0,0)",
+        "to": "rgb(255,255,255)",
+        "reason": "Improves readability against a dark background."
+      }
+    ]
+  },
+  {
+    "element_id": "I1057:1501;1057:2148",
+    "element_name": "New Password Text",
+    "type": "TEXT",
+    "changes": [
+      {
+        "property": "color",
+        "from": "rgb(68.00000354647636,46.000001057982445,30.00000011175871)",
+        "to": "rgb(0,0,0)",
+        "reason": "Ensures consistent text color for better readability."
+      }
+    ]
+  },
+  {
+    "element_id": "I1057:1502;1057:2148",
+    "element_name": "Confirm New Password Text",
+    "type": "TEXT",
+    "changes": [
+      {
+        "property": "text",
+        "from": "Confrirm new Password",
+        "to": "Confirm New Password",
+        "reason": "Corrects spelling error for clarity."
+      },
+      {
+        "property": "color",
+        "from": "rgb(68.00000354647636,46.000001057982445,30.00000011175871)",
+        "to": "rgb(0,0,0)",
+        "reason": "Ensures consistent text color for better readability."
+      }
+    ]
+  }
+]
