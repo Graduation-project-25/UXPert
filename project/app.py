@@ -331,86 +331,161 @@ def modify_design():
         if not data or 'design_json' not in data:
             return jsonify({"status": "error", "message": "No design data provided"}), 400
 
-        # Simplify the design JSON to reduce token usage
+        # Include all properties with safeguards
         simplified_design = {
             "metadata": data['design_json'].get('metadata', {}),
             "elements": [
-                {k: v for k, v in elem.items() if k in ['id', 'type', 'text', 'color']}
-                for elem in data['design_json'].get('elements', [])[:50]  # Limit to first 50 elements
+                {
+                    "id": elem.get('id'),
+                    "name": elem.get('name', '')[:50],
+                    "type": elem.get('type'),
+                    "textContent": elem.get('textContent', '')[:100],
+                    "width": elem.get('width'),
+                    "height": elem.get('height'),
+                    "position": {
+                        "x": elem.get('position.x'),
+                        "y": elem.get('position.y')
+                    },
+                    "rotation": elem.get('rotation'),
+                    "color": {
+                        "r": elem.get('color_r', 0),
+                        "g": elem.get('color_g', 0), 
+                        "b": elem.get('color_b', 0)
+                    },
+                    "interactions": {
+                        "hasClickInteraction": elem.get('hasClickInteraction', False),
+                        "clickDestination": elem.get('clickDestination', '')[:50]
+                    },
+                    "isIcon": elem.get('isIcon', False),
+                    "isIconLabeled": elem.get('isIconLabeled', False)
+                }
+                for elem in data['design_json'].get('elements', [])[:15]  # Limited to 15 elements
             ]
         }
 
-        system_message = """You are a UX analyzer that returns perfect JSON with:
-            - "status": "success"
-            - "summary": "brief assessment"
-            - "modified_design": {original JSON with fixes}
-            - "modifications": [{
-                "element_id": "element identifier",
-                "element_name": "human-readable name",
-                "type": "element type",
-                "changes": [{
-                    "property": "which property was changed",
-                    "from": "original value",
-                    "to": "new value",
-                    "reason": "why this change improves UX"
-                }]
-            }]
-            Return ONLY the JSON object."""
+        system_message = """You are an expert UX analyzer that suggests holistic design improvements. Return JSON with:
+- "status": "success"
+- "summary": "assessment considering whole design"
+- "modifications": [{
+    "element_id": "id",
+    "element_name": "name",
+    "type": "element type",
+    "changes": [{
+        "property": "which property",
+        "from": "original value",
+        "to": "new value",
+        "reason": "why this improves the WHOLE design",
+        "impact_analysis": "how this affects other elements"
+    }]
+}]
+RULES:
+1. Consider the ENTIRE design context for each change
+2. Consider the 10 Nielsen's UI/UX rules: {NIELSEN_HEURISTICS}
+3. Check for potential overlaps/conflicts with other elements
+4. Maintain visual hierarchy and consistency
+5. Maximum 3 most impactful changes per element
+. Keep response under 2000 tokens"""
 
-        prompt = f"""Analyze and improve this design:
-        {json.dumps(simplified_design, indent=2)}
-        
-        Instructions:
-        1. Keep responses under 3000 tokens
-        2. Return complete JSON (no truncation)
-        3. Focus on key usability issues"""
+        prompt = f"""Analyze this design holistically:
+{json.dumps(simplified_design, indent=2)}
+
+Suggest improvements that:
+1. Consider relationships between all elements
+2. Maintain proper spacing and alignment
+3. Preserve visual hierarchy
+4. Avoid overlapping or obscuring other elements
+5. Explain how each change affects the whole design""" 
 
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4-turbo",
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.3,
-            max_tokens=3000,  # Increased token limit
+            max_tokens=2000,
             response_format={"type": "json_object"}
         )
 
         content = response.choices[0].message.content
-        
-        # Debug: Check response completeness
-        if not content.strip().endswith('}'):
-            print("Warning: Response may be truncated")
-            content = content + '}"}'  # Attempt to fix
+        print(f"Response length: {len(content)} chars")
+
+        # Robust JSON parsing with multiple fallbacks
+        def parse_json_response(content):
+            attempts = [
+                content,
+                content + '"}',
+                content + '}}',
+                '{' + content.split('{', 1)[-1],
+                content.rsplit(',', 1)[0] + '}'
+            ]
+            
+            for attempt in attempts:
+                try:
+                    return json.loads(attempt)
+                except json.JSONDecodeError:
+                    continue
+            
+            try:
+                json_str = re.search(r'\{.*\}', content, re.DOTALL)
+                if json_str:
+                    return json.loads(json_str.group())
+            except:
+                pass
+            
+            raise ValueError("Could not parse response")
 
         try:
-            modifications = json.loads(content)
+            modifications = parse_json_response(content)
             
-            # Validate response structure
-            if not all(k in modifications for k in ['modified_design', 'modifications']):
-                raise ValueError("Missing required fields in response")
-                
+            # Validate and clean modifications
+            valid_modifications = []
+            for mod in modifications.get('modifications', []):
+                if not isinstance(mod, dict) or 'element_id' not in mod:
+                    continue
+                    
+                clean_mod = {
+                    "element_id": mod.get('element_id'),
+                    "element_name": mod.get('element_name', ''),
+                    "type": mod.get('type', ''),
+                    "changes": [
+                        {
+                            "property": str(change.get('property', '')),
+                            "from": str(change.get('from', '')),
+                            "to": str(change.get('to', '')),
+                            "reason": str(change.get('reason', ''))[:100],
+                            "impact_analysis": str(change.get('impact_analysis', ''))[:150]
+                        }
+                        for change in mod.get('changes', [])
+                        if isinstance(change, dict)
+                    ][:2]  # Limit to 2 changes
+                }
+                if clean_mod['changes']:
+                    valid_modifications.append(clean_mod)
+
             # Save to database
             doc_id, files = modified_designs_repo.save_modification_record(
                 original_data=data,
-                modified_json=modifications
+                modified_json={
+                    "summary": modifications.get('summary', 'Design analysis complete'),
+                    "modifications": valid_modifications
+                }
             )
             
             return jsonify({
-               "status": "success",
+                "status": "success",
                 "document_id": doc_id,
-                "modified_design": modifications['modified_design'],
-                "modifications": modifications.get('modifications', []), 
+                "modifications": valid_modifications,
                 "summary": modifications.get('summary', 'Design analysis complete'),
                 "files": files
             })
             
-        except json.JSONDecodeError as e:
-            print(f"JSON Parse Error: {e}\nContent:\n{content[:500]}...")
+        except Exception as e:
+            print(f"Response processing error: {str(e)}")
             return jsonify({
                 "status": "error",
-                "message": "Invalid JSON from AI",
-                "content": content[:500] + "..." if len(content) > 500 else content
+                "message": "Could not process AI response",
+                "content": content[:500] + ("..." if len(content) > 500 else "")
             }), 500
             
     except Exception as e:
@@ -419,7 +494,6 @@ def modify_design():
             "status": "error",
             "message": "Internal server error"
         }), 500
-
 
 @app.route('/', methods=['GET'])
 def home():
