@@ -1,0 +1,132 @@
+[
+  {
+    "element_id": "1057:1482",
+    "element_name": "Frame 145",
+    "type": "FRAME",
+    "changes": [
+      {
+        "property": "color",
+        "from": "rgb(0,0,0)",
+        "to": "rgb(255,255,255)",
+        "reason": "Improves readability by providing a better contrast with the text."
+      }
+    ]
+  },
+  {
+    "element_id": "1057:1484",
+    "element_name": "Frame 101",
+    "type": "FRAME",
+    "changes": [
+      {
+        "property": "color",
+        "from": "rgb(0,0,0)",
+        "to": "rgb(255,255,255)",
+        "reason": "Enhances visual consistency and readability."
+      }
+    ]
+  },
+  {
+    "element_id": "I1057:1485;1057:2135",
+    "element_name": "Frame 20",
+    "type": "FRAME",
+    "changes": [
+      {
+        "property": "color",
+        "from": "rgb(0,0,0)",
+        "to": "rgb(255,255,255)",
+        "reason": "Ensures the input fields are visually distinct and accessible."
+      }
+    ]
+  },
+  {
+    "element_id": "I1057:1486;1057:2135",
+    "element_name": "Frame 20",
+    "type": "FRAME",
+    "changes": [
+      {
+        "property": "color",
+        "from": "rgb(0,0,0)",
+        "to": "rgb(255,255,255)",
+        "reason": "Improves visual clarity and accessibility of the input field."
+      }
+    ]
+  },
+  {
+    "element_id": "I1057:1487;1057:2146",
+    "element_name": "Frame 77",
+    "type": "FRAME",
+    "changes": [
+      {
+        "property": "color",
+        "from": "rgb(0,0,0)",
+        "to": "rgb(255,255,255)",
+        "reason": "Enhances the contrast and readability of the password input field."
+      }
+    ]
+  },
+  {
+    "element_id": "I1057:1487;1057:2147",
+    "element_name": "Frame 22",
+    "type": "FRAME",
+    "changes": [
+      {
+        "property": "color",
+        "from": "rgb(0,0,0)",
+        "to": "rgb(255,255,255)",
+        "reason": "Improves the visual distinction of the password input field."
+      }
+    ]
+  },
+  {
+    "element_id": "I1057:1487;1057:2149",
+    "element_name": "eye",
+    "type": "INSTANCE",
+    "changes": [
+      {
+        "property": "color",
+        "from": "rgb(255,255,255)",
+        "to": "rgb(0,0,0)",
+        "reason": "Provides better visibility and interaction feedback for the eye icon."
+      }
+    ]
+  },
+  {
+    "element_id": "I1057:1487;1057:2149;1057:2174",
+    "element_name": "Group",
+    "type": "GROUP",
+    "changes": [
+      {
+        "property": "color",
+        "from": "rgb(0,0,0)",
+        "to": "rgb(255,255,255)",
+        "reason": "Ensures the group elements are visually consistent with the rest of the design."
+      }
+    ]
+  },
+  {
+    "element_id": "1057:1489",
+    "element_name": "Frame 102",
+    "type": "FRAME",
+    "changes": [
+      {
+        "property": "color",
+        "from": "rgb(0,0,0)",
+        "to": "rgb(255,255,255)",
+        "reason": "Improves the visual consistency and readability of the frame."
+      }
+    ]
+  },
+  {
+    "element_id": "I1057:1495;1057:2195",
+    "element_name": "frame99",
+    "type": "FRAME",
+    "changes": [
+      {
+        "property": "color",
+        "from": "rgb(0,0,0)",
+        "to": "rgb(255,255,255)",
+        "reason": "Enhances the visual clarity and accessibility of the Google sign-up option."
+      }
+    ]
+  }
+]
