@@ -15,7 +15,7 @@ from json.decoder import JSONDecodeError
 import openai
 from openai import OpenAI, files 
 import json
-from html2image import Html2Image
+
 
 
 load_dotenv()  
@@ -329,82 +329,74 @@ def modify_design():
     try:
         data = request.get_json()
         print("Received design modification request")
-
+        
         if not data or 'design_json' not in data:
             return jsonify({"status": "error", "message": "No design data provided"}), 400
 
+        # Simplify the design JSON to reduce token usage
         simplified_design = {
             "metadata": data['design_json'].get('metadata', {}),
             "elements": [
-                {
-                    "id": elem.get('id'),
-                    "name": elem.get('name', '')[:50],
-                    "type": elem.get('type'),
-                    "textContent": elem.get('textContent', '')[:100],
-                    "width": elem.get('width'),
-                    "height": elem.get('height'),
-                    "position": {
-                        "x": elem.get('position.x'),
-                        "y": elem.get('position.y')
-                    },
-                    "rotation": elem.get('rotation'),
-                    "color": {
-                        "r": elem.get('color_r', 0),
-                        "g": elem.get('color_g', 0), 
-                        "b": elem.get('color_b', 0)
-                    },
-                    "interactions": {
-                        "hasClickInteraction": elem.get('hasClickInteraction', False),
-                        "clickDestination": elem.get('clickDestination', '')[:50]
-                    },
-                    "isIcon": elem.get('isIcon', False),
-                    "isIconLabeled": elem.get('isIconLabeled', False)
-                }
-                for elem in data['design_json'].get('elements', [])[:15]
+                {k: v for k, v in elem.items() if k in ['id', 'type', 'text', 'color']}
+                for elem in data['design_json'].get('elements', [])[:50]  # Limit to first 50 elements
             ]
         }
 
-        system_message = """You are an expert UX analyzer that suggests holistic design improvements. Return JSON with:
-- \"status\": \"success\"
-- \"summary\": \"assessment considering whole design\"
-- \"modifications\": [{
-    \"element_id\": \"id\",
-    \"element_name\": \"name\",
-    \"type\": \"element type\",
-    \"changes\": [{
-        \"property\": \"which property\",
-        \"from\": \"original value\",
-        \"to\": \"new value\",
-        \"reason\": \"why this improves the WHOLE design\",
-        \"impact_analysis\": \"how this affects other elements\"
-    }]
-}]
-RULES:
-1. Consider the ENTIRE design context for each change
-2. Consider the 10 Nielsen's UI/UX rules: {NIELSEN_HEURISTICS}
-3. Check for potential overlaps/conflicts with other elements
-4. Maintain visual hierarchy and consistency
-5. Maximum 3 most impactful changes per element
-. Keep response under 2000 tokens"""
+        system_message = """You are a UX analyzer that returns perfect JSON with:
+            - "status": "success"
+            - "summary": "brief assessment"
+            - "modified_design": {original JSON with fixes}
+            - "modifications": [{
+                "element_id": "element identifier",
+                "element_name": "human-readable name",
+                "type": "element type",
+                "changes": [{
+                    "property": "which property was changed",
+                    "from": "original value",
+                    "to": "new value",
+                    "reason": "why this change improves UX"
+                }]
+            }]
+            Return ONLY the JSON object."""
 
-        prompt = f"""Analyze this design holistically:
-{json.dumps(simplified_design, indent=2)}
-
-Suggest improvements that:
-1. Consider relationships between all elements
-2. Maintain proper spacing and alignment
-3. Preserve visual hierarchy
-4. Avoid overlapping or obscuring other elements
-5. Explain how each change affects the whole design"""
+        prompt = f"""Analyze and improve this design:
+        {json.dumps(simplified_design, indent=2)}
+        
+        Instructions:
+        1. Keep responses under 3000 tokens
+        2. Return complete JSON (no truncation)
+        3. Focus on key usability issues
+        4. In 'modified_design', include:
+           - metadata: screenWidth, screenHeight
+           - elements: array of objects with:
+             - id: unique identifier
+             - type: element type (FRAME, RECTANGLE, TEXT)
+             - text: text content or label
+             - color: RGB string (e.g., rgb(255,255,255))
+             - x, y: position in pixels
+             - width, height: dimensions in pixels (for RECTANGLE, FRAME)
+             - fontSize: font size in pixels (for TEXT)
+             - fontFamily: font family (for TEXT, e.g., "Roboto")
+             - interactions: optional
+        5. Infer reasonable values for x, y, width, height, fontSize, fontFamily if missing (e.g., avoid overlap, align elements).
+        Example:
+        {{
+          "metadata": {{ "screenWidth": 1440, "screenHeight": 2491 }},
+          "elements": [
+            {{ "id": "1:1", "type": "FRAME", "text": "Home page", "color": "rgb(255,255,255)", "width": 1440, "height": 2491 }},
+            {{ "id": "1:2", "type": "RECTANGLE", "text": "Rectangle 3", "color": "rgb(0,0,0)", "x": 20, "y": 20, "width": 100, "height": 100 }},
+            {{ "id": "1:3", "type": "TEXT", "text": "Rectangle 3 Label", "color": "rgb(0,0,0)", "x": 20, "y": 0, "fontSize": 12, "fontFamily": "Roboto" }}
+          ]
+        }}"""
 
         response = client.chat.completions.create(
-            model="gpt-4-turbo",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.3,
-            max_tokens=2000,
+            max_tokens=3000,  # Increased token limit
             response_format={"type": "json_object"}
         )
 
@@ -425,24 +417,10 @@ Suggest improvements that:
             # Save to database
             doc_id, files = modified_designs_repo.save_modification_record(
                 original_data=data,
-                modified_json={
-                    "summary": modifications.get('summary', 'Design analysis complete'),
-                    "modifications": valid_modifications
-                }
+                modified_json=modifications
             )
-
-            output_type = data.get("output_type", "json")
-
-            if output_type == "ui_image":
-                html = generate_visual_ui_from_json(valid_modifications)
-                image_path = html_to_image(html)
-                return jsonify({
-                    "status": "success",
-                    "image_url": f"/static/{os.path.basename(image_path)}"
-                })
-
+            
             return jsonify({
-                "status": "success",
                 "status": "success",
                 "document_id": doc_id,
                 "result": modifications,
@@ -451,82 +429,21 @@ Suggest improvements that:
                 "summary": modifications.get('summary', 'Design analysis complete'),
                 "files": files
             })
-
-        except Exception as e:
-            print(f"Response processing error: {str(e)}")
+            
+        except json.JSONDecodeError as e:
+            print(f"JSON Parse Error: {e}\nContent:\n{content[:500]}...")
             return jsonify({
                 "status": "error",
-                "message": "Could not process AI response",
-                "content": content[:500] + ("..." if len(content) > 500 else "")
+                "message": "Invalid JSON from AI",
+                "content": content[:500] + "..." if len(content) > 500 else content
             }), 500
-
+            
     except Exception as e:
         print(f"Server Error: {str(e)}")
         return jsonify({
             "status": "error",
             "message": "Internal server error"
         }), 500
-        
-#trying html 
-def generate_visual_ui_from_json(modifications, width=375, height=667):
-    html = f"""
-    <html>
-    <head>
-        <style>
-            body {{
-                margin: 0;
-                padding: 0;
-                background: #f0f0f0;
-            }}
-            .canvas {{
-                position: relative;
-                width: {width}px;
-                height: {height}px;
-                margin: 20px auto;
-                background: white;
-                border: 2px solid #ccc;
-            }}
-            .element {{
-                position: absolute;
-                overflow: hidden;
-                font-size: 12px;
-                font-family: sans-serif;
-                border: 1px solid #999;
-                text-align: center;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="canvas">
-    """
-
-    for mod in modifications:
-        pos = mod.get("position", {"x": 0, "y": 0})
-        width = mod.get("width", 100)
-        height = mod.get("height", 30)
-        text = mod.get("element_name", "Element")
-        color = mod.get("color", {"r": 255, "g": 255, "b": 255})
-        background = f"rgb({color['r']},{color['g']},{color['b']})"
-
-        html += f"""
-        <div class="element" style="
-            left: {pos.get('x', 0)}px;
-            top: {pos.get('y', 0)}px;
-            width: {width}px;
-            height: {height}px;
-            background: {background};
-            line-height: {height}px;
-        ">{text}</div>
-        """
-
-    html += "</div></body></html>"
-    return html
-
-
-def html_to_image(html_content, output_path='frontend/static/suggestion.png'):
-    hti = Html2Image(output_path='frontend/static')
-    hti.screenshot(html_str=html_content, save_as=os.path.basename(output_path))
-    return output_path
 
 
 @app.route('/', methods=['GET'])
