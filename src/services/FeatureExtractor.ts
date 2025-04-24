@@ -58,15 +58,28 @@ export class FeatureExtractor {
                 screenWidth: 'width' in node ? node.width : null,
                 screenHeight: 'height' in node ? node.height : null
             },
-            elements: elements.map(el => ({
-                id: el.id,
-                type: el.type,
-                text: el.textContent,
-                color: `rgb(${el.color_r*255},${el.color_g*255},${el.color_b*255})`,
-                interactions: el.hasClickInteraction ? {
-                    destination: el.clickDestination
-                } : null
-            })),
+            elements
+            // : elements.map(el => ({
+            //     id: el.id,
+            //     type: el.type,
+            //     text: el.textContent,
+            //     color: el.color,
+            //     width: 'width' in node ? node.width : null,
+            //     height: 'height' in node ? node.height : null,
+            //     "position.x": 'x' in node ? node.x : null,
+            //     "position.y": 'y' in node ? node.y : null,
+            //     rotation: 'rotation' in node ? node.rotation : null,
+            //     color_r: el.color.r, 
+            //     color_g: el.color.g,
+            //     color_b: el.color.b,
+            //     // hasClickInteraction : el.hasClickInteraction,
+            //     clickDestination: el.clickDestination,
+            //     isIconLabeled:  el.isIconLabeled,
+                
+            //     interactions: el.hasClickInteraction ? {
+            //         destination: el.clickDestination
+            //     } : null
+            // })),
         };
     }
 
