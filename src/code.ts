@@ -139,6 +139,164 @@ else if (msg.type === 'request-modifications') {
         });
     }
 }
+else if (msg.type === 'create-frame-from-json') {
+    // Show a minimal UI to trigger file picker
+    const filePickerUI = `
+        <input type="file" id="jsonFile" accept=".json" style="display: none;">
+        <script>
+            const fileInput = document.getElementById('jsonFile');
+            fileInput.click();
+            fileInput.onchange = () => {
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const json = JSON.parse(e.target.result);
+                            parent.postMessage({ pluginMessage: { type: 'json-loaded', json } }, '*');
+                        } catch (error) {
+                            parent.postMessage({ pluginMessage: { type: 'error', message: 'Invalid JSON file' } }, '*');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+        </script>
+    `;
+    figma.showUI(filePickerUI, { visible: false });
+
+    // Handle file picker response
+    figma.ui.onmessage = async (fileMsg) => {
+        try {
+            if (fileMsg.type === 'json-loaded') {
+                const json = fileMsg.json;
+                if (!json || !json.elements) {
+                    throw new Error("Invalid JSON: Missing elements");
+                }
+
+                // Load font for text nodes (with fallback)
+                try {
+                    await figma.loadFontAsync({ family: "Inter", style: "Regular" });
+                } catch (error) {
+                    console.warn("Font 'Inter' not found, falling back to 'Roboto'");
+                    await figma.loadFontAsync({ family: "Roboto", style: "Regular" });
+                }
+
+                // Create a new frame
+                const newFrame = figma.createFrame();
+                newFrame.name = "Modified Design";
+                newFrame.resize(json.metadata?.screenWidth || 1440, json.metadata?.screenHeight || 717);
+                newFrame.x = 1500; // Offset to avoid overlapping
+                newFrame.y = 0;
+
+                let yOffset = 20; // Start position for stacking nodes
+
+                // Parse and create nodes
+                json.elements.forEach((element: any) => {
+                    let node: SceneNode | null = null;
+
+                    // Parse color (supports rgb(r,g,b) or defaults to black)
+                    let color = { r: 0, g: 0, b: 0, a: 1 };
+                    if (element.color) {
+                        const rgbMatch = element.color.match(/rgb\((\d+),(\d+),(\d+)\)/);
+                        if (rgbMatch) {
+                            color = {
+                                r: parseInt(rgbMatch[1]) / 255,
+                                g: parseInt(rgbMatch[2]) / 255,
+                                b: parseInt(rgbMatch[3]) / 255,
+                                a: 1
+                            };
+                        }
+                    }
+
+                    // Parse optional position and size
+                    const x = element.x || 20;
+                    const y = element.y || yOffset;
+                    const width = element.width || (element.type === "FRAME" ? 200 : 120);
+                    const height = element.height || (element.type === "FRAME" ? 100 : 40);
+
+                    switch (element.type?.toUpperCase()) {
+                        case "FRAME":
+                            node = figma.createFrame();
+                            node.name = element.text || "Unnamed Frame";
+                            node.resize(width, height);
+                            node.fills = [{ type: "SOLID", color }];
+                            break;
+                        case "RECTANGLE":
+                            node = figma.createRectangle();
+                            node.name = element.text || "Unnamed Rectangle";
+                            node.resize(width, height);
+                            node.fills = [{ type: "SOLID", color }];
+                            break;
+                        case "TEXT":
+                            node = figma.createText();
+                            (node as TextNode).characters = element.text || "";
+                            (node as TextNode).fontSize = element.fontSize || 16;
+                            (node as TextNode).fontName = element.fontName || { family: "Inter", style: "Regular" };
+                            (node as TextNode).fills = [{ type: "SOLID", color }];
+                            break;
+                        case "LINE":
+                            node = figma.createLine();
+                            node.name = element.text || "Unnamed Line";
+                            (node as LineNode).strokeWeight = element.strokeWeight || 2;
+                            (node as LineNode).strokes = [{ type: "SOLID", color }];
+                            (node as LineNode).resize(element.length || 100, 0);
+                            break;
+                        case "GROUP":
+                            // Skip groups unless children are provided
+                            if (!element.children) {
+                                console.warn(`Skipping GROUP: ${element.text || "Unnamed"} (no children)`);
+                                return;
+                            }
+                            node = figma.createFrame(); // Use frame as placeholder for group
+                            node.name = element.text || "Unnamed Group";
+                            node.resize(width, height);
+                            break;
+                        case "INSTANCE":
+                        case "SYMBOLINSTANCE":
+                            // Create placeholder for instances
+                            node = figma.createRectangle();
+                            node.name = `INSTANCE: ${element.text || "Unnamed"}`;
+                            node.resize(width, height);
+                            node.fills = [{ type: "SOLID", color }];
+                            console.warn(`INSTANCE ${element.text || "Unnamed"} created as placeholder`);
+                            break;
+                        default:
+                            console.warn(`Unsupported node type: ${element.type}`);
+                            return;
+                    }
+
+                    if (node) {
+                        // Apply position
+                        node.x = x;
+                        node.y = y;
+                        yOffset += height + 20; // Update yOffset for next node
+
+                        // Add to frame
+                        newFrame.appendChild(node);
+                    }
+                });
+
+                // Add frame to page
+                figma.currentPage.appendChild(newFrame);
+
+                // Select and zoom to new frame
+                figma.currentPage.selection = [newFrame];
+                figma.viewport.scrollAndZoomIntoView([newFrame]);
+
+                figma.notify("New frame created with JSON changes!");
+            } else if (fileMsg.type === 'error') {
+                throw new Error(fileMsg.message);
+            }
+        } catch (error) {
+            console.error("Error creating frame from JSON:", error);
+            figma.notify(error instanceof Error ? error.message : "Failed to create frame");
+        } finally {
+            // Close the file picker UI
+            figma.closePlugin();
+        }
+    };
+}
 } catch (error) {
 console.error('Plugin error:', error);
 figma.notify('An error occurred. See console for details.');
