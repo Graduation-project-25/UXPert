@@ -13,13 +13,13 @@ from json.decoder import JSONDecodeError
 import openai
 from openai import OpenAI, files 
 import json
-
+from html2image import Html2Image
 from database.modified_design_repository import ModifiedDesignsRepository 
 
 
 load_dotenv()  
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 figma_repository = FigmaFeaturesRepository()       
 feedback_repository = FeedbackRepository()       
@@ -327,11 +327,10 @@ def modify_design():
     try:
         data = request.get_json()
         print("Received design modification request")
-        
+
         if not data or 'design_json' not in data:
             return jsonify({"status": "error", "message": "No design data provided"}), 400
 
-        # Include all properties with safeguards
         simplified_design = {
             "metadata": data['design_json'].get('metadata', {}),
             "elements": [
@@ -359,23 +358,23 @@ def modify_design():
                     "isIcon": elem.get('isIcon', False),
                     "isIconLabeled": elem.get('isIconLabeled', False)
                 }
-                for elem in data['design_json'].get('elements', [])[:15]  # Limited to 15 elements
+                for elem in data['design_json'].get('elements', [])[:15]
             ]
         }
 
         system_message = """You are an expert UX analyzer that suggests holistic design improvements. Return JSON with:
-- "status": "success"
-- "summary": "assessment considering whole design"
-- "modifications": [{
-    "element_id": "id",
-    "element_name": "name",
-    "type": "element type",
-    "changes": [{
-        "property": "which property",
-        "from": "original value",
-        "to": "new value",
-        "reason": "why this improves the WHOLE design",
-        "impact_analysis": "how this affects other elements"
+- \"status\": \"success\"
+- \"summary\": \"assessment considering whole design\"
+- \"modifications\": [{
+    \"element_id\": \"id\",
+    \"element_name\": \"name\",
+    \"type\": \"element type\",
+    \"changes\": [{
+        \"property\": \"which property\",
+        \"from\": \"original value\",
+        \"to\": \"new value\",
+        \"reason\": \"why this improves the WHOLE design\",
+        \"impact_analysis\": \"how this affects other elements\"
     }]
 }]
 RULES:
@@ -394,7 +393,7 @@ Suggest improvements that:
 2. Maintain proper spacing and alignment
 3. Preserve visual hierarchy
 4. Avoid overlapping or obscuring other elements
-5. Explain how each change affects the whole design""" 
+5. Explain how each change affects the whole design"""
 
         response = client.chat.completions.create(
             model="gpt-4-turbo",
@@ -410,7 +409,6 @@ Suggest improvements that:
         content = response.choices[0].message.content
         print(f"Response length: {len(content)} chars")
 
-        # Robust JSON parsing with multiple fallbacks
         def parse_json_response(content):
             attempts = [
                 content,
@@ -419,31 +417,29 @@ Suggest improvements that:
                 '{' + content.split('{', 1)[-1],
                 content.rsplit(',', 1)[0] + '}'
             ]
-            
+
             for attempt in attempts:
                 try:
                     return json.loads(attempt)
                 except json.JSONDecodeError:
                     continue
-            
+
             try:
                 json_str = re.search(r'\{.*\}', content, re.DOTALL)
                 if json_str:
                     return json.loads(json_str.group())
             except:
                 pass
-            
+
             raise ValueError("Could not parse response")
 
         try:
             modifications = parse_json_response(content)
-            
-            # Validate and clean modifications
             valid_modifications = []
             for mod in modifications.get('modifications', []):
                 if not isinstance(mod, dict) or 'element_id' not in mod:
                     continue
-                    
+
                 clean_mod = {
                     "element_id": mod.get('element_id'),
                     "element_name": mod.get('element_name', ''),
@@ -458,12 +454,11 @@ Suggest improvements that:
                         }
                         for change in mod.get('changes', [])
                         if isinstance(change, dict)
-                    ][:2]  # Limit to 2 changes
+                    ][:2]
                 }
                 if clean_mod['changes']:
                     valid_modifications.append(clean_mod)
 
-            # Save to database
             doc_id, files = modified_designs_repo.save_modification_record(
                 original_data=data,
                 modified_json={
@@ -471,7 +466,17 @@ Suggest improvements that:
                     "modifications": valid_modifications
                 }
             )
-            
+
+            output_type = data.get("output_type", "json")
+
+            if output_type == "ui_image":
+                html = generate_visual_ui_from_json(valid_modifications)
+                image_path = html_to_image(html)
+                return jsonify({
+                    "status": "success",
+                    "image_url": f"/static/{os.path.basename(image_path)}"
+                })
+
             return jsonify({
                 "status": "success",
                 "document_id": doc_id,
@@ -479,7 +484,7 @@ Suggest improvements that:
                 "summary": modifications.get('summary', 'Design analysis complete'),
                 "files": files
             })
-            
+
         except Exception as e:
             print(f"Response processing error: {str(e)}")
             return jsonify({
@@ -487,13 +492,75 @@ Suggest improvements that:
                 "message": "Could not process AI response",
                 "content": content[:500] + ("..." if len(content) > 500 else "")
             }), 500
-            
+
     except Exception as e:
         print(f"Server Error: {str(e)}")
         return jsonify({
             "status": "error",
             "message": "Internal server error"
         }), 500
+        
+#trying html 
+def generate_visual_ui_from_json(modifications, width=375, height=667):
+    html = f"""
+    <html>
+    <head>
+        <style>
+            body {{
+                margin: 0;
+                padding: 0;
+                background: #f0f0f0;
+            }}
+            .canvas {{
+                position: relative;
+                width: {width}px;
+                height: {height}px;
+                margin: 20px auto;
+                background: white;
+                border: 2px solid #ccc;
+            }}
+            .element {{
+                position: absolute;
+                overflow: hidden;
+                font-size: 12px;
+                font-family: sans-serif;
+                border: 1px solid #999;
+                text-align: center;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="canvas">
+    """
+
+    for mod in modifications:
+        pos = mod.get("position", {"x": 0, "y": 0})
+        width = mod.get("width", 100)
+        height = mod.get("height", 30)
+        text = mod.get("element_name", "Element")
+        color = mod.get("color", {"r": 255, "g": 255, "b": 255})
+        background = f"rgb({color['r']},{color['g']},{color['b']})"
+
+        html += f"""
+        <div class="element" style="
+            left: {pos.get('x', 0)}px;
+            top: {pos.get('y', 0)}px;
+            width: {width}px;
+            height: {height}px;
+            background: {background};
+            line-height: {height}px;
+        ">{text}</div>
+        """
+
+    html += "</div></body></html>"
+    return html
+
+
+def html_to_image(html_content, output_path='frontend/static/suggestion.png'):
+    hti = Html2Image(output_path='frontend/static')
+    hti.screenshot(html_str=html_content, save_as=os.path.basename(output_path))
+    return output_path
+
 
 @app.route('/', methods=['GET'])
 def home():
