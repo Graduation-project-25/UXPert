@@ -7,6 +7,8 @@ import app
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
 from database.feedback_repository import FeedbackRepository
 from database.figma_features_repository import FigmaFeaturesRepository
+from database.modified_design_repository import ModifiedDesignsRepository 
+
 from dotenv import load_dotenv
 import re
 from json.decoder import JSONDecodeError
@@ -14,7 +16,6 @@ import openai
 from openai import OpenAI, files 
 import json
 
-from database.modified_design_repository import ModifiedDesignsRepository 
 
 
 load_dotenv()  
@@ -23,6 +24,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 figma_repository = FigmaFeaturesRepository()       
 feedback_repository = FeedbackRepository()       
+modified_designs_repo = ModifiedDesignsRepository()
 
 
 # Initialize Flask
@@ -214,6 +216,7 @@ def process_elements():
             "RecoveryIssues": error_handling_results.get("RecoveryIssues", []),
             "Feedback": error_handling_results
         }
+        
         minimalist_feedback = {
             "Feedback": cleaned_minimalist_feedback,  
             # "Score": f"Final Score: {minimalist_score:.2f}%"  # Score from Minimalist
@@ -257,7 +260,6 @@ def process_elements():
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 
-modified_designs_repo = ModifiedDesignsRepository()
 NIELSEN_HEURISTICS = {
     "Visibility of system status": "The system should always keep users informed about what is going on",
     "Match between system and real world": "The system should speak the users' language",
@@ -363,7 +365,29 @@ def modify_design():
         Instructions:
         1. Keep responses under 3000 tokens
         2. Return complete JSON (no truncation)
-        3. Focus on key usability issues"""
+        3. Focus on key usability issues
+        4. In 'modified_design', include:
+           - metadata: screenWidth, screenHeight
+           - elements: array of objects with:
+             - id: unique identifier
+             - type: element type (FRAME, RECTANGLE, TEXT)
+             - text: text content or label
+             - color: RGB string (e.g., rgb(255,255,255))
+             - x, y: position in pixels
+             - width, height: dimensions in pixels (for RECTANGLE, FRAME)
+             - fontSize: font size in pixels (for TEXT)
+             - fontFamily: font family (for TEXT, e.g., "Roboto")
+             - interactions: optional
+        5. Infer reasonable values for x, y, width, height, fontSize, fontFamily if missing (e.g., avoid overlap, align elements).
+        Example:
+        {{
+          "metadata": {{ "screenWidth": 1440, "screenHeight": 2491 }},
+          "elements": [
+            {{ "id": "1:1", "type": "FRAME", "text": "Home page", "color": "rgb(255,255,255)", "width": 1440, "height": 2491 }},
+            {{ "id": "1:2", "type": "RECTANGLE", "text": "Rectangle 3", "color": "rgb(0,0,0)", "x": 20, "y": 20, "width": 100, "height": 100 }},
+            {{ "id": "1:3", "type": "TEXT", "text": "Rectangle 3 Label", "color": "rgb(0,0,0)", "x": 20, "y": 0, "fontSize": 12, "fontFamily": "Roboto" }}
+          ]
+        }}"""
 
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -387,7 +411,7 @@ def modify_design():
             modifications = json.loads(content)
             
             # Validate response structure
-            if not all(k in modifications for k in ['modified_design', 'modifications']):
+            if not all(k in modifications for k in ['status', 'summary','modified_design', 'modifications']):
                 raise ValueError("Missing required fields in response")
                 
             # Save to database
@@ -397,8 +421,9 @@ def modify_design():
             )
             
             return jsonify({
-               "status": "success",
+                "status": "success",
                 "document_id": doc_id,
+                "result": modifications,
                 "modified_design": modifications['modified_design'],
                 "modifications": modifications.get('modifications', []), 
                 "summary": modifications.get('summary', 'Design analysis complete'),
