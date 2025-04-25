@@ -1,12 +1,8 @@
 import pandas as pd
 from flask import jsonify, request
-from database.figma_features_repository import FigmaFeaturesRepository
-from database.feedback_repository import FeedbackRepository
 from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
+from config import figma_repository, feedback_repository
 from utils.helpers import clean_prefix
-
-figma_repository = FigmaFeaturesRepository()
-feedback_repository = FeedbackRepository()
 
 def process_elements():
     if request.method == 'OPTIONS':
@@ -67,6 +63,13 @@ def process_elements():
             return jsonify({"error": "No elements found in the retrieved frames"}), 500
 
         elements_db = pd.DataFrame(elements_list)
+
+        designs_for_evaluation = [{"elements": elements_db}]
+
+        output_data = {
+            "screen_size": frame_info,
+            "elements": elements,
+        }
 
         frame_data = latest_saved_data.get("frames", [])
         if frame_data:
