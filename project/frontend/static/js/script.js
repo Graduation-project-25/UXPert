@@ -211,7 +211,7 @@ function navigateFeedback(frameId) {
 }
 
 // Message handling
-window.addEventListener('message', (event) => {
+window.addEventListener('message', async (event) => {
     const msg = event.data.pluginMessage;
     if (!msg) return;
 
@@ -271,46 +271,48 @@ window.addEventListener('message', (event) => {
 
             // Add event listeners for modify buttons
 
-        //     document.querySelectorAll('modify-button').forEach(button => {
-        //         button.addEventListener('click', (e) => {
-        //             const frameId = e.currentTarget.getAttribute('data-frame-id');
-        //             console.log('Requesting modifications for frame:', frameId);
-                    
-        //             // Show loading state
-        //             document.getElementById('processing-screen').style.display = 'block';
-                    
-        //             parent.postMessage({
-        //                 pluginMessage: {
-        //                     type: 'request-modifications',
-        //                     frameId: frameId
-        //                 }
-        //             }, '*');
-        //         }
-        //     );
-        //     }
-        // );
+            document.querySelectorAll('modify-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const frameId = e.currentTarget.getAttribute('data-frame-id');
+                    const frameName = feedbackData[frameId].item.frameName;
+                    console.log('Requesting modifications for frame:', frameName);
+                    showLoading();
+                    parent.postMessage({
+                        pluginMessage: {
+                            type: 'request-modifications',
+                            frameName: frameName
+                        }
+                    }, '*');
+                });
+            });
         }, 300);
     
     return;
 }
 
-
 if (msg.type === 'design-modifications') {
     hideLoading();
-    console.log('Received modifications:', msg);
-    
-    // Ensure we have the data in the expected format
-    const modificationsData = {
-        summary: msg.summary || "Design analysis completed",
-        modifications: msg.modifications || [],
-        modified_design: msg.modifiedDesign || null
-    };
-    
-    showModifications(modificationsData);
-    return;
-}
+    console.log('Received modifications:', JSON.stringify(msg, null, 2));
 
-if (msg.type === 'progress-update') {
+    if (msg.modifications && msg.modifications.length > 0) {
+        showModifications(msg);
+
+        if (msg.image) {
+            document.getElementById('modified-design-image').src = msg.image;
+        } else {
+            console.warn('No image provided in design-modifications');
+            document.getElementById('modified-design-image').src = '';
+            document.getElementById('modification-list').innerHTML += `
+                <p>No modified design preview available</p>
+            `;
+        }
+    } else {
+        document.getElementById('modification-list').innerHTML = '<p>No modifications suggested for this frame</p>';
+        document.getElementById('modified-design-image').src = '';
+        document.getElementById('modifications-screen').style.display = 'block';
+        document.getElementById('feedback-screen').style.display = 'none';
+    }
+}if (msg.type === 'progress-update') {
     document.getElementById('progress-bar').value = msg.progress;
     document.getElementById('progress-text').textContent = `${msg.progress}%`;
     return;

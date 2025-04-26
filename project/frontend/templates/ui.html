@@ -24,6 +24,7 @@
     <div id="initial-screen" style="display: none;">
         <h1>Start Detection</h1>
         <button id="start">Start</button>
+        <button id="create-frame-from-json">Create Frame from JSON</button>
     </div>
 
     <!-- Processing Screen -->
@@ -65,10 +66,20 @@
         <div class="modifications-container">
             <div id="modification-summary" class="scrollable"></div>  
             <div id="modification-list" class="modifications-list"></div>
+            <div id="design-preview">
+                <h3>Preview of Modified Design</h3>
+                <img id="modified-design-image" style="max-width: 100%; border: 1px solid #ccc;" />
+            </div>
         </div>
         <button id="back-to-feedback-from-mods" class="button">Back to Feedback</button>
     </div>
 
-   
+    <script>
+        // Existing script logic from script.js (loaded via defer) is preserved
+        // Add handler for the new button
+        document.getElementById('create-frame-from-json')?.addEventListener('click', () => {
+            parent.postMessage({ pluginMessage: { type: 'create-frame-from-json' } }, '*');
+        });
+    </script>
 </body>
 </html>
