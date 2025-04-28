@@ -1,9 +1,9 @@
-from components.Heuristics_Component.heuristic_rules.ErrorHandling import ErrorHandling
-from components.Heuristics_Component.heuristic_rules.ErrorPrevention import ErrorPrevention
-from components.Heuristics_Component.heuristic_rules.consistency import Consistency
-from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist
-from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
-from components.Heuristics_Component.heuristic_rules.recognition import Recognition
+from components.Heuristics_Component.ErrorHandling import ErrorHandling
+from components.Heuristics_Component.ErrorPrevention import ErrorPrevention
+from components.Heuristics_Component.consistency import Consistency
+from components.Heuristics_Component.minimalist import Minimalist
+from components.Heuristics_Component.heuristic import HeuristicInterface
+from components.Heuristics_Component.recognition import Recognition
 
 
 class HeuristicFactory:

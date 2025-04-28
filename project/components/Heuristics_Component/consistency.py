@@ -5,7 +5,7 @@ from collections import Counter
 from skimage.color import rgb2lab
 from scipy.spatial.distance import euclidean
 from sklearn.cluster import KMeans
-from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface
+from components.Heuristics_Component.heuristic import HeuristicInterface
 
 
 class Consistency(HeuristicInterface):

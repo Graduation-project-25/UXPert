@@ -2,8 +2,10 @@ import json
 import time
 from flask import jsonify, request
 from config import client, modified_designs_repo
+from components.Suggestions_Component.prompt import Prompt
 from utils.helpers import extract_json_from_response
 
+prompt = Prompt("Project 2.png")
 
 NIELSEN_HEURISTICS = {
     "Visibility of system status": "The system should always keep users informed about what is going on",
@@ -18,6 +20,7 @@ NIELSEN_HEURISTICS = {
     "Help and documentation": "Even though it's better if the system can be used without documentation"
 }
 def modify_design():
+    
     try:
         data = request.get_json()
         print("Received design modification request")
@@ -74,7 +77,7 @@ def modify_design():
                 }]
             }]
             Return ONLY the JSON object."""
-
+        
         prompt = f"""Analyze and improve this design:
         {json.dumps(simplified_design, indent=2)}
 
