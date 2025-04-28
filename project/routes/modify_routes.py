@@ -7,6 +7,7 @@ from utils.helpers import extract_json_from_response
 
 prompt = Prompt("Project 2.png")
 def modify_design():
+    
     try:
         data = request.get_json()
         print("Received design modification request")

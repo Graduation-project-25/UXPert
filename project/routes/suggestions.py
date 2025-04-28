@@ -14,7 +14,19 @@ class Suggestions:
         self.client = openai.OpenAI(api_key = self.openai_key)
         self.prompt = Prompt(self.design_image)
 
-    # Create the prompt based on GPT-4o suggestions
+    def analyze_design(self):
+            # Read and encode the image file as base64
+            base64_image = self.get_base64_image()
+            # Create the chat completion request with the base64 image
+            response = self.client.chat.completions.create(
+                model="gpt-4o",  # Vision model
+                messages = self.prompt.get_gpt_4o_messages(base64_image)
+            )
+
+            # Print the response
+            gpt_suggestions = response.choices[0].message.content
+            return gpt_suggestions
+    
     def generate_suggested_image(self, gpt_suggestions): 
         print(gpt_suggestions)
 
@@ -32,22 +44,12 @@ class Suggestions:
         with open("Project 1 - modified.png", "wb") as f:
             f.write(image_bytes)
 
-    def analyze_design(self):
-            # Read and encode the image file as base64
-            base64_image = self.get_base64_image()
-            # Create the chat completion request with the base64 image
-            response = self.client.chat.completions.create(
-                model="gpt-4o",  # Vision model
-                messages = self.prompt.get_gpt_4o_messages(base64_image)
-            )
-
-            # Print the response
-            gpt_suggestions = response.choices[0].message.content
-            return gpt_suggestions
-    
     def get_base64_image(self):
         with open(self.design_image, "rb") as image_file:
             image_data = image_file.read()
             base64_image = base64.b64encode(image_data).decode("utf-8")
         return base64_image
 
+    def generate_suggestions(self):
+        gpt_suggestions = self.analyze_design()
+        self.generate_suggested_image(gpt_suggestions)
