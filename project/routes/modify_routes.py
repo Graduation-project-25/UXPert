@@ -5,7 +5,7 @@ from config import client, modified_designs_repo
 from routes.prompt import Prompt
 from utils.helpers import extract_json_from_response
 
-prompt = Prompt()
+prompt = Prompt("Project 2.png")
 def modify_design():
     try:
         data = request.get_json()

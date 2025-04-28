@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from routes.suggestions import Suggestions
 from routes.process_routes import process_elements
-from routes.modify_routes import modify_design
+# from routes.modify_routes import modify_design
 
 # Initialize Flask
 app = Flask(__name__, static_folder = "frontend/static", template_folder="frontend/templates")
@@ -10,12 +10,13 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Objects
 suggestions = Suggestions()
-suggestions.generate_image("Project 1.png")
-# suggestions.analyze_design("Project 1.png")
+gpt_suggestions = suggestions.analyze_design()
+suggestions.generate_suggested_image(gpt_suggestions)
+
 
 # Register routes
 app.route('/process', methods=['POST', 'OPTIONS'])(process_elements)
-app.route('/modify-design', methods=['POST'])(modify_design)
+# app.route('/modify-design', methods=['POST'])(modify_design)
 
 @app.route('/', methods=['GET'])
 def home():
