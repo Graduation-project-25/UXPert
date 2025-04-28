@@ -44,3 +44,27 @@ class Prompt:
             - Heuristics violated in the design.
             - The specific areas highlighted (e.g., search bar, navigation menu) and the type of mask/annotation used.
             - A brief explanation of each violation (e.g., why it violates the heuristic)."""
+    
+    def get_gpt_4o_messages(self,base64_image):
+        return [
+                    {
+                        "role": "system",
+                        "content": "You are an expert UX/UI designer. Apply Nielsen's 10 Usability Heuristics."
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Analyze the uploaded design image. Identify up to 5 heuristic violations and suggest clear improvements for each."
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{base64_image}"
+                                }
+                            }
+                        ]
+                    }
+                ]
+        

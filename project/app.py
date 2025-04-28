@@ -9,8 +9,9 @@ app = Flask(__name__, static_folder = "frontend/static", template_folder="fronte
 CORS(app, resources={r"/*": {"origins": "*"}})  
 
 # Objects
-# suggestions = Suggestions()
-# suggestions.generate_image()
+suggestions = Suggestions()
+suggestions.generate_image("Project 1.png")
+# suggestions.analyze_design("Project 1.png")
 
 # Register routes
 app.route('/process', methods=['POST', 'OPTIONS'])(process_elements)

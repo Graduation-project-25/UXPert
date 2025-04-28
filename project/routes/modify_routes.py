@@ -2,8 +2,10 @@ import json
 import time
 from flask import jsonify, request
 from config import client, modified_designs_repo
+from routes.prompt import Prompt
 from utils.helpers import extract_json_from_response
 
+prompt = Prompt()
 def modify_design():
     try:
         data = request.get_json()
@@ -37,7 +39,7 @@ def modify_design():
                 }]
             }]
             Return ONLY the JSON object."""
-
+        
         prompt = f"""Analyze and improve this design:
         {json.dumps(simplified_design, indent=2)}
 
