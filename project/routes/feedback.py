@@ -1,6 +1,6 @@
 import pandas as pd
 from flask import jsonify, request
-from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
+from components.Heuristics_Component.heuristic_factory import HeuristicFactory
 from config import figma_repository, feedback_repository
 from utils.helpers import clean_prefix
 

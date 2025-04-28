@@ -1,4 +1,4 @@
-from components.Heuristics_Component.heuristic_rules.heuristic import HeuristicInterface 
+from components.Heuristics_Component.heuristic import HeuristicInterface 
 
 class Recognition(HeuristicInterface):
 

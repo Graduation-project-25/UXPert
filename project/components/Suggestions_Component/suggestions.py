@@ -3,14 +3,15 @@ from dotenv import load_dotenv
 import openai
 import base64
 
-from routes.prompt import Prompt
+from components.Suggestions_Component.prompt import Prompt
+from components.Suggestions_Component.suggestions_generator import SuggestionsGenerator
 
-class Suggestions:
-    load_dotenv()  
-    openai_key = os.getenv("OPENAI_API_KEY")
-    design_image = "Project 1.png"
+class Suggestions(SuggestionsGenerator):
 
     def __init__(self):
+        load_dotenv()  
+        self.openai_key = os.getenv("OPENAI_API_KEY")
+        self.design_image = "Project 2.png"
         self.client = openai.OpenAI(api_key = self.openai_key)
         self.prompt = Prompt(self.design_image)
 
@@ -27,13 +28,13 @@ class Suggestions:
             gpt_suggestions = response.choices[0].message.content
             return gpt_suggestions
     
-    def generate_suggested_image(self, gpt_suggestions): 
-        print(gpt_suggestions)
+    def generate_suggested_image(self, generated_text_suggestions): 
+        print(generated_text_suggestions)
 
         result = self.client.images.edit(
             model="gpt-image-1",
             image=open(self.design_image, "rb"),
-            prompt= self.prompt.get_gpt_image_1_prompt(gpt_suggestions), 
+            prompt= self.prompt.get_gpt_image_1_prompt(generated_text_suggestions), 
             quality = 'low',
         )
 
@@ -41,7 +42,7 @@ class Suggestions:
         image_bytes = base64.b64decode(image_base64)
 
         # Save the image to a file
-        with open("Project 1 - modified.png", "wb") as f:
+        with open("Project 2 - modified.png", "wb") as f:
             f.write(image_bytes)
 
     def get_base64_image(self):
@@ -51,5 +52,5 @@ class Suggestions:
         return base64_image
 
     def generate_suggestions(self):
-        gpt_suggestions = self.analyze_design()
-        self.generate_suggested_image(gpt_suggestions)
+        generated_text_suggestions = self.analyze_design()
+        self.generate_suggested_image(generated_text_suggestions)

@@ -2,7 +2,7 @@ import json
 import time
 from flask import jsonify, request
 from config import client, modified_designs_repo
-from routes.prompt import Prompt
+from components.Suggestions_Component.prompt import Prompt
 from utils.helpers import extract_json_from_response
 
 prompt = Prompt("Project 2.png")
