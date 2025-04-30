@@ -9,7 +9,6 @@ from sklearn.preprocessing import StandardScaler
 from components.Clustering_Component.clustering import ClusteringInterface
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Loader_Component.EGFE_load_data import EGFE_LoadData
-from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
 from utils.csv_exporting import export_to_csv
 from database.cluster_repository import ClusterRepository
  

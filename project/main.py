@@ -10,10 +10,7 @@ from database.cluster_repository import ClusterRepository
 
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
-from components.Heuristics_Component.heuristics_evaluation.minimalist_evaluation import MinimalistEvaluation
-from components.Heuristics_Component.heuristic_rules.minimalist import Minimalist
-from components.Heuristics_Component.heuristic_rules.Consistency_using_clusters import ClusteringConsistency
+from components.Heuristics_Component.minimalist import Minimalist
 from components.Clustering_Component.EGFE_clustering import EGFE_Clustering
 from components.Clustering_Component.EGFE_clustering_evaluation import EGFE_ClusteringEvaluation
 from components.Clustering_Component.EGFE_clustering_testing import EGFE_ClusteringTesting
@@ -22,10 +19,7 @@ from components.Data_Processor_Component.EGFE_ui_normalizing import EGFE_UiNorma
 from components.Data_Processor_Component.EGFE_ui_processing import EGFE_UiProcessing
 from components.Data_Splitter_Component.json_data_splitter import JSONDataSplitter
 from components.Feature_Extractor_Component.EGFE_ui_extraction import EGFE_FeatureExtraction
-from components.Heuristics_Component.heuristics_testing.minimalist_testing import MinimalistTesting
-from components.Heuristics_Component.heuristics_evaluation.recognition_evaluation import RecognitionEvaluation
-from components.Heuristics_Component.heuristics_testing.recognition_testing import RecognitionTesting
-from components.Heuristics_Component.heuristic_rules.heuristic_factory import HeuristicFactory
+from components.Heuristics_Component.heuristic_factory import HeuristicFactory
 from components.Visualizer_Component.EGFE_visualization import EGFE_Visualization
 
 from PIL import Image, ImageDraw
@@ -55,8 +49,6 @@ def main():
     egfe_visualization = EGFE_Visualization()
     egfe_clustering_testing = EGFE_ClusteringTesting()
     egfe_load_data = EGFE_LoadData()
-    minimalist_evaluation = MinimalistEvaluation()
-    minimalist_test_evaluation = MinimalistTesting()
     recognition_instance = HeuristicFactory.check_rule("recognition")
 
     # Image Generation Test
@@ -120,10 +112,10 @@ def main():
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    # clustered_data, clusters = egfe_clustering.dbscan_cluster('label')
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
     # print (clustered_data)
     # egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
-    # egfe_clustering_evaluation.evaluate_clustering(clustered_data)
+    egfe_clustering_evaluation.evaluate_clustering(clustered_data)
 
 
     # print(data)
