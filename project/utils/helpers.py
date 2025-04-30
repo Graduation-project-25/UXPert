@@ -9,58 +9,51 @@ def clean_prefix(text):
 def extract_json_from_response(text):
     """Robust JSON extraction that handles truncated responses"""
     text = text.strip()
-    print(f"Attempting to parse JSON of length: {len(text)}")
-
+    
     # First try parsing directly
     try:
         return json.loads(text)
     except JSONDecodeError as e:
-        print(f"Direct JSON parse failed: {str(e)}")
-
-    # Try to find complete JSON object
+        pass  # We'll try other methods
+        
+    # Try to find complete JSON object (handles truncated responses)
     try:
+        # Look for complete objects within curly braces
         json_str = re.search(r'\{.*\}', text, re.DOTALL)
         if json_str:
-            json_text = json_str.group()
-            open_braces = json_text.count('{')
-            close_braces = json_text.count('}')
+            # Count braces to ensure we have balanced pairs
+            open_braces = json_str.group().count('{')
+            close_braces = json_str.group().count('}')
             
-            # Attempt to fix unbalanced braces
+            # If unbalanced, try to fix by adding missing braces
             if open_braces > close_braces:
-                json_text += '}' * (open_braces - close_braces)
+                fixed_json = json_str.group() + '}' * (open_braces - close_braces)
+                return json.loads(fixed_json)
             elif close_braces > open_braces:
-                json_text = '{' * (close_braces - open_braces) + json_text
-            
-            try:
-                return json.loads(json_text)
-            except JSONDecodeError as e:
-                print(f"Balanced JSON parse failed: {str(e)}")
-    except Exception as e:
-        print(f"Regex JSON extraction failed: {str(e)}")
-
+                fixed_json = '{' * (close_braces - open_braces) + json_str.group()
+                return json.loads(fixed_json)
+            return json.loads(json_str.group())
+    except json.JSONDecodeError:
+        pass
+        
     # Try extracting from markdown code blocks
     try:
         json_match = re.search(r'```(?:json)?\n(.*?)\n```', text, re.DOTALL)
         if json_match:
             return json.loads(json_match.group(1))
-    except JSONDecodeError as e:
-        print(f"Markdown JSON parse failed: {str(e)}")
-
-    # Fallback: Attempt to parse partial JSON
+    except JSONDecodeError:
+        pass
+        
+    # Final fallback - try parsing as much as possible
     try:
+        # Find the longest valid JSON prefix
         for i in range(len(text), 0, -1):
             try:
-                return json.loads(text[:i] + '}' * text[:i].count('{'))
+                return json.loads(text[:i])
             except JSONDecodeError:
                 continue
-    except Exception as e:
-        print(f"Partial JSON parse failed: {str(e)}")
+    except Exception:
+        pass
+        
+    raise ValueError(f"Could not extract valid JSON from response. Content:\n{text[:500]}...")
 
-    # If all else fails, return a minimal valid JSON with error info
-    error_json = {
-        "status": "error",
-        "message": "Failed to parse JSON response",
-        "partial_content": text[:500] + "..." if len(text) > 500 else text
-    }
-    print(f"Returning fallback JSON: {json.dumps(error_json)[:100]}...")
-    return error_json

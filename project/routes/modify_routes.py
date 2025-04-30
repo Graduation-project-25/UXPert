@@ -6,6 +6,19 @@ from components.Suggestions_Component.prompt import Prompt
 from utils.helpers import extract_json_from_response
 
 prompt = Prompt("Project 2.png")
+
+NIELSEN_HEURISTICS = {
+    "Visibility of system status": "The system should always keep users informed about what is going on",
+    "Match between system and real world": "The system should speak the users' language",
+    "User control and freedom": "Users need clearly marked 'emergency exits'",
+    "Consistency and standards": "Users should not have to wonder if different words mean the same thing",
+    "Error prevention": "Prevent problems from occurring in the first place",
+    "Recognition rather than recall": "Minimize the user's memory load",
+    "Flexibility and efficiency": "Allow users to tailor frequent actions",
+    "Aesthetic and minimalist design": "Dialogues should not contain irrelevant information",
+    "Help users recognize errors": "Error messages should be expressed in plain language",
+    "Help and documentation": "Even though it's better if the system can be used without documentation"
+}
 def modify_design():
     
     try:
@@ -19,8 +32,31 @@ def modify_design():
         simplified_design = {
             "metadata": data['design_json'].get('metadata', {}),
             "elements": [
-                {k: v for k, v in elem.items() if k in ['id', 'type', 'text', 'color']}
-                for elem in data['design_json'].get('elements', [])[:30]  # Reduced to 30 elements
+                {
+                    "id": elem.get('id'),
+                    "name": elem.get('name', '')[:50],
+                    "type": elem.get('type'),
+                    "textContent": elem.get('textContent', '')[:100],
+                    "width": elem.get('width'),
+                    "height": elem.get('height'),
+                    "position": {
+                        "x": elem.get('position.x'),
+                        "y": elem.get('position.y')
+                    },
+                    "rotation": elem.get('rotation'),
+                    "color": {
+                        "r": elem.get('color_r', 0),
+                        "g": elem.get('color_g', 0), 
+                        "b": elem.get('color_b', 0)
+                    },
+                    "interactions": {
+                        "hasClickInteraction": elem.get('hasClickInteraction', False),
+                        "clickDestination": elem.get('clickDestination', '')[:50]
+                    },
+                    "isIcon": elem.get('isIcon', False),
+                    "isIconLabeled": elem.get('isIconLabeled', False)
+                }
+                for elem in data['design_json'].get('elements', [])[:15]  # Limited to 15 elements
             ]
         }
 
@@ -29,14 +65,15 @@ def modify_design():
             - "summary": "brief assessment"
             - "modified_design": {original JSON with fixes}
             - "modifications": [{
-                "element_id": "element identifier",
-                "element_name": "human-readable name",
+                "element_id": "id",
+                "element_name": "name",
                 "type": "element type",
                 "changes": [{
-                    "property": "which property was changed",
+                    "property": "which property",
                     "from": "original value",
                     "to": "new value",
-                    "reason": "why this change improves UX"
+                    "reason": "why this improves the WHOLE design",
+                    "impact_analysis": "how this affects other elements"
                 }]
             }]
             Return ONLY the JSON object."""
@@ -52,15 +89,16 @@ def modify_design():
            - metadata: screenWidth, screenHeight
            - elements: array of objects with:
              - id: unique identifier
-             - type: element type (FRAME, RECTANGLE, TEXT)
+             - type: element type 
              - text: text content or label
-             - color: RGB string (e.g., rgb(255,255,255))
+             - color: RGB string 
              - x, y: position in pixels
              - width, height: dimensions in pixels (for RECTANGLE, FRAME)
              - fontSize: font size in pixels (for TEXT)
-             - fontFamily: font family (for TEXT, e.g., "Roboto")
+             - fontFamily: font family 
              - interactions: optional
-        5. Infer reasonable values for x, y, width, height, fontSize, fontFamily if missing (e.g., avoid overlap, align elements).
+        5. evaluate the design according to the 10 Nielsen's UI/UX rules: {NIELSEN_HEURISTICS}
+        6. Infer reasonable values for x, y, width, height, fontSize, fontFamily if missing (e.g., avoid overlap, align elements).
         Example:
         {{
           "metadata": {{ "screenWidth": 1440, "screenHeight": 2491 }},
@@ -70,6 +108,7 @@ def modify_design():
             {{ "id": "1:3", "type": "TEXT", "text": "Rectangle 3 Label", "color": "rgb(0,0,0)", "x": 20, "y": 0, "fontSize": 12, "fontFamily": "Roboto" }}
           ]
         }}"""
+        
 
         # Retry mechanism
         max_retries = 3
