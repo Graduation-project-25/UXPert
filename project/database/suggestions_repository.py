@@ -1,3 +1,5 @@
+import base64
+from io import BytesIO
 from PIL import Image, ImageDraw
 from database.base_repository import BaseRepository
 
@@ -57,29 +59,62 @@ class SuggestionsRepository(BaseRepository):
             print(f"Error updating element: {e}")
             return None
 
-    def get_image(self):
-        # Fetch JSON data
-        ui_data = self.find_one({"design_name": "simple test design"})
-        print("UI DATA")
-        print(ui_data)
-        # Extract frame details
-        frame = ui_data["frames"][0]  # Assuming single frame for simplicity
-        frame_width, frame_height = frame["design_name"], frame["user_name"]
+    def save_design_with_images(self, design_data):
+        """
+        Save design data with original and modified images
+        Args:
+            design_data: {
+                "design_name": str,
+                "user_name": str,
+                "frames": [{
+                    "frame_name": str,
+                    "original_image": base64 str,
+                    "modified_image": base64 str (optional),
+                    "elements": list
+                }]
+            }
+        """
+        # Convert images to base64 if they're PIL images
+        for frame in design_data.get("frames", []):
+            if isinstance(frame.get("original_image"), Image.Image):
+                frame["original_image"] = self.image_to_base64(frame["original_image"])
+            if isinstance(frame.get("modified_image"), Image.Image):
+                frame["modified_image"] = self.image_to_base64(frame["modified_image"])
+        
+        # Upsert the design data
+        return self.update(
+            {"design_name": design_data["design_name"]},
+            {"$set": design_data},
+            upsert=True
+        )
 
-        # Create a blank canvas (white background)
-        image = Image.new("RGB", (frame_width, frame_height), "white")
-        draw = ImageDraw.Draw(image)
+    def get_design_images(self, design_name, frame_name):
+        """
+        Retrieve original and modified images for a design frame
+        Returns: (original_image, modified_image) as PIL Images
+        """
+        design = self.find_one(
+            {"design_name": design_name, "frames.frame_name": frame_name},
+            {"frames.$": 1}
+        )
+        
+        if not design or not design.get("frames"):
+            return None, None
+            
+        frame = design["frames"][0]
+        original = self.base64_to_image(frame.get("original_image")) if frame.get("original_image") else None
+        modified = self.base64_to_image(frame.get("modified_image")) if frame.get("modified_image") else None
+        
+        return original, modified
 
-        # Draw elements
-        for element in frame["elements"]:
-            x, y = element["position"]["x"], element["position"]["y"]
-            w, h = element["width"], element["height"]
-            color = tuple(element["color"])  # Convert list to tuple (R, G, B)
+    @staticmethod
+    def image_to_base64(image):
+        """Convert PIL Image to base64 string"""
+        buffered = BytesIO()
+        image.save(buffered, format="PNG")
+        return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
-            draw.rectangle([x, y, x + w, y + h], fill=color)
-
-        # Save the image
-        image.save("output_ui.png")
-        image.show()  # Open the image
-
-        print("Image saved as output_ui.png")
+    @staticmethod
+    def base64_to_image(base64_str):
+        """Convert base64 string to PIL Image"""
+        return Image.open(BytesIO(base64.b64decode(base64_str)))
