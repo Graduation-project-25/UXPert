@@ -3,7 +3,10 @@ import os
 import time
 from dotenv import load_dotenv
 from flask import jsonify, request
+import openai
 from components.Suggestions_Component.prompt import Prompt
+from database.modified_design_repository import ModifiedDesignsRepository
+
 from utils.helpers import extract_json_from_response
 
 class Modification:
@@ -11,7 +14,9 @@ class Modification:
     def __init__(self):
         load_dotenv()  
         self.openai_key = os.getenv("OPENAI_API_KEY")
+        self.client = openai.OpenAI(apikey=self.openai_key)
         prompt = Prompt("Project 2.png")
+        self.modified_designs_repo = ModifiedDesignsRepository()
 
     NIELSEN_HEURISTICS = {
         "Visibility of system status": "The system should always keep users informed about what is going on",
@@ -26,7 +31,7 @@ class Modification:
         "Help and documentation": "Even though it's better if the system can be used without documentation"
     }
     
-    def modify_design():
+    def modify_design(self):
         
         try:
             data = request.get_json()
@@ -104,7 +109,7 @@ class Modification:
                 - fontSize: font size in pixels (for TEXT)
                 - fontFamily: font family 
                 - interactions: optional
-            5. evaluate the design according to the 10 Nielsen's UI/UX rules: {NIELSEN_HEURISTICS}
+            5. evaluate the design according to the 10 Nielsen's UI/UX rules: {self.NIELSEN_HEURISTICS}
             6. Infer reasonable values for x, y, width, height, fontSize, fontFamily if missing (e.g., avoid overlap, align elements).
             Example:
             {{
@@ -121,7 +126,7 @@ class Modification:
             max_retries = 3
             for attempt in range(max_retries):
                 try:
-                    response = client.chat.completions.create(
+                    response = self.client.chat.completions.create(
                         model="gpt-4o",
                         messages=[
                             {"role": "system", "content": system_message},
@@ -155,7 +160,7 @@ class Modification:
                         raise ValueError("Missing required fields in response")
 
                     # Save to database
-                    doc_id, files = modified_designs_repo.save_modification_record(
+                    doc_id, files = self.modified_designs_repo.save_modification_record(
                         original_data=data,
                         modified_json=modifications
                     )
