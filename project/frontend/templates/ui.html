@@ -24,7 +24,6 @@
     <div id="initial-screen" style="display: none;">
         <h1>Start Detection</h1>
         <button id="start">Start</button>
-        <button id="create-frame-from-json">Create Frame from JSON</button>
     </div>
 
     <!-- Processing Screen -->
@@ -74,12 +73,5 @@
         <button id="back-to-feedback-from-mods" class="button">Back to Feedback</button>
     </div>
 
-    <script>
-        // Existing script logic from script.js (loaded via defer) is preserved
-        // Add handler for the new button
-        document.getElementById('create-frame-from-json')?.addEventListener('click', () => {
-            parent.postMessage({ pluginMessage: { type: 'create-frame-from-json' } }, '*');
-        });
-    </script>
 </body>
 </html>
