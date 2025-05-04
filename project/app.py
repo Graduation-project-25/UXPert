@@ -1,8 +1,11 @@
 from flask import Flask
+import os
 from flask_cors import CORS
 from components.Suggestions_Component.suggestions import Suggestions
 from routes.feedback import Feedback
 
+
+os.environ['LOKY_MAX_CPU_COUNT'] = '4'
 # Initialize Flask
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 CORS(app, resources={r"/*": {"origins": "*"}})
