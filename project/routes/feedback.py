@@ -1,10 +1,17 @@
 import pandas as pd
 from flask import jsonify, request
 from components.Heuristics_Component.heuristic_factory import HeuristicFactory
-from config import figma_repository, feedback_repository, suggestions_repository
+from database.feedback_repository import FeedbackRepository
+from database.figma_features_repository import FigmaFeaturesRepository
+from database.suggestions_repository import SuggestionsRepository
 from utils.helpers import clean_prefix
 
 class Feedback:
+    def __init__(self):
+        self.figma_repository = FigmaFeaturesRepository()
+        self.suggestions_repository = SuggestionsRepository()
+        self.feedback_repository = FeedbackRepository()
+
     def process_elements(self):
         if request.method == 'OPTIONS':
             return '', 200
@@ -38,12 +45,12 @@ class Feedback:
                 "elements": elements,
                 "image64_string": imageDataUrl
             }
-            suggestions_repository.save_original_image(imageDataUrl, feature_data)
+            self.suggestions_repository.save_original_image(imageDataUrl, feature_data)
 
             recognition_feedback_list = []
 
             print("Attempting to insert data into MongoDB...")
-            insert_result = figma_repository.update_or_insert_frame(feature_data)
+            insert_result = self.figma_repository.update_or_insert_frame(feature_data)
 
             print("Data inserted successfully.")
             if insert_result.matched_count > 0:
@@ -52,7 +59,7 @@ class Feedback:
                 print(f"New design document created: {design_name}")
 
             # Retrieve Saved Design
-            latest_saved_data = figma_repository.get_saved_design(design_name, frame_name)
+            latest_saved_data = self.figma_repository.get_saved_design(design_name, frame_name)
 
             if not latest_saved_data:
                 print("Failed to retrieve saved design data from MongoDB")
@@ -193,7 +200,7 @@ class Feedback:
                 feedback_data["recognition_results"] = recognition_feedback_list
 
             # Update feedback in database
-            update_result = feedback_repository.update_feedback(design_name, frame_name, feedback_data)
+            update_result = self.feedback_repository.update_feedback(design_name, frame_name, feedback_data)
 
             if update_result.matched_count == 0:
                 print("Error updating feedback in MongoDB.")
