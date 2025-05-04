@@ -2,9 +2,9 @@ import os
 from dotenv import load_dotenv
 import openai
 import base64
-
 from components.Suggestions_Component.prompt import Prompt
 from components.Suggestions_Component.suggestions_generator import SuggestionsGenerator
+
 
 class Suggestions(SuggestionsGenerator):
 
