@@ -3,6 +3,13 @@ import { ApiService } from "./services/ApiService";
 import { UiService } from "./services/UiService";
 import { FeedbackResult } from "./types";
 
+// Interface for recognition result to fix TypeScript error
+interface RecognitionResult {
+    element_id?: string;
+    element_name?: string;
+    Feedback?: string[];
+}
+
 // Rendering functions
 async function applyJsonToFigma(json: any): Promise<FrameNode> {
     if (typeof figma === "undefined") {
@@ -135,11 +142,49 @@ figma.ui.onmessage = async (msg) => {
                 const imageBase64 = figma.base64Encode(imageBytes);
                 const imageDataUrl = `data:image/png;base64,${imageBase64}`;
 
-                const serializedNodes = FeatureExtractor.extractElements(frame);
+                const serializedNodes = await FeatureExtractor.extractElements(frame);
                 const user_name = figma.currentUser?.name ?? "Unknown User";
                 const design_name = figma.root.name ?? "Untitled Design";
                 const frame_id = frame.id;
 
+                // Check if frame data exists in the database
+                try {
+                    const existingFeedback = await ApiService.checkExistingFrame({
+                        design_name,
+                        frame_name: frame.name,
+                        elements: serializedNodes.map(node => {
+                            const { imageBase64, ...rest } = node;
+                            return rest; // Exclude imageBase64 for comparison
+                        })
+                    });
+
+                    if (existingFeedback && existingFeedback.feedback) {
+                        // If feedback exists, use it and skip further processing
+                        console.log(`Found existing feedback for frame: ${frame.name}`);
+                        allFeedback.push({
+                            frameName: frame.name,
+                            frameId: frame.id,
+                            errorPreventionFeedback: existingFeedback.feedback.error_prevention_results?.Feedback ?? "No feedback",
+                            errorHandlingFeedback: existingFeedback.feedback.error_handling_results?.Feedback ?? "No feedback",
+                            minimalistFeedback: existingFeedback.feedback.minimalist_results?.Feedback ?? "No feedback",
+                            consistencyFeedback: existingFeedback.feedback.consistency_results?.Feedback ?? "No feedback",
+                            recognitionFeedback: Array.isArray(existingFeedback.feedback.recognition_results)
+                                ? existingFeedback.feedback.recognition_results.map((r: RecognitionResult) => ({
+                                    element_id: r?.element_id ?? "Unknown ID",
+                                    element_name: r?.element_name ?? "Unknown Element",
+                                    feedback: Array.isArray(r?.Feedback) ? r.Feedback.join(", ") : "No recognition feedback"
+                                }))
+                                : [],
+                            screenshot: imageDataUrl
+                        });
+                        continue; // Skip to the next frame
+                    }
+                } catch (error) {
+                    console.warn(`Error checking existing frame data for ${frame.name}:`, error);
+                    // Proceed with full processing if check fails
+                }
+
+                // Proceed with full feature extraction and feedback generation
                 try {
                     const result = await ApiService.sendToBackend({
                         user_name,
@@ -151,7 +196,7 @@ figma.ui.onmessage = async (msg) => {
                             screen_width: frame.width,
                             screen_height: frame.height
                         },
-                        elements: (await serializedNodes).map(node => {
+                        elements: serializedNodes.map(node => {
                             const { imageBase64, ...rest } = node;
                             return imageBase64 ? { ...rest, imageBase64 } : rest;
                         })
@@ -159,7 +204,7 @@ figma.ui.onmessage = async (msg) => {
 
                     console.log("API Response:", result);
                     const recognitionFeedback = Array.isArray(result.recognition_results)
-                        ? result.recognition_results.map(r => ({
+                        ? result.recognition_results.map((r: RecognitionResult) => ({
                             element_id: r?.element_id ?? "Unknown ID",
                             element_name: r?.element_name ?? "Unknown Element",
                             feedback: Array.isArray(r?.Feedback) ? r.Feedback.join(", ") : "No recognition feedback"
@@ -188,7 +233,7 @@ figma.ui.onmessage = async (msg) => {
                 UiService.sendFeedbackToUI(allFeedback);
             }
         }
-         else if (msg.type === 'request-modifications') {
+        else if (msg.type === 'request-modifications') {
             try {
                 console.log('Requesting modifications for frame:', msg.frameName);
                 const frames = figma.currentPage.children.filter(node =>
