@@ -1,3 +1,5 @@
+import base64
+from io import BytesIO
 from PIL import Image, ImageDraw
 import pymongo
 import base64

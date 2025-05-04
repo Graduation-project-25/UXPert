@@ -11,8 +11,6 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # suggestions = Suggestions()
 # suggestions.generate_suggestions()
 feedback = Feedback()
-
-
 # Register routes
 app.route('/process', methods=['POST', 'OPTIONS'])(feedback.process_elements)
 # app.route('/modify-design', methods=['POST'])(suggestions.generate_suggestions)
