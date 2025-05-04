@@ -26,6 +26,7 @@ class Feedback:
         page_name = data.get("page_name", "DefaultPage")
         frame_info = data.get("frame", {})
         frame_name = frame_info.get("frameName", "")
+        frame_id = frame_info.get("frameId", "")
         elements = data.get('elements', [])
         imageDataUrl = data.get("imageDataUrl")
 
@@ -41,16 +42,17 @@ class Feedback:
                 "design_name": design_name,
                 "page_name": page_name,
                 "frame_name": frame_name,
+                "frame_id": frame_id,
                 "screen_size": frame_info,
                 "elements": elements,
                 "image64_string": imageDataUrl
             }
-            self.suggestions_repository.save_original_image(imageDataUrl, feature_data)
 
             recognition_feedback_list = []
 
             print("Attempting to insert data into MongoDB...")
             insert_result = self.figma_repository.update_or_insert_frame(feature_data)
+            self.suggestions_repository.save_original_image(imageDataUrl, feature_data)
 
             print("Data inserted successfully.")
             if insert_result.matched_count > 0:

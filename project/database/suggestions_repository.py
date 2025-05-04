@@ -8,8 +8,8 @@ class SuggestionsRepository(BaseRepository):
 
     def save_original_image(self, imageDataUrl,feature_data):
         image_entry = {
-            "id": feature_data.get("frameId", str(ObjectId())),  # Use frameId or generate ObjectId
-            "original_image": imageDataUrl  
+            "id": feature_data.get("frame_id", str(ObjectId())),  # Use frameId or generate ObjectId
+            # "original_image": imageDataUrl  
         }
         self.update(
                 {
