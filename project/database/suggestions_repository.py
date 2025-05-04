@@ -1,10 +1,12 @@
 from PIL import Image, ImageDraw
+import pymongo
+import base64
+
 from database.base_repository import BaseRepository
 
 class SuggestionsRepository(BaseRepository):
     def __init__(self):
         super().__init__("suggestions")
-    
 
     def save_suggested_features(self, feature_data):
         filter_query = {
@@ -32,6 +34,7 @@ class SuggestionsRepository(BaseRepository):
             )
 
         return update_result
+
     def update_element_value(self, design_name, frame_name, element_id, field_name, new_value):
         try:
             filter_query = {
@@ -83,3 +86,27 @@ class SuggestionsRepository(BaseRepository):
         image.show()  # Open the image
 
         print("Image saved as output_ui.png")
+
+
+    def save_original_image(self, imageDataUrl,feature_data):
+        image_entry = {
+            "original_image": imageDataUrl  
+        }
+        self.update(
+                {
+                    "design_name": feature_data["design_name"],
+                    "user_name": feature_data.get("user_name", "Unknown User")
+                },
+                {
+                    "$set": {
+                        "design_name": feature_data["design_name"],
+                        "user_name": feature_data.get("user_name", "Unknown User"),
+                    },
+                    "$push": {
+                        "images": image_entry  # Append image to images array
+                    }
+                },
+                upsert=True  # Create new document if it doesn't exist
+            )
+
+

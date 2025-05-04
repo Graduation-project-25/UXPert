@@ -7,7 +7,7 @@ from components.Suggestions_Component.prompt import Prompt
 from components.Suggestions_Component.suggestions_generator import SuggestionsGenerator
 
 class Suggestions(SuggestionsGenerator):
-
+ 
     def __init__(self):
         load_dotenv()  
         self.openai_key = os.getenv("OPENAI_API_KEY")

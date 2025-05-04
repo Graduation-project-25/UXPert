@@ -1,7 +1,7 @@
 import pandas as pd
 from flask import jsonify, request
 from components.Heuristics_Component.heuristic_factory import HeuristicFactory
-from config import figma_repository, feedback_repository
+from config import figma_repository, feedback_repository, suggestions_repository
 from utils.helpers import clean_prefix
 
 class Feedback:
@@ -20,6 +20,8 @@ class Feedback:
         frame_info = data.get("frame", {})
         frame_name = frame_info.get("frameName", "")
         elements = data.get('elements', [])
+        imageDataUrl = data.get("imageDataUrl")
+
 
         if not elements:
             return jsonify({"error": "No elements found"}), 400
@@ -33,8 +35,11 @@ class Feedback:
                 "page_name": page_name,
                 "frame_name": frame_name,
                 "screen_size": frame_info,
-                "elements": elements
+                "elements": elements,
+                "image64_string": imageDataUrl
             }
+            suggestions_repository.save_original_image(imageDataUrl, feature_data)
+
             recognition_feedback_list = []
 
             print("Attempting to insert data into MongoDB...")

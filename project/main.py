@@ -107,12 +107,12 @@ def main():
     # Step 3: Load Normalized train data
     # train_data = egfe_load_data.load_unnormalized_data(train_folder)
     # print(train_data)
-    
+    # 
     # Step 4: Visualize UI Elements (Scatter Plot)
     #egfe_visualization.scatter_plot_ui_elements(train_data)
     
     # Step 5: DBSCAN Clustering Based on selected feature
-    clustered_data, clusters = egfe_clustering.dbscan_cluster('color')
+    clustered_data, clusters = egfe_clustering.dbscan_cluster('size')
     # print (clustered_data)
     # egfe_clustering.handle_outliers(clustered_data, "Color Clustering", "Color Clustering Outliers")
     egfe_clustering_evaluation.evaluate_clustering(clustered_data)
@@ -130,7 +130,7 @@ def main():
     ##############################################################################################################
     
     # Step 6: Visualizing Clustering Results
-    # egfe_visualization.clustering_visualization(clustered_data,clusters)
+    egfe_visualization.clustering_visualization(clustered_data,clusters)
     # egfe_visualization.visualize_alignment_consistency(clustered_data)
     # egfe_visualization.visualize_color_consistency(clustered_data)
     # egfe_visualization.visualize_size_proportionality(clustered_data)

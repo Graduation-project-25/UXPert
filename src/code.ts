@@ -112,6 +112,11 @@ function bytesToBase64(bytes: Uint8Array): string {
     return `data:image/png;base64,${base64String}`;
 }
 
+function save_image(imageDataUrl: any){
+
+
+}
+
 // Main plugin logic
 UiService.showUI();
 
@@ -138,6 +143,7 @@ figma.ui.onmessage = async (msg) => {
                     const result = await ApiService.sendToBackend({
                         user_name,
                         design_name,
+                        imageDataUrl,
                         frame: {
                             frameName: frame.name,
                             screen_width: frame.width,
@@ -179,108 +185,109 @@ figma.ui.onmessage = async (msg) => {
             if (allFeedback.length > 0) {
                 UiService.sendFeedbackToUI(allFeedback);
             }
-        } else if (msg.type === 'request-modifications') {
-            try {
-                console.log('Requesting modifications for frame:', msg.frameName);
-                const frames = figma.currentPage.children.filter(node =>
-                    node.type === "FRAME" && node.name === msg.frameName
-                ) as FrameNode[];
-                if (frames.length === 0) {
-                    figma.notify(`Frame "${msg.frameName}" not found`);
-                    figma.ui.postMessage({
-                        type: 'error',
-                        message: `Frame "${msg.frameName}" not found`
-                    });
-                    return;
-                }
-
-                const frame = frames[0];
-                const originalImage = await frame.exportAsync({ format: "PNG" });
-                const originalImageBase64 = figma.base64Encode(originalImage);
-                const designData = await FeatureExtractor.extractForAI(frame);
-
-                if (!designData.elements || designData.elements.length === 0) {
-                    console.error('No elements extracted for frame:', frame.name);
-                    figma.ui.postMessage({
-                        type: 'error',
-                        message: 'No elements found in the selected frame'
-                    });
-                    return;
-                }
-
-                const requestBody = {
-                    design_json: {
-                        metadata: { screenWidth: frame.width, screenHeight: frame.height },
-                        elements: designData.elements
-                    }
-                };
-                console.log('Sending request body:', JSON.stringify(requestBody, null, 2));
-
-                figma.ui.postMessage({
-                    type: 'progress-update',
-                    progress: 10,
-                    message: 'Preparing design data...'
-                });
-
-                const result = await ApiService.sendModificationRequest(frame.id, requestBody);
-
-                if (result.status === "error") {
-                    throw new Error(result.error);
-                }
-
-                // Merge original positions if missing
-                let designJson = result.designJson || {};
-                if (designJson.elements && designData.elements) {
-                    designJson.elements = designJson.elements.map((modEl: any) => {
-                        const origEl = designData.elements.find((o: any) => o.id === modEl.id);
-                        if (origEl && (!modEl.x || !modEl.y || !modEl.width || !modEl.height)) {
-                            return {
-                                ...modEl,
-                                x: origEl.x || 0,
-                                y: origEl.y || 0,
-                                width: origEl.width || 100,
-                                height: origEl.height || 100,
-                                fontSize: origEl.fontSize || 12,
-                                fontFamily: origEl.fontFamily || "Inter"
-                            };
-                        }
-                        return modEl;
-                    });
-                }
-
-                // Render the designJson as an image
-                let base64Image = '';
-                if (designJson && designJson.elements && designJson.elements.length > 0) {
-                    try {
-                        const renderedFrame = await applyJsonToFigma(designJson);
-                        const imageBytes = await exportFrameAsImage(renderedFrame);
-                        base64Image = bytesToBase64(imageBytes);
-                        renderedFrame.remove(); // Clean up
-                    } catch (error) {
-                        console.error('Failed to render design in backend:', error);
-                        throw new Error(`Failed to render modified design: ${error}`);
-                    }
-                } else {
-                    console.warn('No elements to render in designJson');
-                }
-
-                figma.ui.postMessage({
-                    type: 'design-modifications',
-                    frameId: frame.id,
-                    frameName: frame.name,
-                    modifications: result.modifications || [],
-                    summary: result.summary || "",
-                    designJson: designJson,
-                    image: base64Image
-                });
-            } catch (error) {
-                console.error('Modification error:', error);
-                figma.ui.postMessage({
-                    type: 'error',
-                    message: error instanceof Error ? error.message : 'Modification failed'
-                });
-            }
         }
+        //  else if (msg.type === 'request-modifications') {
+        //     try {
+        //         console.log('Requesting modifications for frame:', msg.frameName);
+        //         const frames = figma.currentPage.children.filter(node =>
+        //             node.type === "FRAME" && node.name === msg.frameName
+        //         ) as FrameNode[];
+        //         if (frames.length === 0) {
+        //             figma.notify(`Frame "${msg.frameName}" not found`);
+        //             figma.ui.postMessage({
+        //                 type: 'error',
+        //                 message: `Frame "${msg.frameName}" not found`
+        //             });
+        //             return;
+        //         }
+
+        //         const frame = frames[0];
+        //         const originalImage = await frame.exportAsync({ format: "PNG" });
+        //         const originalImageBase64 = figma.base64Encode(originalImage);
+        //         const designData = await FeatureExtractor.extractForAI(frame);
+
+        //         if (!designData.elements || designData.elements.length === 0) {
+        //             console.error('No elements extracted for frame:', frame.name);
+        //             figma.ui.postMessage({
+        //                 type: 'error',
+        //                 message: 'No elements found in the selected frame'
+        //             });
+        //             return;
+        //         }
+
+        //         const requestBody = {
+        //             design_json: {
+        //                 metadata: { screenWidth: frame.width, screenHeight: frame.height },
+        //                 elements: designData.elements
+        //             }
+        //         };
+        //         console.log('Sending request body:', JSON.stringify(requestBody, null, 2));
+
+        //         figma.ui.postMessage({
+        //             type: 'progress-update',
+        //             progress: 10,
+        //             message: 'Preparing design data...'
+        //         });
+
+        //         const result = await ApiService.sendModificationRequest(frame.id, requestBody);
+
+        //         if (result.status === "error") {
+        //             throw new Error(result.error);
+        //         }
+
+        //         // Merge original positions if missing
+        //         let designJson = result.designJson || {};
+        //         if (designJson.elements && designData.elements) {
+        //             designJson.elements = designJson.elements.map((modEl: any) => {
+        //                 const origEl = designData.elements.find((o: any) => o.id === modEl.id);
+        //                 if (origEl && (!modEl.x || !modEl.y || !modEl.width || !modEl.height)) {
+        //                     return {
+        //                         ...modEl,
+        //                         x: origEl.x || 0,
+        //                         y: origEl.y || 0,
+        //                         width: origEl.width || 100,
+        //                         height: origEl.height || 100,
+        //                         fontSize: origEl.fontSize || 12,
+        //                         fontFamily: origEl.fontFamily || "Inter"
+        //                     };
+        //                 }
+        //                 return modEl;
+        //             });
+        //         }
+
+        //         // Render the designJson as an image
+        //         let base64Image = '';
+        //         if (designJson && designJson.elements && designJson.elements.length > 0) {
+        //             try {
+        //                 const renderedFrame = await applyJsonToFigma(designJson);
+        //                 const imageBytes = await exportFrameAsImage(renderedFrame);
+        //                 base64Image = bytesToBase64(imageBytes);
+        //                 renderedFrame.remove(); // Clean up
+        //             } catch (error) {
+        //                 console.error('Failed to render design in backend:', error);
+        //                 throw new Error(`Failed to render modified design: ${error}`);
+        //             }
+        //         } else {
+        //             console.warn('No elements to render in designJson');
+        //         }
+
+        //         figma.ui.postMessage({
+        //             type: 'design-modifications',
+        //             frameId: frame.id,
+        //             frameName: frame.name,
+        //             modifications: result.modifications || [],
+        //             summary: result.summary || "",
+        //             designJson: designJson,
+        //             image: base64Image
+        //         });
+        //     } catch (error) {
+        //         console.error('Modification error:', error);
+        //         figma.ui.postMessage({
+        //             type: 'error',
+        //             message: error instanceof Error ? error.message : 'Modification failed'
+        //         });
+        //     }
+        // }
     } catch (error) {
         console.error('Plugin error:', error);
         figma.notify('An error occurred. See console for details.');
