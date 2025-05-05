@@ -1,4 +1,4 @@
-// src/services/ApiService.ts
+
 export class ApiService {
     static async sendToBackend(userData: any) {
         try {
@@ -17,21 +17,45 @@ export class ApiService {
             return null;
         }
     }
+    
     static async sendModificationRequest(frameId: string, designData: any): Promise<any> {
-    const response = await fetch('http://localhost:3000/modify-design', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(designData)
-    });
-    const data = await response.json();
-    if (data.status === "error") {
-        throw new Error(data.message);
+        const response = await fetch('http://localhost:3000/modify-design', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(designData)
+        });
+        const data = await response.json();
+        if (data.status === "error") {
+            throw new Error(data.message);
+        }
+        return {
+            status: data.result.status,
+            modifications: data.result.modifications,
+            summary: data.result.summary,
+            designJson: data.result.modified_design
+        };
     }
-    return {
-        status: data.result.status,
-        modifications: data.result.modifications,
-        summary: data.result.summary,
-        designJson: data.result.modified_design
-    };
+
+    static async checkExistingFrame(frameData: { design_name: string, frame_name: string, elements: any[] }): Promise<any> {
+        try {
+            const response = await fetch("http://localhost:3000/check-frame", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(frameData),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! Status: ${response.status}, Body: ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log("checkExistingFrame response:", data);
+            return data.feedback || null;
+        } catch (error) {
+            console.error("Error checking existing frame:", error, error instanceof Error ? error.stack : '');
+            figma.notify(`Failed to check existing frame data: ${error instanceof Error ? error.message : String(error)}`);
+            return null;
+        }
+    }
 }
-    }
