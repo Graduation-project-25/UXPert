@@ -8,8 +8,8 @@ app = Flask(__name__, static_folder = "frontend/static", template_folder="fronte
 CORS(app, resources={r"/*": {"origins": "*"}})  
 
 # Objects
-# suggestions = Suggestions()
-# suggestions.generate_suggestions()
+suggestions = Suggestions()
+suggestions.generate_suggestions(Feedback)
 feedback = Feedback()
 # Register routes
 app.route('/process', methods=['POST', 'OPTIONS'])(feedback.process_elements)

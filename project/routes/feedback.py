@@ -52,6 +52,7 @@ class Feedback:
 
             print("Attempting to insert data into MongoDB...")
             insert_result = self.figma_repository.update_or_insert_frame(feature_data)
+            doc_id = self.suggestions_repository.save_original_image(imageDataUrl, feature_data)
             self.suggestions_repository.save_original_image(imageDataUrl, feature_data)
 
             print("Data inserted successfully.")
