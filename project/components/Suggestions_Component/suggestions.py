@@ -28,7 +28,7 @@ class Suggestions(SuggestionsGenerator):
             gpt_suggestions = response.choices[0].message.content
             return gpt_suggestions
     
-    def generate_suggested_image(self, generated_text_suggestions): 
+    def generate_suggested_image_id(self, generated_text_suggestions): 
         print(generated_text_suggestions)
 
         result = self.client.images.edit(
