@@ -14,8 +14,8 @@ app = Flask(__name__, static_folder="frontend/static", template_folder="frontend
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Objects
-suggestions = Suggestions()
-suggestions.generate_suggestions(Feedback)
+# suggestions = Suggestions()
+# suggestions.generate_suggestions(Feedback)
 feedback = Feedback()
 
 # Register routes

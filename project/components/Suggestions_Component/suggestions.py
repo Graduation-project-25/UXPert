@@ -78,19 +78,16 @@ class Suggestions(SuggestionsGenerator):
         self.design_image="UXpert Poster.png"
         self.prompt = Prompt(self.design_image)  # Removed image dependency from constructor
 
-    def analyze_design(self, document_id, frame_id=None):
+    def analyze_design(self,design_name, frame_id):
         """Analyze design using image from database"""
-        # Get the specific frame's image if frame_id provided, else most recent
-        if frame_id:
-            image_doc = self.figma_repository.get_image_by_frame_id(document_id, frame_id)
-        else:
-            image_doc = self.figma_repository.get_most_recent_image(document_id)
-        
-        if not image_doc or not image_doc.get("original_image"):
+        image_data = self.figma_repository.get_image_by_frame_id(design_name, frame_id)
+    
+        if not image_data or not image_data.get("original_image"):
             raise ValueError("No image found in database document")
 
+
         # Extract base64 data (remove data URL prefix if present)
-        base64_image = image_doc["original_image"]
+        base64_image = image_data["original_image"]
         if base64_image.startswith("data:image"):
             base64_image = base64_image.split(",")[1]
             
@@ -102,16 +99,17 @@ class Suggestions(SuggestionsGenerator):
 
         return response.choices[0].message.content
     
-    def generate_suggested_image(self, document_id, generated_text_suggestions): 
+    def generate_suggested_image(self,doc_id, design_name, frame_id, generated_text_suggestions): 
         """Generate modified image using image from database"""
         # Get the most recent image from the document
-        image_doc = self.figma_repository.get_image_by_frame_id(document_id)
         
-        if not image_doc or not image_doc.get("original_image"):
+        image_data = self.figma_repository.get_image_by_frame_id(design_name, frame_id)
+    
+        if not image_data or not image_data.get("original_image"):
             raise ValueError("No image found in database document")
             
         # Extract base64 data
-        base64_image = image_doc["original_image"]
+        base64_image = image_data["original_image"]
         if base64_image.startswith("data:image"):
             base64_image = base64_image.split(",")[1]
             
@@ -135,7 +133,7 @@ class Suggestions(SuggestionsGenerator):
             
             # Save modified image back to database
             suggestions_repository.update(
-                {"_id": ObjectId(document_id)},
+                {"_id": ObjectId(doc_id)},
                 {"$push": {"images": {
                     "modified_image": f"data:image/png;base64,{modified_image_base64}",
                     "timestamp": datetime.datetime.utcnow()
@@ -149,11 +147,11 @@ class Suggestions(SuggestionsGenerator):
             if os.path.exists(temp_image_path):
                 os.remove(temp_image_path)
 
-    def generate_suggestions(self, document_id, frame_id):
+    def generate_suggestions(self, document_id, frame_id, design_name):
         """Main method to generate both text and image suggestions"""
         try:
             text_suggestions = self.analyze_design(document_id, frame_id)
-            modified_image = self.generate_suggested_image(document_id, text_suggestions)
+            modified_image = self.generate_suggested_image(document_id, design_name, frame_id,  text_suggestions)
             return {
                 "text_suggestions": text_suggestions,
                 "modified_image": modified_image

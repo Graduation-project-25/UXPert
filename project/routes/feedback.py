@@ -1,6 +1,7 @@
 import pandas as pd
 from flask import jsonify, request
 from components.Heuristics_Component.heuristic_factory import HeuristicFactory
+from components.Suggestions_Component.suggestions import Suggestions
 from database.feedback_repository import FeedbackRepository
 from database.figma_features_repository import FigmaFeaturesRepository
 from database.suggestions_repository import SuggestionsRepository
@@ -89,61 +90,61 @@ class Feedback:
             "image64_string": imageDataUrl
         }
 
-            recognition_feedback_list = []
+        recognition_feedback_list = []
 
-            print("Attempting to insert data into MongoDB...")
-            insert_result = self.figma_repository.update_or_insert_frame(feature_data)
-            doc_id = self.suggestions_repository.save_original_image_id(feature_data)
+        print("Attempting to insert data into MongoDB...")
+        insert_result = self.figma_repository.update_or_insert_frame(feature_data)
+        doc_id = self.suggestions_repository.save_original_image_id(feature_data)
 
-            # 3. Get the image FROM THE CORRECT REPOSITORY
-            frame_image = self.figma_repository.get_image_by_frame_id(
-                feature_data["design_name"],
-                feature_data["frame_id"]
-            )
-            print(frame_image)
-            print("Data inserted successfully.")
-            if frame_image:
-                suggestions = Suggestions()
-                suggestions.generate_suggestions(doc_id, frame_id)  # Uses image from suggestions repo
-            if insert_result.matched_count > 0:
-                print(f"Frame added to existing design: {design_name}")
-            else:
-                print(f"New design document created: {design_name}")
+        # 3. Get the image FROM THE CORRECT REPOSITORY
+        frame_image = self.figma_repository.get_image_by_frame_id(
+            feature_data["design_name"],
+            feature_data["frame_id"]
+        )
+        print(frame_image)
+        print("Data inserted successfully.")
+        if frame_image:
+            suggestions = Suggestions()
+            suggestions.generate_suggestions(doc_id, frame_id, design_name)  # Uses image from suggestions repo
+        if insert_result.matched_count > 0:
+            print(f"Frame added to existing design: {design_name}")
+        else:
+            print(f"New design document created: {design_name}")
 
-            # Retrieve Saved Design
-            latest_saved_data = self.figma_repository.get_saved_design(design_name, frame_name)
+        # Retrieve Saved Design
+        latest_saved_data = self.figma_repository.get_saved_design(design_name, frame_name)
 
-            if not latest_saved_data:
-                print("Failed to retrieve saved design data from MongoDB")
-                return jsonify({"error": "Failed to retrieve saved design data"}), 500
+        if not latest_saved_data:
+            print("Failed to retrieve saved design data from MongoDB")
+            return jsonify({"error": "Failed to retrieve saved design data"}), 500
 
-            # Extract elements from the retrieved design data
-            frames = latest_saved_data.get("frames", [])
-            if not frames:
-                return jsonify({"error": "No frames found in the retrieved design"}), 500
+        # Extract elements from the retrieved design data
+        frames = latest_saved_data.get("frames", [])
+        if not frames:
+            return jsonify({"error": "No frames found in the retrieved design"}), 500
 
-            elements_list = [elem for frame in frames for elem in frame.get("elements", [])]
+        elements_list = [elem for frame in frames for elem in frame.get("elements", [])]
 
-            if not elements_list:
-                return jsonify({"error": "No elements found in the retrieved frames"}), 500
+        if not elements_list:
+            return jsonify({"error": "No elements found in the retrieved frames"}), 500
 
-            elements_db = pd.DataFrame(elements_list)
+        elements_db = pd.DataFrame(elements_list)
 
-            designs_for_evaluation = [{"elements": elements_db}]
+        designs_for_evaluation = [{"elements": elements_db}]
 
-            output_data = {
-                "screen_size": frame_info,
-                "elements": elements,
-            }
+        output_data = {
+            "screen_size": frame_info,
+            "elements": elements,
+        }
 
-            frame_data = latest_saved_data.get("frames", [])
-            if frame_data:
-                elements_df = pd.DataFrame(frame_data[0].get("elements", []))
-            else:
-                return jsonify({"error": "No elements found in the retrieved frame data"}), 500
+        frame_data = latest_saved_data.get("frames", [])
+        if frame_data:
+            elements_df = pd.DataFrame(frame_data[0].get("elements", []))
+        else:
+            return jsonify({"error": "No elements found in the retrieved frame data"}), 500
 
-            screen_width = frame_info["screen_width"]
-            screen_height = frame_info["screen_height"]
+        screen_width = frame_info["screen_width"]
+        screen_height = frame_info["screen_height"]
 
         # Initialize evaluators
         consistency_evaluator = HeuristicFactory.check_rule("consistency")

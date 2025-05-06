@@ -65,7 +65,14 @@ class FigmaFeaturesRepository(BaseRepository):
         )
         
         if result and "frames" in result and len(result["frames"]) > 0:
-            return result["frames"][0].get("image64_string")
+            frame = result["frames"][0]
+            return {
+                "original_image": frame.get("image64_string"),
+                "frame_data": {  # Include additional frame info if needed
+                    "frame_name": frame.get("frame_name"),
+                    "page_name": frame.get("page_name")
+                }
+            }
         return None
     def get_most_recent_image(self, document_id):
         """
