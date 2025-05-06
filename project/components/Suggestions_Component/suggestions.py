@@ -66,12 +66,14 @@ from io import BytesIO
 from components.Suggestions_Component.prompt import Prompt
 from components.Suggestions_Component.suggestions_generator import SuggestionsGenerator
 from config import suggestions_repository
+from database.figma_features_repository import FigmaFeaturesRepository
 
 class Suggestions(SuggestionsGenerator):
  
     def __init__(self):
         load_dotenv()  
         self.openai_key = os.getenv("OPENAI_API_KEY")
+        self.figma_repository = FigmaFeaturesRepository()
         self.client = openai.OpenAI(api_key=self.openai_key)
         self.design_image="UXpert Poster.png"
         self.prompt = Prompt(self.design_image)  # Removed image dependency from constructor
@@ -80,9 +82,9 @@ class Suggestions(SuggestionsGenerator):
         """Analyze design using image from database"""
         # Get the specific frame's image if frame_id provided, else most recent
         if frame_id:
-            image_doc = suggestions_repository.get_image_by_document_id(document_id, frame_id)
+            image_doc = self.figma_repository.get_image_by_frame_id(document_id, frame_id)
         else:
-            image_doc = suggestions_repository.get_most_recent_image(document_id)
+            image_doc = self.figma_repository.get_most_recent_image(document_id)
         
         if not image_doc or not image_doc.get("original_image"):
             raise ValueError("No image found in database document")
@@ -103,7 +105,7 @@ class Suggestions(SuggestionsGenerator):
     def generate_suggested_image(self, document_id, generated_text_suggestions): 
         """Generate modified image using image from database"""
         # Get the most recent image from the document
-        image_doc = suggestions_repository.get_most_recent_image(document_id)
+        image_doc = self.figma_repository.get_image_by_frame_id(document_id)
         
         if not image_doc or not image_doc.get("original_image"):
             raise ValueError("No image found in database document")

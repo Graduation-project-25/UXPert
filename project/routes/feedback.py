@@ -64,7 +64,7 @@ class Feedback:
             print("Data inserted successfully.")
             if frame_image:
                 suggestions = Suggestions()
-                suggestions.generate_suggestions(doc_id)  # Uses image from suggestions repo
+                suggestions.generate_suggestions(doc_id, frame_id)  # Uses image from suggestions repo
             if insert_result.matched_count > 0:
                 print(f"Frame added to existing design: {design_name}")
             else:
