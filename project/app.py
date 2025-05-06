@@ -3,8 +3,9 @@ import os
 from flask_cors import CORS
 from components.Suggestions_Component.suggestions import Suggestions
 from database.suggestions_repository import SuggestionsRepository
-from routes.feedback import Feedback
+
 from database.figma_features_repository import FigmaFeaturesRepository
+from routes.feedback import Feedback
 
 
 
@@ -15,9 +16,9 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Objects
 # suggestions = Suggestions()
-# suggestions.generate_suggestions(Feedback)
+# suggestions.generate_suggestions()
 feedback = Feedback()
-
+ 
 # Register routes
 app.route('/process', methods=['POST', 'OPTIONS'])(feedback.process_elements)
 # app.route('/modify-design', methods=['POST'])(suggestions.generate_suggestions)
