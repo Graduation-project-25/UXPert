@@ -3,8 +3,9 @@ import os
 from flask_cors import CORS
 from components.Suggestions_Component.suggestions import Suggestions
 from database.suggestions_repository import SuggestionsRepository
-from routes.feedback import Feedback
+
 from database.figma_features_repository import FigmaFeaturesRepository
+from routes.feedback import Feedback
 
 
 
@@ -13,9 +14,7 @@ os.environ['LOKY_MAX_CPU_COUNT'] = '4'
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Objects
-suggestions = Suggestions()
-suggestions.generate_suggestions(Feedback)
+
 feedback = Feedback()
 
 # Register routes
