@@ -3,8 +3,9 @@ import os
 from flask_cors import CORS
 from components.Suggestions_Component.suggestions import Suggestions
 from database.suggestions_repository import SuggestionsRepository
-from routes.feedback import Feedback
+
 from database.figma_features_repository import FigmaFeaturesRepository
+from routes.feedback import Feedback
 
 
 
