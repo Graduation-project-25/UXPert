@@ -2,6 +2,7 @@ import pandas as pd
 from flask import jsonify, request
 from components.Heuristics_Component.heuristic_factory import HeuristicFactory
 from database.feedback_repository import FeedbackRepository
+from components.Suggestions_Component.suggestions import Suggestions
 from database.figma_features_repository import FigmaFeaturesRepository
 from database.suggestions_repository import SuggestionsRepository
 from utils.helpers import clean_prefix
@@ -52,9 +53,18 @@ class Feedback:
 
             print("Attempting to insert data into MongoDB...")
             insert_result = self.figma_repository.update_or_insert_frame(feature_data)
-            self.suggestions_repository.save_original_image_id(imageDataUrl, feature_data)
+            doc_id = self.suggestions_repository.save_original_image_id(feature_data)
 
+            # 3. Get the image FROM THE CORRECT REPOSITORY
+            frame_image = self.figma_repository.get_image_by_frame_id(
+                feature_data["design_name"],
+                feature_data["frame_id"]
+            )
+            print(frame_image)
             print("Data inserted successfully.")
+            if frame_image:
+                suggestions = Suggestions()
+                suggestions.generate_suggestions(doc_id)  # Uses image from suggestions repo
             if insert_result.matched_count > 0:
                 print(f"Frame added to existing design: {design_name}")
             else:
