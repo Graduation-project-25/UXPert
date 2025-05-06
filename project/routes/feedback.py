@@ -60,11 +60,11 @@ class Feedback:
                 feature_data["design_name"],
                 feature_data["frame_id"]
             )
-            print(frame_image)
             print("Data inserted successfully.")
             if frame_image:
                 suggestions = Suggestions()
-                suggestions.generate_suggestions(doc_id)  # Uses image from suggestions repo
+                suggestions.generate_suggestions(frame_image)
+
             if insert_result.matched_count > 0:
                 print(f"Frame added to existing design: {design_name}")
             else:
