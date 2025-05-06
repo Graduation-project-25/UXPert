@@ -56,16 +56,16 @@
 #         self.generate_suggested_image(generated_text_suggestions)
 
 
-from datetime import datetime
 import os
-from bson import ObjectId
 from dotenv import load_dotenv
 import openai
 import base64
+import datetime
+from bson.objectid import ObjectId
 from io import BytesIO
 from components.Suggestions_Component.prompt import Prompt
 from components.Suggestions_Component.suggestions_generator import SuggestionsGenerator
-from config import suggestions_repository  # Import the repository
+from config import suggestions_repository
 
 class Suggestions(SuggestionsGenerator):
  
@@ -73,16 +73,20 @@ class Suggestions(SuggestionsGenerator):
         load_dotenv()  
         self.openai_key = os.getenv("OPENAI_API_KEY")
         self.client = openai.OpenAI(api_key=self.openai_key)
-        self.prompt = Prompt()  # Remove image dependency from constructor
+        self.design_image="UXpert Poster.png"
+        self.prompt = Prompt(self.design_image)  # Removed image dependency from constructor
 
-    def analyze_design(self, document_id):
+    def analyze_design(self, document_id, frame_id=None):
         """Analyze design using image from database"""
-        # Get the most recent image from the document
-        image_doc = suggestions_repository.get_most_recent_image(document_id)
+        # Get the specific frame's image if frame_id provided, else most recent
+        if frame_id:
+            image_doc = suggestions_repository.get_image_by_document_id(document_id, frame_id)
+        else:
+            image_doc = suggestions_repository.get_most_recent_image(document_id)
         
         if not image_doc or not image_doc.get("original_image"):
             raise ValueError("No image found in database document")
-            
+
         # Extract base64 data (remove data URL prefix if present)
         base64_image = image_doc["original_image"]
         if base64_image.startswith("data:image"):
@@ -96,21 +100,23 @@ class Suggestions(SuggestionsGenerator):
 
         return response.choices[0].message.content
     
-    def generate_suggested_image_id(self, generated_text_suggestions): 
-        print(generated_text_suggestions)
-
-        result = self.client.images.edit(
-            model="gpt-image-1",
-            image=open(self.design_image, "rb"),
-            prompt= self.prompt.get_gpt_image_1_prompt(generated_text_suggestions), 
-            quality = 'low',
-        )
-
-        image_base64 = result.data[0].b64_json
-        image_bytes = base64.b64decode(image_base64)
-
-        # Save the image to a file
-        with open("Project 2 - modified.png", "wb") as f:
+    def generate_suggested_image(self, document_id, generated_text_suggestions): 
+        """Generate modified image using image from database"""
+        # Get the most recent image from the document
+        image_doc = suggestions_repository.get_most_recent_image(document_id)
+        
+        if not image_doc or not image_doc.get("original_image"):
+            raise ValueError("No image found in database document")
+            
+        # Extract base64 data
+        base64_image = image_doc["original_image"]
+        if base64_image.startswith("data:image"):
+            base64_image = base64_image.split(",")[1]
+            
+        # Convert to bytes and save temporarily (required by OpenAI API)
+        image_bytes = base64.b64decode(base64_image)
+        temp_image_path = "temp_db_image.png"
+        with open(temp_image_path, "wb") as f:
             f.write(image_bytes)
             
         try:
@@ -141,10 +147,10 @@ class Suggestions(SuggestionsGenerator):
             if os.path.exists(temp_image_path):
                 os.remove(temp_image_path)
 
-    def generate_suggestions(self, document_id):
+    def generate_suggestions(self, document_id, frame_id):
         """Main method to generate both text and image suggestions"""
         try:
-            text_suggestions = self.analyze_design(document_id)
+            text_suggestions = self.analyze_design(document_id, frame_id)
             modified_image = self.generate_suggested_image(document_id, text_suggestions)
             return {
                 "text_suggestions": text_suggestions,
