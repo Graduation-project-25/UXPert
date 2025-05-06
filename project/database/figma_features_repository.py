@@ -1,3 +1,5 @@
+from bson.objectid import ObjectId
+from bson.errors import InvalidId
 from database.base_repository import BaseRepository
 
 class FigmaFeaturesRepository(BaseRepository):
@@ -50,3 +52,40 @@ class FigmaFeaturesRepository(BaseRepository):
         projection = {"frames.$": 1}  # Return only the matching frame
         return self.find_one(filter_query, projection)
     
+    def get_image_by_frame_id(self, design_name, frame_id):
+        """Get image from a specific frame in the features collection"""
+        result = self.find_one(
+            {
+                "design_name": design_name,
+                "frames.frame_id": frame_id
+            },
+            {
+                "frames.$": 1  # Project only the matching frame
+            }
+        )
+        
+        if result and "frames" in result and len(result["frames"]) > 0:
+            return result["frames"][0].get("image64_string")
+        return None
+    def get_most_recent_image(self, document_id):
+        """
+        Get the most recent image from a specific document
+        
+        Args:
+            document_id: The MongoDB _id of the document
+            
+        Returns:
+            The most recent image document or None
+        """
+        try:
+            result = self.find_one(
+                {"_id": ObjectId(document_id)},
+                {"images": {"$slice": -1}}
+            )
+            
+            if result and "images" in result and len(result["images"]) > 0:
+                return result["images"][0]
+            return None
+            
+        except InvalidId:
+            return None
