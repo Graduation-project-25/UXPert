@@ -18,7 +18,7 @@ class Suggestions(SuggestionsGenerator):
     def analyze_design(self, frame_image):
             # Read and encode the image file as base64
             # base64_image = self.get_base64_image()
-            base64_image = frame_image.split(",")[1]
+            base64_image = str(frame_image).split(",")[1]
 
             # Create the chat completion request with the base64 image
             response = self.client.chat.completions.create(
