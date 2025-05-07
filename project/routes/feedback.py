@@ -3,11 +3,10 @@ from flask import jsonify, request
 from components.Heuristics_Component.heuristic_factory import HeuristicFactory
 from components.Suggestions_Component.suggestions import Suggestions
 from database.feedback_repository import FeedbackRepository
-from components.Suggestions_Component.suggestions import Suggestions
 from database.figma_features_repository import FigmaFeaturesRepository
 from database.suggestions_repository import SuggestionsRepository
 from utils.helpers import clean_prefix
-import hashlib
+from datetime import datetime
 
 class Feedback:
     def __init__(self):
@@ -15,9 +14,13 @@ class Feedback:
         self.suggestions_repository = SuggestionsRepository()
         self.feedback_repository = FeedbackRepository()
 
-    def _generate_data_hash(self, data):
-        """Generate a consistent hash for the design data"""
-        return hashlib.md5(str(sorted(data.items())).encode()).hexdigest()
+    def _log(self, message, feedback_type=None):
+        """Helper method for consistent logging"""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if feedback_type:
+            print(f"[{timestamp}] [{feedback_type}] {message}")
+        else:
+            print(f"[{timestamp}] {message}")
 
     def process_elements(self):
         if request.method == 'OPTIONS':
@@ -40,28 +43,23 @@ class Feedback:
         if not elements:
             return jsonify({"error": "No elements found"}), 400
 
-        # Create hash of current data for comparison
-        current_hash = self._generate_data_hash({
-            "elements": elements,
-            "frame_info": frame_info,
-            "imageDataUrl": imageDataUrl
-        })
-
-        # Check if we have cached results for this exact data
-        cached_feedback = self.feedback_repository.get_feedback_by_hash(design_name, frame_name, current_hash)
-        if cached_feedback:
-            print("Returning cached feedback for unchanged design")
+        # First check if feedback already exists in database
+        existing_feedback = self.feedback_repository.get_feedback(design_name, frame_name)
+        if existing_feedback:
+            self._log(f"Returning cached feedback for design '{design_name}', frame '{frame_name}'", "CACHED")
             return jsonify({
-                "message": "Design processed successfully! (cached results)",
+                "message": "Existing feedback retrieved successfully!",
                 "status": 200,
                 "cached": True,
-                "error_prevention_results": cached_feedback.get("error_prevention_results", {}),
-                "consistency_results": cached_feedback.get("consistency_results", {}),
-                "error_handling_results": cached_feedback.get("error_handling_results", {}),
-                "minimalist_results": cached_feedback.get("minimalist_results", {}),
-                "recognition_results": cached_feedback.get("recognition_results", [])
+                "error_prevention_results": existing_feedback.get("error_prevention_results", {}),
+                "consistency_results": existing_feedback.get("consistency_results", {}),
+                "error_handling_results": existing_feedback.get("error_handling_results", {}),
+                "minimalist_results": existing_feedback.get("minimalist_results", {}),
+                "recognition_results": existing_feedback.get("recognition_results", [])
             }), 200
 
+        # If no existing feedback, proceed with processing
+        self._log(f"Processing new feedback for design '{design_name}', frame '{frame_name}'", "NEW")
         elements_df = pd.DataFrame(elements)
 
         try:
@@ -73,15 +71,14 @@ class Feedback:
                 "frame_id": frame_id,
                 "screen_size": frame_info,
                 "elements": elements,
-                "image64_string": imageDataUrl,
-                "data_hash": current_hash
+                "image64_string": imageDataUrl
             }
 
             recognition_feedback_list = []
 
-            print("Processing new/changed design...")
+            # Process design data
             insert_result = self.figma_repository.update_or_insert_frame(feature_data)
-            # self.suggestions_repository.save_original_image_id(feature_data)
+            self.suggestions_repository.save_original_image_id(feature_data)
 
             # Get the image for suggestions
             frame_image = self.figma_repository.get_image_by_frame_id(
@@ -90,37 +87,38 @@ class Feedback:
             )
             
             # if frame_image:
+            #     self._log("Generating design suggestions...", "PROCESSING")
             #     suggestions = Suggestions(frame_image, feature_data)
             #     suggestions.generate_suggestions()
 
             if insert_result.matched_count > 0:
-                print(f"Frame added to existing design: {design_name}")
+                self._log(f"Updated existing design: {design_name}", "UPDATE")
             else:
-                print(f"New design document created: {design_name}")
+                self._log(f"Created new design document: {design_name}", "CREATE")
 
             # Retrieve Saved Design
             latest_saved_data = self.figma_repository.get_saved_design(design_name, frame_name)
-
             if not latest_saved_data:
-                print("Failed to retrieve saved design data from MongoDB")
+                self._log("Failed to retrieve saved design data", "ERROR")
                 return jsonify({"error": "Failed to retrieve saved design data"}), 500
 
-            # Extract elements from the retrieved design data
+            # Process elements
             frames = latest_saved_data.get("frames", [])
             if not frames:
+                self._log("No frames found in design", "ERROR")
                 return jsonify({"error": "No frames found in the retrieved design"}), 500
 
             elements_list = [elem for frame in frames for elem in frame.get("elements", [])]
-
             if not elements_list:
+                self._log("No elements found in frames", "ERROR")
                 return jsonify({"error": "No elements found in the retrieved frames"}), 500
 
             elements_db = pd.DataFrame(elements_list)
-
             screen_width = frame_info["screen_width"]
             screen_height = frame_info["screen_height"]
 
             # Initialize evaluators
+            self._log("Initializing heuristic evaluators...", "PROCESSING")
             consistency_evaluator = HeuristicFactory.check_rule("consistency")
             minimalist_evaluator = HeuristicFactory.check_rule("minimalist")
             recognition_evaluator = HeuristicFactory.check_rule("recognition")
@@ -128,6 +126,7 @@ class Feedback:
             error_prevention_evaluator = HeuristicFactory.check_rule("errorPrevention")
 
             # Evaluate Rules
+            self._log("Evaluating design heuristics...", "PROCESSING")
             consistency_results = consistency_evaluator.evaluate_rule(elements_df)
             minimalist_results, minimalist_score = minimalist_evaluator.evaluate_rule({"elements": elements}, screen_width, screen_height)
             error_handling_results = error_handling_evaluator.evaluate_rule(elements_df)
@@ -152,110 +151,124 @@ class Feedback:
                     }
                     recognition_feedback_list.append(recognition_feedback)
 
-            # Transform minimalist results
-            cleaned_minimalist_feedback = []
-            if isinstance(minimalist_results, dict):
-                for key, value in minimalist_results.items():
-                    cleaned_key = clean_prefix(key)
-                    if "white space" in cleaned_key.lower():
-                        issue = "White Space Ratio"
-                    elif "elements" in cleaned_key.lower() and "irrelevant" not in cleaned_key.lower():
-                        issue = "Number of Elements"
-                    elif "irrelevant" in cleaned_key.lower():
-                        issue = "Irrelevant Elements"
-                    elif "score" in cleaned_key.lower():
-                        issue = "Score"
-                    else:
-                        issue = cleaned_key
-                    cleaned_minimalist_feedback.append({
-                        "issue": issue,
-                        "feedback": clean_prefix(value) if isinstance(value, str) else str(value)
-                    })
-            elif isinstance(minimalist_results, list):
-                for item in minimalist_results:
-                    if isinstance(item, str):
-                        cleaned_item = clean_prefix(item)
-                        if "white space" in cleaned_item.lower():
-                            issue = "White Space Ratio"
-                        elif "elements" in cleaned_item.lower() and "irrelevant" not in cleaned_item.lower():
-                            issue = "Number of Elements"
-                        elif "irrelevant" in cleaned_item.lower():
-                            issue = "Irrelevant Elements"
-                        elif "score" in cleaned_item.lower():
-                            issue = "Score"
-                        else:
-                            issue = "Feedback"
-                        cleaned_minimalist_feedback.append({
-                            "issue": issue,
-                            "feedback": cleaned_item
-                        })
-                    elif isinstance(item, dict):
-                        cleaned_minimalist_feedback.append({
-                            "issue": clean_prefix(item.get('issue', '')),
-                            "feedback": clean_prefix(item.get('feedback', '')) if isinstance(item.get('feedback'), str) else str(item.get('feedback', ''))
-                        })
-            else:
-                cleaned_minimalist_feedback.append({
-                    "issue": "Score",
-                    "feedback": clean_prefix(str(minimalist_results))
-                })
-
             # Prepare feedback data
-            minimalist_feedback = {
-                "Feedback": cleaned_minimalist_feedback,
-            }
-
+            minimalist_feedback = self._transform_minimalist_results(minimalist_results)
+            
             feedback_data = {
                 "error_prevention_results": error_prevention_results,
                 "consistency_results": consistency_results,
                 "error_handling_results": error_handling_results,
                 "minimalist_results": minimalist_feedback,
-                "data_hash": current_hash
             }
             
             if recognition_feedback_list:
                 feedback_data["recognition_results"] = recognition_feedback_list
 
-            # Update feedback in database
+            # Save feedback to database
             update_result = self.feedback_repository.update_feedback(design_name, frame_name, feedback_data)
-
-            if update_result.matched_count == 0:
-                print("Error updating feedback in MongoDB.")
-                return jsonify({"error": "Failed to update feedback in database"}), 500
             
-            print("Feedback processed and saved successfully.")
-
-            # Prepare final response
-            response_data = {
-                "message": "Design processed successfully!",
-                "status": 200,
-                "cached": False,
-                "error_prevention_results": {
-                    "ErrorPreventionScore": f"Error Prevention Score: {error_prevention_results.get('ErrorPreventionScore', 0)}%.",
-                    "ValidationIssues": error_prevention_results.get("ValidationIssues", []),
-                    "ConfirmationIssues": error_prevention_results.get("ConfirmationIssues", []),
-                    "Feedback": error_prevention_results.get("Feedback", {})
-                },
-                "consistency_results": {
-                    "ColorConsistency": f"Color consistency is {consistency_results.get('ColorConsistency', 0)}%.",
-                    "AlignmentConsistency": f"Alignment consistency is {consistency_results.get('AlignmentConsistency', 0)}%.",
-                    "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
-                    "Feedback": consistency_results.get('Feedback', {})
-                },
-                "error_handling_results": {
-                    "ErrorHandlingScore": f"Error Handling Score: {error_handling_results.get('ErrorHandlingScore', 0)}%.",
-                    "ErrorIssues": error_handling_results.get("ErrorIssues", []),
-                    "RecoveryIssues": error_handling_results.get("RecoveryIssues", []),
-                    "Feedback": error_handling_results
-                },
-                "minimalist_results": minimalist_feedback,
-            }
+            if update_result.matched_count > 0:
+                self._log(f"Updated existing feedback for design '{design_name}'", "UPDATE")
+            elif update_result.upserted_id:
+                self._log(f"Created new feedback for design '{design_name}'", "CREATE")
+            else:
+                self._log("Failed to save feedback", "ERROR")
+                return jsonify({"error": "Failed to save feedback to database"}), 500
             
-            if recognition_feedback_list:
-                response_data["recognition_results"] = recognition_feedback_list
+            self._log("Feedback processing completed successfully", "SUCCESS")
 
+            # Prepare and return response
+            response_data = self._prepare_response_data(
+                error_prevention_results,
+                consistency_results,
+                error_handling_results,
+                minimalist_feedback,
+                recognition_feedback_list
+            )
+            
             return jsonify(response_data), 200
 
         except Exception as e:
-            print(f"Error: {str(e)}")
+            self._log(f"Processing error: {str(e)}", "ERROR")
             return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+    def _transform_minimalist_results(self, minimalist_results):
+        """Helper method to transform minimalist results"""
+        cleaned_minimalist_feedback = []
+        
+        if isinstance(minimalist_results, dict):
+            for key, value in minimalist_results.items():
+                cleaned_key = clean_prefix(key)
+                if "white space" in cleaned_key.lower():
+                    issue = "White Space Ratio"
+                elif "elements" in cleaned_key.lower() and "irrelevant" not in cleaned_key.lower():
+                    issue = "Number of Elements"
+                elif "irrelevant" in cleaned_key.lower():
+                    issue = "Irrelevant Elements"
+                elif "score" in cleaned_key.lower():
+                    issue = "Score"
+                else:
+                    issue = cleaned_key
+                cleaned_minimalist_feedback.append({
+                    "issue": issue,
+                    "feedback": clean_prefix(value) if isinstance(value, str) else str(value)
+                })
+        elif isinstance(minimalist_results, list):
+            for item in minimalist_results:
+                if isinstance(item, str):
+                    cleaned_item = clean_prefix(item)
+                    if "white space" in cleaned_item.lower():
+                        issue = "White Space Ratio"
+                    elif "elements" in cleaned_item.lower() and "irrelevant" not in cleaned_item.lower():
+                        issue = "Number of Elements"
+                    elif "irrelevant" in cleaned_item.lower():
+                        issue = "Irrelevant Elements"
+                    elif "score" in cleaned_item.lower():
+                        issue = "Score"
+                    else:
+                        issue = "Feedback"
+                    cleaned_minimalist_feedback.append({
+                        "issue": issue,
+                        "feedback": cleaned_item
+                    })
+                elif isinstance(item, dict):
+                    cleaned_minimalist_feedback.append({
+                        "issue": clean_prefix(item.get('issue', '')),
+                        "feedback": clean_prefix(item.get('feedback', '')) if isinstance(item.get('feedback'), str) else str(item.get('feedback', ''))
+                    })
+        else:
+            cleaned_minimalist_feedback.append({
+                "issue": "Score",
+                "feedback": clean_prefix(str(minimalist_results))
+            })
+            
+        return {"Feedback": cleaned_minimalist_feedback}
+
+    def _prepare_response_data(self, error_prevention_results, consistency_results, 
+                             error_handling_results, minimalist_feedback, recognition_feedback_list):
+        """Helper method to prepare response data"""
+        return {
+            "message": "Design processed successfully!",
+            "status": 200,
+            "cached": False,
+            "error_prevention_results": {
+                "ErrorPreventionScore": f"Error Prevention Score: {error_prevention_results.get('ErrorPreventionScore', 0)}%.",
+                "ValidationIssues": error_prevention_results.get("ValidationIssues", []),
+                "ConfirmationIssues": error_prevention_results.get("ConfirmationIssues", []),
+                "Feedback": error_prevention_results.get("Feedback", {})
+            },
+            "consistency_results": {
+                "ColorConsistency": f"Color consistency is {consistency_results.get('ColorConsistency', 0)}%.",
+                "AlignmentConsistency": f"Alignment consistency is {consistency_results.get('AlignmentConsistency', 0)}%.",
+                "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
+                "Feedback": consistency_results.get('Feedback', {})
+            },
+            "error_handling_results": {
+                "ErrorHandlingScore": f"Error Handling Score: {error_handling_results.get('ErrorHandlingScore', 0)}%.",
+                "ErrorIssues": error_handling_results.get("ErrorIssues", []),
+                "RecoveryIssues": error_handling_results.get("RecoveryIssues", []),
+                "Feedback": error_handling_results
+            },
+            "minimalist_results": minimalist_feedback,
+            "recognition_results": recognition_feedback_list if recognition_feedback_list else []
+        }
