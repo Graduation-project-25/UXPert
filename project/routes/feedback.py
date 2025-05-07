@@ -81,7 +81,7 @@ class Feedback:
 
             print("Processing new/changed design...")
             insert_result = self.figma_repository.update_or_insert_frame(feature_data)
-            self.suggestions_repository.save_original_image_id(feature_data)
+            # self.suggestions_repository.save_original_image_id(feature_data)
 
             # Get the image for suggestions
             frame_image = self.figma_repository.get_image_by_frame_id(
@@ -89,9 +89,9 @@ class Feedback:
                 feature_data["frame_id"]
             )
             
-            if frame_image:
-                suggestions = Suggestions(frame_image, feature_data)
-                suggestions.generate_suggestions()
+            # if frame_image:
+            #     suggestions = Suggestions(frame_image, feature_data)
+            #     suggestions.generate_suggestions()
 
             if insert_result.matched_count > 0:
                 print(f"Frame added to existing design: {design_name}")
