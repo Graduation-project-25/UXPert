@@ -7,12 +7,17 @@ from components.Suggestions_Component.suggestions import Suggestions
 from database.figma_features_repository import FigmaFeaturesRepository
 from database.suggestions_repository import SuggestionsRepository
 from utils.helpers import clean_prefix
+import hashlib
 
 class Feedback:
     def __init__(self):
         self.figma_repository = FigmaFeaturesRepository()
-        self.suggestions_repository = SuggestionsRepository()
+        # self.suggestions_repository = SuggestionsRepository()
         self.feedback_repository = FeedbackRepository()
+
+    def _generate_data_hash(self, data):
+        """Generate a consistent hash for the design data"""
+        return hashlib.md5(str(sorted(data.items())).encode()).hexdigest()
 
     def process_elements(self):
         if request.method == 'OPTIONS':
@@ -32,9 +37,30 @@ class Feedback:
         elements = data.get('elements', [])
         imageDataUrl = data.get("imageDataUrl")
 
-
         if not elements:
             return jsonify({"error": "No elements found"}), 400
+
+        # Create hash of current data for comparison
+        current_hash = self._generate_data_hash({
+            "elements": elements,
+            "frame_info": frame_info,
+            "imageDataUrl": imageDataUrl
+        })
+
+        # Check if we have cached results for this exact data
+        cached_feedback = self.feedback_repository.get_feedback_by_hash(design_name, frame_name, current_hash)
+        if cached_feedback:
+            print("Returning cached feedback for unchanged design")
+            return jsonify({
+                "message": "Design processed successfully! (cached results)",
+                "status": 200,
+                "cached": True,
+                "error_prevention_results": cached_feedback.get("error_prevention_results", {}),
+                "consistency_results": cached_feedback.get("consistency_results", {}),
+                "error_handling_results": cached_feedback.get("error_handling_results", {}),
+                "minimalist_results": cached_feedback.get("minimalist_results", {}),
+                "recognition_results": cached_feedback.get("recognition_results", [])
+            }), 200
 
         elements_df = pd.DataFrame(elements)
 
@@ -47,23 +73,22 @@ class Feedback:
                 "frame_id": frame_id,
                 "screen_size": frame_info,
                 "elements": elements,
-                "image64_string": imageDataUrl
+                "image64_string": imageDataUrl,
+                "data_hash": current_hash
             }
 
             recognition_feedback_list = []
 
-            print("Attempting to insert data into MongoDB...")
+            print("Processing new/changed design...")
             insert_result = self.figma_repository.update_or_insert_frame(feature_data)
             self.suggestions_repository.save_original_image_id(feature_data)
 
-            # 3. Get the image FROM THE CORRECT REPOSITORY
+            # Get the image for suggestions
             frame_image = self.figma_repository.get_image_by_frame_id(
                 feature_data["design_name"],
                 feature_data["frame_id"]
             )
-            print("frame image:")
-            print(frame_image)
-            print("Data inserted successfully.")
+            
             if frame_image:
                 suggestions = Suggestions(frame_image, feature_data)
                 suggestions.generate_suggestions()
@@ -92,19 +117,6 @@ class Feedback:
 
             elements_db = pd.DataFrame(elements_list)
 
-            designs_for_evaluation = [{"elements": elements_db}]
-
-            output_data = {
-                "screen_size": frame_info,
-                "elements": elements,
-            }
-
-            frame_data = latest_saved_data.get("frames", [])
-            if frame_data:
-                elements_df = pd.DataFrame(frame_data[0].get("elements", []))
-            else:
-                return jsonify({"error": "No elements found in the retrieved frame data"}), 500
-
             screen_width = frame_info["screen_width"]
             screen_height = frame_info["screen_height"]
 
@@ -120,8 +132,17 @@ class Feedback:
             minimalist_results, minimalist_score = minimalist_evaluator.evaluate_rule({"elements": elements}, screen_width, screen_height)
             error_handling_results = error_handling_evaluator.evaluate_rule(elements_df)
             error_prevention_results = error_prevention_evaluator.evaluate_rule(elements_db)
+            
             for element in elements:
-                recognition_results = recognition_evaluator.evaluate_rule(element, element["type"], screen_width, screen_height, element["isIconLabeled"], element["width"], element["height"])
+                recognition_results = recognition_evaluator.evaluate_rule(
+                    element, 
+                    element["type"], 
+                    screen_width, 
+                    screen_height, 
+                    element["isIconLabeled"], 
+                    element["width"], 
+                    element["height"]
+                )
                 if recognition_results:
                     recognition_feedback = {
                         "element_id": element["id"],
@@ -151,7 +172,7 @@ class Feedback:
                         "feedback": clean_prefix(value) if isinstance(value, str) else str(value)
                     })
             elif isinstance(minimalist_results, list):
-                for i, item in enumerate(minimalist_results):
+                for item in minimalist_results:
                     if isinstance(item, str):
                         cleaned_item = clean_prefix(item)
                         if "white space" in cleaned_item.lower():
@@ -179,28 +200,7 @@ class Feedback:
                     "feedback": clean_prefix(str(minimalist_results))
                 })
 
-            # Prepare human-readable feedback
-            consistency_feedback = {
-                "ColorConsistency": f"Color consistency is {consistency_results.get('ColorConsistency', 0)}%.",
-                "AlignmentConsistency": f"Alignment consistency is {consistency_results.get('AlignmentConsistency', 0)}%.",
-                "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
-                "Feedback": consistency_results.get('Feedback', {})
-            }
-
-            error_feedback = {
-                "ErrorPreventionScore": f"Error Prevention Score: {error_prevention_results.get('ErrorPreventionScore', 0)}%.",
-                "ValidationIssues": error_prevention_results.get("ValidationIssues", []),
-                "ConfirmationIssues": error_prevention_results.get("ConfirmationIssues", []),
-                "Feedback": error_prevention_results.get("Feedback", {})
-            }
-
-            error_handling_feedback = {
-                "ErrorHandlingScore": f"Error Handling Score: {error_handling_results.get('ErrorHandlingScore', 0)}%.",
-                "ErrorIssues": error_handling_results.get("ErrorIssues", []),
-                "RecoveryIssues": error_handling_results.get("RecoveryIssues", []),
-                "Feedback": error_handling_results
-            }
-
+            # Prepare feedback data
             minimalist_feedback = {
                 "Feedback": cleaned_minimalist_feedback,
             }
@@ -210,7 +210,9 @@ class Feedback:
                 "consistency_results": consistency_results,
                 "error_handling_results": error_handling_results,
                 "minimalist_results": minimalist_feedback,
+                "data_hash": current_hash
             }
+            
             if recognition_feedback_list:
                 feedback_data["recognition_results"] = recognition_feedback_list
 
@@ -220,17 +222,35 @@ class Feedback:
             if update_result.matched_count == 0:
                 print("Error updating feedback in MongoDB.")
                 return jsonify({"error": "Failed to update feedback in database"}), 500
-            print("Feedback saved successfully.")
+            
+            print("Feedback processed and saved successfully.")
 
             # Prepare final response
             response_data = {
                 "message": "Design processed successfully!",
                 "status": 200,
-                "error_prevention_results": error_feedback,
-                "consistency_results": consistency_feedback,
-                "error_handling_results": error_handling_feedback,
+                "cached": False,
+                "error_prevention_results": {
+                    "ErrorPreventionScore": f"Error Prevention Score: {error_prevention_results.get('ErrorPreventionScore', 0)}%.",
+                    "ValidationIssues": error_prevention_results.get("ValidationIssues", []),
+                    "ConfirmationIssues": error_prevention_results.get("ConfirmationIssues", []),
+                    "Feedback": error_prevention_results.get("Feedback", {})
+                },
+                "consistency_results": {
+                    "ColorConsistency": f"Color consistency is {consistency_results.get('ColorConsistency', 0)}%.",
+                    "AlignmentConsistency": f"Alignment consistency is {consistency_results.get('AlignmentConsistency', 0)}%.",
+                    "SizeProportionality": f"Size proportionality is {consistency_results.get('SizeProportionality', 0)}%.",
+                    "Feedback": consistency_results.get('Feedback', {})
+                },
+                "error_handling_results": {
+                    "ErrorHandlingScore": f"Error Handling Score: {error_handling_results.get('ErrorHandlingScore', 0)}%.",
+                    "ErrorIssues": error_handling_results.get("ErrorIssues", []),
+                    "RecoveryIssues": error_handling_results.get("RecoveryIssues", []),
+                    "Feedback": error_handling_results
+                },
                 "minimalist_results": minimalist_feedback,
             }
+            
             if recognition_feedback_list:
                 response_data["recognition_results"] = recognition_feedback_list
 
