@@ -22,12 +22,11 @@ class Prompt:
 
         - Keep the layout, style, theme, and visuals the same.
         - Only apply small UX changes according to the suggestions.
+        - Ensure all text remains in English, as in the original design. Do not translate or change the language of any text.
                
         **Constraints**:
         - Do NOT change the overall layout, screen size, or resolution of the original screenshot.
-        - Do NOT change the original language
         - Do NOT change the colors, only make it brighter or darker
-        - Do NOT Change the language
         - Do NOT alter the color scheme, typography, imagery, or content of the original design.
         - Only overlay masks or annotations to highlight violations—do not edit or redesign any part of the design.
         - Limit the number of highlighted violations to 5 to avoid overcrowding the output."""

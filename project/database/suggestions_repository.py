@@ -35,7 +35,7 @@ class SuggestionsRepository(BaseRepository):
         }
         
         # Upsert operation
-        result = self.update(
+        self.update(
             {
                 "design_name": feature_data["design_name"],
                 "user_name": feature_data.get("user_name", "Unknown User")
@@ -53,9 +53,9 @@ class SuggestionsRepository(BaseRepository):
         )
         
         # Get the document ID (new or existing)
-        doc = self.find_one({
-            "design_name": feature_data["design_name"],
-            "user_name": feature_data.get("user_name", "Unknown User")
-        })
+        # doc = self.find_one({
+        #     "design_name": feature_data["design_name"],
+        #     "user_name": feature_data.get("user_name", "Unknown User")
+        # })
         
-        return str(doc["_id"]) if doc else None
+        # return str(doc["_id"]) if doc else None
