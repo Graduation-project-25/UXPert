@@ -54,7 +54,7 @@ class Feedback:
 
             print("Attempting to insert data into MongoDB...")
             insert_result = self.figma_repository.update_or_insert_frame(feature_data)
-            doc_id = self.suggestions_repository.save_original_image_id(feature_data)
+            self.suggestions_repository.save_original_image_id(feature_data)
 
             # 3. Get the image FROM THE CORRECT REPOSITORY
             frame_image = self.figma_repository.get_image_by_frame_id(
@@ -62,9 +62,9 @@ class Feedback:
                 feature_data["frame_id"]
             )
             print("Data inserted successfully.")
-            if frame_image:
-                suggestions = Suggestions()
-                suggestions.generate_suggestions(frame_image)
+            # if frame_image:
+            #     suggestions = Suggestions(frame_image)
+            #     suggestions.generate_suggestions()
 
             if insert_result.matched_count > 0:
                 print(f"Frame added to existing design: {design_name}")
