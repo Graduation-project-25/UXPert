@@ -1,4 +1,5 @@
 import os
+import tempfile
 from dotenv import load_dotenv
 import openai
 import base64, binascii
@@ -17,17 +18,11 @@ class Suggestions(SuggestionsGenerator):
         self.frame_image = frame_image
         self.feature_data = feature_data
         self.suggestions_repository = SuggestionsRepository()
-        # self.design_image = "Project 1.png"
         self.design_image = self.convert_base64_to_png(frame_image)
-        if not self.design_image:
-            raise ValueError("Failed to convert image data to PNG")
-            
         self.prompt = Prompt(self.design_image)
         
     def analyze_design(self):
         # Read and encode the image file as base64
-        # base64_image = self.get_base64_image()
-        # base64_image = str(self.frame_image).split(",")[1]
         base64_image = self.get_base64_string(self.frame_image)
         if not base64_image:
             raise ValueError("Invalid image data format")
@@ -52,33 +47,22 @@ class Suggestions(SuggestionsGenerator):
             # quality = 'high',
         )
 
-        # image_base64 = result.data[0].b64_json
-        # image_bytes = base64.b64decode(image_base64)
-
-        # Save the image to a file
-        # with open("test2-modified.png", "wb") as f:
-        #     f.write(image_bytes)
-
-
         modified_image_b64 = result.data[0].b64_json
         modified_image_url = base64.b64decode(modified_image_b64)
             
-            # Save to database if feature_data exists
-        
+        # Save to database if feature_data exists
         self.suggestions_repository.save_modified_image(
-                design_name=self.feature_data["design_name"],
-                user_name=self.feature_data.get("user_name", "Unknown User"),
-                frame_id=self.feature_data.get("frame_id"),
-                modified_image_data=modified_image_url
-            )
+            design_name=self.feature_data["design_name"],
+            user_name=self.feature_data.get("user_name", "Unknown User"),
+            frame_id=self.feature_data.get("frame_id"),
+            modified_image_data=modified_image_url
+        )
             
-            # Optional: Save to local file
+        # Optional: Save to local file
         with open("modified_output.png", "wb") as f:
-                f.write(base64.b64decode(modified_image_b64))
+            f.write(base64.b64decode(modified_image_b64))
             
-        
             
-
     def get_base64_string(self, data_url):
         try:
             return str(data_url).split(",")[1]
@@ -87,24 +71,39 @@ class Suggestions(SuggestionsGenerator):
             return None
         
     
+    # def convert_base64_to_png(self, data_url):
+    #     try:
+    #         base64_string = self.get_base64_string(data_url)
+    #         image = base64.b64decode(base64_string, validate=True)
+    #         file_to_save = "converted_image2.png"
+    #         with open(file_to_save, "wb") as f:
+    #             f.write(image)
+    #         return file_to_save
+    #     except binascii.Error as e:
+    #         print(e)
+
+
     def convert_base64_to_png(self, data_url):
         try:
             base64_string = self.get_base64_string(data_url)
             image = base64.b64decode(base64_string, validate=True)
-            file_to_save = "converted_image2.png"
-            with open(file_to_save, "wb") as f:
-                f.write(image)
-            return file_to_save
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp_file:
+                temp_file.write(image)
+                temp_file_path = temp_file.name
+            return temp_file_path
         except binascii.Error as e:
             print(e)
-
-
-    # def get_base64_image(self):
-    #     with open(self.design_image, "rb") as image_file:
-    #         image_data = image_file.read()
-    #         base64_image = base64.b64encode(image_data).decode("utf-8")
-    #     return base64_image
+            return None
 
     def generate_suggestions(self):
         generated_text_suggestions = self.analyze_design()
         self.generate_suggested_image(generated_text_suggestions)
+
+    def __del__(self):
+        """Destructor to clean up the temporary file."""
+        if hasattr(self, 'design_image') and self.design_image and os.path.exists(self.design_image):
+            try:
+                os.unlink(self.design_image)
+                print(f"Deleted temporary file: {self.design_image}")
+            except OSError as e:
+                print(f"Error deleting temporary file {self.design_image}: {e}")

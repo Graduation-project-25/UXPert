@@ -12,7 +12,7 @@ import hashlib
 class Feedback:
     def __init__(self):
         self.figma_repository = FigmaFeaturesRepository()
-        # self.suggestions_repository = SuggestionsRepository()
+        self.suggestions_repository = SuggestionsRepository()
         self.feedback_repository = FeedbackRepository()
 
     def _generate_data_hash(self, data):

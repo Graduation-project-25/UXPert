@@ -50,21 +50,21 @@ class SuggestionsRepository(BaseRepository):
         # return str(doc["_id"]) if doc else None
 
     def save_modified_image(self, design_name, user_name, frame_id, modified_image_data):
-            """Save modified image for a specific frame"""
-            return self.update(
-                {
-                    "design_name": design_name,
-                    "user_name": user_name,
-                    "images.id": frame_id
-                },
-                {
-                    "$set": {
-                        "images.$.modified_image": modified_image_data,
-                        "images.$.modified_at": datetime.datetime.utcnow()
-                    }
+        """Save modified image for a specific frame"""
+        return self.update(
+            {
+                "design_name": design_name,
+                "user_name": user_name,
+                "images.id": frame_id
+            },
+            {
+                "$set": {
+                    "images.$.modified_image": modified_image_data,
+                    "images.$.modified_at": datetime.datetime.utcnow()
                 }
-            )
-    
+            }
+        )
+
     def get_images_by_design(self, design_name, user_name="Unknown User"):
         """Get all images for a design"""
         result = self.find_one(
