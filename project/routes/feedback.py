@@ -66,10 +66,10 @@ class Feedback:
             #     suggestions = Suggestions(frame_image)
             #     suggestions.generate_suggestions()
 
-            if insert_result.matched_count > 0:
-                print(f"Frame added to existing design: {design_name}")
-            else:
-                print(f"New design document created: {design_name}")
+            # if insert_result.matched_count > 0:
+            #     print(f"Frame added to existing design: {design_name}")
+            # else:
+            #     print(f"New design document created: {design_name}")
 
             # Retrieve Saved Design
             latest_saved_data = self.figma_repository.get_saved_design(design_name, frame_name)

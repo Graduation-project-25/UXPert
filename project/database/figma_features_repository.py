@@ -15,33 +15,45 @@ class FigmaFeaturesRepository(BaseRepository):
     def update_or_insert_frame(self, feature_data):
         """
         Update an existing frame if it exists, otherwise insert a new frame.
-        """ 
-        filter_query = {
+        """
+        frame_id = feature_data.get("frame_id", str(ObjectId()))
+
+        # Check for existing frame to avoid duplicates
+        existing_frame = self.find_one({
             "design_name": feature_data["design_name"],
-            "user_name": feature_data["user_name"],
+            "frames.frame_id": feature_data["frame_id"],
             "frames.frame_name": feature_data["frame_name"]
-        }
- 
-        update_query = {
-            "$set": {
-                "frames.$.screen_size": feature_data["screen_size"],
-                "frames.$.elements": feature_data["elements"]
+        })
+
+        # If frame exists, update it
+        if existing_frame and any(frame.get("frame_name") == feature_data["frame_name"] for frame in existing_frame.get("frames", [])):
+            print(f"Frame '{feature_data['frame_name']}' found, updating...")
+            filter_query = {
+                "design_name": feature_data["design_name"],
+                "user_name": feature_data["user_name"],
+                "frames.frame_id": frame_id
             }
-        } 
-
-        # Try to update the existing frame
-        update_result = self.update(filter_query, update_query)
-
-        if update_result.matched_count == 0:
-            # If no existing frame was found, insert a new frame
-            self.update(
+            update_query = {
+                "$set": {
+                    "frames.$[elem].screen_size": feature_data["screen_size"],
+                    "frames.$[elem].elements": feature_data["elements"],
+                    "frames.$[elem].image64_string": feature_data["image64_string"]  # Move inside array element
+                }
+            }
+            array_filters = [{"elem.frame_id": frame_id}]
+            update_result = self.update(filter_query, update_query, array_filters=array_filters)
+        else:
+            # If no existing frame, insert a new one
+            print(f"Frame '{feature_data['frame_name']}' not found, inserting...")
+            feature_data["frame_id"] = frame_id  # Ensure frame_id is part of the inserted data
+            update_result = self.update(
                 {"design_name": feature_data["design_name"]},
                 {"$push": {"frames": feature_data}},
                 upsert=True
             )
 
         return update_result
-    
+
     def get_all_designs(self):
         """Retrieve all designs from the database."""
         return self.find_all()
