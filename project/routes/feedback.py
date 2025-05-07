@@ -157,6 +157,25 @@ class Feedback:
         else:
             self._log(f"Processing new feedback for design '{design_name}'", "NEW")
 
+        # Retrieve existing elements from the database
+        latest_saved_data = self.figma_repository.get_saved_design(design_name, frame_name)
+        existing_elements = []
+        if latest_saved_data:
+            frames = latest_saved_data.get("frames", [])
+            existing_elements = [elem for frame in frames for elem in frame.get("elements", [])]
+        
+        # Compare incoming elements with existing elements
+        existing_element_ids = {elem["id"] for elem in existing_elements}
+        new_elements = [elem for elem in elements if elem["id"] not in existing_element_ids]
+
+        # Log new elements if any
+        if new_elements:
+            self._log("New elements found:", "INFO")
+            for elem in new_elements:
+                self._log(f"- Element ID: {elem['id']}, Name: {elem.get('name', 'Unnamed')}, Type: {elem.get('type', 'Unknown')}", "INFO")
+        else:
+            self._log("No new elements found", "INFO")
+
         elements_df = pd.DataFrame(elements)
 
         try:
@@ -182,11 +201,6 @@ class Feedback:
                 feature_data["frame_id"]
             )
             
-            # if frame_image:
-            #     self._log("Generating design suggestions...", "PROCESSING")
-            #     suggestions = Suggestions(frame_image, feature_data)
-            #     suggestions.generate_suggestions()
-
             # Retrieve Saved Design
             latest_saved_data = self.figma_repository.get_saved_design(design_name, frame_name)
             if not latest_saved_data:
