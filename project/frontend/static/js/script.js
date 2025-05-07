@@ -14,22 +14,45 @@ document.getElementById('start').onclick = () => {
     document.getElementById('initial-screen').style.display = 'none';
     document.getElementById('processing-screen').style.display = 'block';
 
-    let progress = 0;
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
+    progressBar.value = 0;
+    progressText.textContent = '0%';
 
+    // Start both the progress animation and processing simultaneously
     const progressInterval = setInterval(() => {
-        progress = Math.min(progress + 5, 100); // Go all the way to 100%
-        progressBar.value = progress;
-        progressText.textContent = `${progress}%`;
-        
-        if (progress === 100) {
-            clearInterval(progressInterval);
-            // Only request feedback after progress completes
-            parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+        const currentProgress = parseInt(progressBar.value);
+        if (currentProgress < 90) { // Only animate up to 90% during processing
+            const newProgress = Math.min(currentProgress + 5, 90);
+            progressBar.value = newProgress;
+            progressText.textContent = `${newProgress}%`;
         }
     }, 300);
+
+    // Start the actual processing
+    parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+
+    // Listen for progress updates from the processing
+    const progressListener = (event) => {
+        const msg = event.data.pluginMessage;
+        if (msg && msg.type === 'progress-update') {
+            // Ensure we don't go backwards in progress
+            if (msg.progress > progressBar.value) {
+                progressBar.value = msg.progress;
+                progressText.textContent = `${msg.progress}%`;
+            }
+
+            // If processing is complete, finish the progress bar
+            if (msg.progress >= 100) {
+                clearInterval(progressInterval);
+                window.removeEventListener('message', progressListener);
+            }
+        }
+    };
+
+    window.addEventListener('message', progressListener);
 };
+
 // Navigation functions
 function showPage(index) {
     pages.forEach((page, i) => {
@@ -120,12 +143,12 @@ function showModifications(data) {
 
         // Display modifications if available
         if (data.modifications && data.modifications.length > 0) {
-            console.log("Modifications found:", data.modifications); // Debug log
+            console.log("Modifications found:", data.modifications);
             
             const fragment = document.createDocumentFragment();
             
             data.modifications.forEach(mod => {
-                console.log("Processing modification:", mod); // Debug log
+                console.log("Processing modification:", mod);
                 
                 const modItem = document.createElement('div');
                 modItem.className = 'modification-item';
@@ -165,7 +188,7 @@ function showModifications(data) {
             
             modList.appendChild(fragment);
         } else {
-            console.log("No modifications found in data"); // Debug log
+            console.log("No modifications found in data");
             modList.innerHTML = `
                 <div class="no-modifications">
                     <p>No specific modifications suggested.</p>
@@ -195,6 +218,7 @@ function showLoading() {
 function hideLoading() {
     document.getElementById('processing-screen').style.display = 'none';
 }
+
 function navigateFeedback(frameId) {
     if (!feedbackData[frameId]) return;
 
@@ -312,13 +336,16 @@ if (msg.type === 'design-modifications') {
         document.getElementById('modifications-screen').style.display = 'block';
         document.getElementById('feedback-screen').style.display = 'none';
     }
-}if (msg.type === 'progress-update') {
+}
+
+if (msg.type === 'progress-update') {
     document.getElementById('progress-bar').value = msg.progress;
     document.getElementById('progress-text').textContent = `${msg.progress}%`;
     return;
 }
 
 });
+
 // Navigation buttons
 document.getElementById('prev').onclick = () => showPage(currentPageIndex - 1);
 document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
@@ -332,7 +359,7 @@ document.getElementById('modify-button').onclick = async () => {
     try {
         const currentFrame = pages[currentPageIndex];
         const frameName = currentFrame.querySelector('h2')?.textContent;
-        console.log("Requesting modifications for frame:", frameName); // Debug log
+        console.log("Requesting modifications for frame:", frameName);
         
         parent.postMessage({
             pluginMessage: {

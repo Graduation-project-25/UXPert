@@ -119,9 +119,8 @@ function bytesToBase64(bytes: Uint8Array): string {
     return `data:image/png;base64,${base64String}`;
 }
 
-function save_image(imageDataUrl: any){
-
-
+function save_image(imageDataUrl: any) {
+    // Implementation remains the same
 }
 
 // Main plugin logic
@@ -134,9 +133,19 @@ figma.ui.onmessage = async (msg) => {
         if (msg.type === 'start-detection') {
             const frames = figma.currentPage.children.filter(node => node.type === "FRAME") as FrameNode[];
             const allFeedback: any[] = [];
+            const totalFrames = frames.length;
+            let processedFrames = 0;
 
             for (const frame of frames) {
                 if (!frame.visible) continue;
+
+                // Update progress
+                processedFrames++;
+                const progress = Math.floor((processedFrames / totalFrames) * 90); // Scale to 90%
+                figma.ui.postMessage({
+                    type: 'progress-update',
+                    progress: progress
+                });
 
                 const imageBytes = await frame.exportAsync({ format: "PNG" });
                 const imageBase64 = figma.base64Encode(imageBytes);
@@ -154,7 +163,7 @@ figma.ui.onmessage = async (msg) => {
                         frame_name: frame.name,
                         elements: serializedNodes.map(node => {
                             const { imageBase64, ...rest } = node;
-                            return rest; // Exclude imageBase64 for comparison
+                            return rest;
                         })
                     });
 
@@ -177,7 +186,7 @@ figma.ui.onmessage = async (msg) => {
                                 : [],
                             screenshot: imageDataUrl
                         });
-                        continue; // Skip to the next frame
+                        continue;
                     }
                 } catch (error) {
                     console.warn(`Error checking existing frame data for ${frame.name}:`, error);
@@ -228,6 +237,12 @@ figma.ui.onmessage = async (msg) => {
                     figma.notify(`Failed to send elements from ${frame.name} to backend.`);
                 }
             }
+
+            // Complete progress
+            figma.ui.postMessage({
+                type: 'progress-update',
+                progress: 100
+            });
 
             if (allFeedback.length > 0) {
                 UiService.sendFeedbackToUI(allFeedback);
@@ -309,7 +324,7 @@ figma.ui.onmessage = async (msg) => {
                         const renderedFrame = await applyJsonToFigma(designJson);
                         const imageBytes = await exportFrameAsImage(renderedFrame);
                         base64Image = bytesToBase64(imageBytes);
-                        renderedFrame.remove(); // Clean up
+                        renderedFrame.remove();
                     } catch (error) {
                         console.error('Failed to render design in backend:', error);
                         throw new Error(`Failed to render modified design: ${error}`);
