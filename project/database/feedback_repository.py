@@ -2,7 +2,14 @@ from database.base_repository import BaseRepository
 
 class FeedbackRepository(BaseRepository):
     def __init__(self):
-        super().__init__("features")  
+        super().__init__("features")
+        
+    def get_feedback(self, design_name, frame_name):
+        """Retrieve feedback for a specific design frame"""
+        return self.collection.find_one({
+            'design_name': design_name,
+            'frame_name': frame_name
+        })      
 
     def update_feedback(self, design_name, frame_name, feedback_data):
         try:
