@@ -193,13 +193,15 @@ class Feedback:
 
             # Store design data
             insert_result = self.figma_repository.update_or_insert_frame(feature_data)
-            self.suggestions_repository.save_original_image_id(feature_data)
+            # self.suggestions_repository.save_original_image_id(feature_data)
 
             # Get the image for suggestions
             frame_image = self.figma_repository.get_image_by_frame_id(
                 feature_data["design_name"],
                 feature_data["frame_id"]
             )
+            if frame_image:
+                self.suggestions_repository.save_original_image_id(feature_data)
             
             # Retrieve Saved Design
             latest_saved_data = self.figma_repository.get_saved_design(design_name, frame_name)
