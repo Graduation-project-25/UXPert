@@ -356,25 +356,65 @@ document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
 
 
+let currentSuggestions = null;
+let currentImages = null;
+
+// Modify the modify button handler
 document.getElementById('modify-button').onclick = async () => {
     showLoading();
-    console.log("Modify button clicked"); 
-    
     try {
         const currentFrame = pages[currentPageIndex];
         const frameName = currentFrame.querySelector('h2')?.textContent;
-        console.log("Requesting modifications for frame:", frameName);
+        const frameId = feedbackData[frameName]?.item?.frameId;
+        const designName = "Untitled Design"; // You should get this from your data
         
-        parent.postMessage({
-            pluginMessage: {
-                type: 'request-modifications',
-                frameName: frameName
+        // First get text suggestions
+        const suggestionsResponse = await ApiService.getSuggestions(frameId, designName);
+        currentSuggestions = suggestionsResponse.suggestions;
+        
+        // Show suggestions in UI
+        document.getElementById('modification-summary').innerHTML = `
+            <div class="suggestions-box">
+                <h3>Design Suggestions</h3>
+                <pre>${currentSuggestions}</pre>
+                <button id="show-modified-image" class="button">Show Modified Image</button>
+            </div>
+        `;
+        
+        // Set up click handler for showing modified image
+        document.getElementById('show-modified-image').onclick = async () => {
+            showLoading();
+            try {
+                const imagesResponse = await ApiService.getModifiedImage(frameId, designName);
+                currentImages = imagesResponse;
+                
+                // Show both images
+                document.getElementById('design-preview').innerHTML = `
+                    <h3>Design Comparison</h3>
+                    <div class="image-comparison">
+                        <div class="image-container">
+                            <h4>Original Design</h4>
+                            <img src="${imagesResponse.original_image}" class="design-image" />
+                        </div>
+                        <div class="image-container">
+                            <h4>Modified Design</h4>
+                            <img src="${imagesResponse.modified_image}" class="design-image" />
+                        </div>
+                    </div>
+                `;
+                
+                hideLoading();
+            } catch (error) {
+                showError(error);
             }
-        }, '*');
+        };
+        
+        hideLoading();
+        document.getElementById('modifications-screen').style.display = 'block';
+        document.getElementById('feedback-screen').style.display = 'none';
         
     } catch (error) {
-        console.error("Modification error:", error);
-        showError(`Failed to get modifications: ${error.message}`);
+        showError(error);
     }
 };
 
