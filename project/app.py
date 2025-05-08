@@ -23,6 +23,59 @@ feedback = Feedback()
 app.route('/process', methods=['POST', 'OPTIONS'])(feedback.process_elements)
 # app.route('/modify-design', methods=['POST'])(suggestions.generate_suggestions)
 
+
+@app.route('/get-suggestions', methods=['POST'])
+def get_suggestions():
+    try:
+        data = request.get_json()
+        if not data or 'frame_id' not in data or 'design_name' not in data:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        # Get the original image
+        repo = FigmaFeaturesRepository()
+        frame_image = repo.get_image_by_frame_id(data['design_name'], data['frame_id'])
+        
+        if not frame_image:
+            return jsonify({'error': 'Original image not found'}), 404
+
+        # Generate suggestions
+        suggestions = Suggestions(frame_image, data)
+        text_suggestions = suggestions.analyze_design()
+        
+        # Return just the text suggestions first
+        return jsonify({
+            'status': 'success',
+            'suggestions': text_suggestions
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/get-modified-image', methods=['POST'])
+def get_modified_image():
+    try:
+        data = request.get_json()
+        if not data or 'frame_id' not in data or 'design_name' not in data:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        # Get both original and modified images
+        figma_repo = FigmaFeaturesRepository()
+        suggestions_repo = SuggestionsRepository()
+        
+        original_image = figma_repo.get_image_by_frame_id(data['design_name'], data['frame_id'])
+        modified_image = suggestions_repo.get_modified_image(data['design_name'], data['frame_id'])
+        
+        if not original_image or not modified_image:
+            return jsonify({'error': 'Images not found'}), 404
+
+        return jsonify({
+            'status': 'success',
+            'original_image': original_image,
+            'modified_image': modified_image
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 @app.route('/', methods=['GET'])
 def home():
     return "Welcome to the Flask server!", 200

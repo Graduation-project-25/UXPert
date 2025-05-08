@@ -837,6 +837,12 @@ img {
   padding: 40px;
   color: #666;
 }
+
+
+
+/* suggestion screen styling */
+
+
 @keyframes colorFade {
   0% { opacity: 0.2; color: #ffffff; }
   100% { opacity: 1; color: #ffeb00; }
