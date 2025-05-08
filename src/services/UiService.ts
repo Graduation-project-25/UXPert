@@ -18,14 +18,12 @@ export class UiService {
     }
 
     static showModifiedDesign(frameId: string, original: string, modified: string, modifications: any[]) {
-        // Store the modified design for this frame
         this.modifiedDesigns[frameId] = {
             original,
             modified,
             modifications
         };
         
-        // Send to UI
         figma.ui.postMessage({
             type: 'design-modifications',
             frameId,
@@ -46,4 +44,5 @@ export class UiService {
     static setCurrentFrameId(frameId: string) {
         this.currentFrameId = frameId;
     }
+
 }

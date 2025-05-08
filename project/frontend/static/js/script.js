@@ -1,7 +1,9 @@
 let currentPageIndex = 0;
 const pages = [];
 let modifiedDesigns = [];
-let feedbackData = {}; // Store all feedback data per frame
+let feedbackData = {};
+let currentSuggestions = null;
+let currentImages = null;// Store all feedback data per frame
 
 // Initialize UI
 setTimeout(() => {
@@ -115,7 +117,7 @@ function renderFeedback(item, feedbackIndex = 0) {
 
 function showModifications(data) {
     try {
-        console.log("Modifications data received:", data); // Debug log
+        console.log("Showing modifications:", data);
         
         // Hide other screens
         document.getElementById('processing-screen').style.display = 'none';
@@ -129,27 +131,32 @@ function showModifications(data) {
         modList.innerHTML = '';
         summaryEl.innerHTML = '';
 
-        // Display the summary
-        if (data.summary) {
+        // Handle different response structures
+        if (data.suggestions) {
+            summaryEl.innerHTML = `
+                <div class="suggestions-box">
+                    <h3>Design Suggestions</h3>
+                    <pre>${data.suggestions}</pre>
+                    ${data.image ? '' : `<button id="show-modified-image" class="button">Show Modified Image</button>`}
+                </div>
+            `;
+        } else if (data.summary) {
             summaryEl.innerHTML = `
                 <div class="summary-box">
                     <h3>Design Assessment Summary</h3>
                     <p>${data.summary}</p>
                 </div>
             `;
-        } else {
-            summaryEl.innerHTML = '<div class="summary-box"><p>No summary available</p></div>';
         }
 
-        // Display modifications if available
+        // Handle modifications list
         if (data.modifications && data.modifications.length > 0) {
-            console.log("Modifications found:", data.modifications);
+            const modList = document.getElementById('modification-list');
+            modList.innerHTML = '';
             
             const fragment = document.createDocumentFragment();
             
             data.modifications.forEach(mod => {
-                console.log("Processing modification:", mod);
-                
                 const modItem = document.createElement('div');
                 modItem.className = 'modification-item';
                 
@@ -158,24 +165,36 @@ function showModifications(data) {
                 const elementType = mod.type || 'element';
                 const elementName = mod.element_name || mod.text || `Untitled ${elementType}`;
                 const changes = mod.changes || mod.modifications || [];
+                const heuristic = mod.heuristic || 'General Improvement';
+                const severity = mod.severity || 'medium';
+                
+                // Create severity indicator
+                const severityIndicator = document.createElement('div');
+                severityIndicator.className = `severity-indicator ${severity}`;
+                severityIndicator.title = `Severity: ${severity}`;
                 
                 modItem.innerHTML = `
                     <div class="element-header">
                         <h4>${elementName}</h4>
                         <span class="element-type">${elementType}</span>
                         <span class="element-id">ID: ${elementId}</span>
+                        <div class="heuristic-tag">${heuristic}</div>
                     </div>
                     <div class="modification-details">
                         ${changes.length > 0 ? 
                             changes.map(change => `
                                 <div class="change-item">
-                                    <div class="change-property">${change.property || 'Property'}:</div>
+                                    <div class="change-header">
+                                        <div class="change-property">${change.property || 'Property'}:</div>
+                                        ${change.heuristic ? `<div class="heuristic-tag small">${change.heuristic}</div>` : ''}
+                                    </div>
                                     <div class="change-from-to">
                                         <span class="from">${change.from || 'Current'}</span>
                                         <span class="arrow">→</span>
                                         <span class="to">${change.to || 'Suggested'}</span>
                                     </div>
                                     ${change.reason ? `<div class="change-reason">${change.reason}</div>` : ''}
+                                    ${change.example ? `<div class="change-example"><strong>Example:</strong> ${change.example}</div>` : ''}
                                 </div>
                             `).join('') :
                             `<div class="no-changes">No specific changes suggested for this element</div>`
@@ -183,37 +202,128 @@ function showModifications(data) {
                     </div>
                 `;
                 
+                // Add severity indicator to the header
+                const header = modItem.querySelector('.element-header');
+                header.insertBefore(severityIndicator, header.firstChild);
+                
                 fragment.appendChild(modItem);
             });
             
             modList.appendChild(fragment);
+            
+            // Add CSS for new elements if not already present
+            const style = document.createElement('style');
+            style.textContent = `
+                .severity-indicator {
+                    width: 12px;
+                    height: 12px;
+                    border-radius: 50%;
+                    margin-right: 8px;
+                    display: inline-block;
+                }
+                .severity-indicator.high {
+                    background-color: #ff4d4f;
+                }
+                .severity-indicator.medium {
+                    background-color: #faad14;
+                }
+                .severity-indicator.low {
+                    background-color: #52c41a;
+                }
+                .heuristic-tag {
+                    display: inline-block;
+                    background-color: #f0f0f0;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 0.8em;
+                    margin-left: 8px;
+                    color: #666;
+                }
+                .heuristic-tag.small {
+                    font-size: 0.7em;
+                    margin-left: 6px;
+                }
+                .change-header {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 4px;
+                }
+                .change-property {
+                    font-weight: bold;
+                    margin-right: 8px;
+                }
+                .change-from-to {
+                    display: flex;
+                    align-items: center;
+                    margin: 4px 0;
+                }
+                .arrow {
+                    margin: 0 8px;
+                    color: #888;
+                }
+                .change-reason {
+                    font-size: 0.9em;
+                    color: #666;
+                    margin-top: 4px;
+                    font-style: italic;
+                }
+                .change-example {
+                    font-size: 0.85em;
+                    background: #f8f8f8;
+                    padding: 6px;
+                    border-radius: 4px;
+                    margin-top: 6px;
+                    border-left: 3px solid #1890ff;
+                }
+            `;
+            if (!document.querySelector('style.severity-styles')) {
+                style.className = 'severity-styles';
+                document.head.appendChild(style);
+            }
         } else {
-            console.log("No modifications found in data");
-            modList.innerHTML = `
+            document.getElementById('modification-list').innerHTML = `
                 <div class="no-modifications">
                     <p>No specific modifications suggested.</p>
-                    ${data.modified_design ? 
-                        '<p>The AI may have made direct changes to the design.</p>' : 
+                    ${data.suggestions ? 
+                        '<p>Review the suggestions above for general improvements.</p>' : 
                         '<p>Try analyzing the design again.</p>'
                     }
                 </div>
             `;
         }
-        
+
+        // Handle image display
+        const designPreview = document.getElementById('design-preview');
+        if (data.image) {
+            designPreview.innerHTML = `
+                <h3>Modified Design Preview</h3>
+                <img src="${data.image}" class="design-image" />
+            `;
+        } else if (data.original_image && data.modified_image) {
+            designPreview.innerHTML = `
+                <h3>Design Comparison</h3>
+                <div class="image-comparison">
+                    <div class="image-container">
+                        <h4>Original Design</h4>
+                        <img src="${data.original_image}" class="design-image" />
+                    </div>
+                    <div class="image-container">
+                        <h4>Modified Design</h4>
+                        <img src="${data.modified_image}" class="design-image" />
+                    </div>
+                </div>
+            `;
+        }
+
         modScreen.style.display = 'block';
         
     } catch (error) {
         console.error("Error showing modifications:", error);
-        // Show error details in the UI for debugging
         document.getElementById('error-message').textContent = "Could not display modifications";
         document.getElementById('error-details').textContent = error.stack;
         document.getElementById('error-screen').style.display = 'block';
     }
 }
-
-
-
-
 
 function showLoading() {
     document.getElementById('processing-screen').style.display = 'block';
@@ -320,35 +430,152 @@ window.addEventListener('message', async (event) => {
 
 if (msg.type === 'design-modifications') {
     hideLoading();
-    console.log('Received modifications:', JSON.stringify(msg, null, 2));
+    console.log('Received design modifications:', msg);
 
-    if (msg.modifications && msg.modifications.length > 0) {
-        showModifications(msg);
+    // Clear previous content
+    document.getElementById('modification-list').innerHTML = '';
+    document.getElementById('modification-summary').innerHTML = '';
+    document.getElementById('design-preview').innerHTML = '';
 
-        if (msg.image) {
-            document.getElementById('modified-design-image').src = msg.image;
-        } else {
-            console.warn('No image provided in design-modifications');
-            document.getElementById('modified-design-image').src = '';
-            document.getElementById('modification-list').innerHTML += `
-                <p>No modified design preview available</p>
-            `;
+    // Handle text suggestions
+    if (msg.suggestions) {
+        document.getElementById('modification-summary').innerHTML = `
+            <div class="suggestions-box">
+                <h3>Design Suggestions</h3>
+                <pre>${msg.suggestions}</pre>
+                ${msg.modified_image ? '' : `<button id="show-modified-image" class="button">Show Modified Image</button>`}
+            </div>
+        `;
+        
+        if (!msg.modified_image) {
+            // Set up click handler for showing modified image
+            document.getElementById('show-modified-image').onclick = async () => {
+                showLoading();
+                try {
+                    const currentFrame = pages[currentPageIndex];
+                    const frameName = currentFrame.querySelector('h2')?.textContent;
+                    const frameId = feedbackData[frameName]?.item?.frameId;
+                    const designName = "Untitled Design";
+                    
+                    const imagesResponse = await ApiService.getModifiedImage(frameId, designName);
+                    
+                    // Show both images
+                    document.getElementById('design-preview').innerHTML = `
+                        <h3>Design Comparison</h3>
+                        <div class="image-comparison">
+                            <div class="image-container">
+                                <h4>Original Design</h4>
+                                <img src="${msg.original_image || imagesResponse.original_image}" class="design-image" />
+                            </div>
+                            <div class="image-container">
+                                <h4>Modified Design</h4>
+                                <img src="${imagesResponse.modified_image}" class="design-image" />
+                            </div>
+                        </div>
+                    `;
+                    
+                    hideLoading();
+                } catch (error) {
+                    showError(error);
+                }
+            };
         }
-    } else {
-        document.getElementById('modification-list').innerHTML = '<p>No modifications suggested for this frame</p>';
-        document.getElementById('modified-design-image').src = '';
-        document.getElementById('modifications-screen').style.display = 'block';
-        document.getElementById('feedback-screen').style.display = 'none';
     }
+
+    // Handle modifications list if available
+    if (msg.modifications && msg.modifications.length > 0) {
+        const modList = document.getElementById('modification-list');
+        const fragment = document.createDocumentFragment();
+        
+        msg.modifications.forEach(mod => {
+            const modItem = document.createElement('div');
+            modItem.className = 'modification-item';
+            
+            // Extract element details with fallbacks
+            const elementId = mod.element_id || mod.id || 'unknown';
+            const elementType = mod.type || 'element';
+            const elementName = mod.element_name || mod.text || `Untitled ${elementType}`;
+            const changes = mod.changes || mod.modifications || [];
+            const heuristic = mod.heuristic || 'General Improvement';
+            const severity = mod.severity || 'medium';
+            
+            // Create severity indicator
+            const severityIndicator = document.createElement('div');
+            severityIndicator.className = `severity-indicator ${severity}`;
+            severityIndicator.title = `Severity: ${severity}`;
+            
+            modItem.innerHTML = `
+                <div class="element-header">
+                    <h4>${elementName}</h4>
+                    <span class="element-type">${elementType}</span>
+                    <span class="element-id">ID: ${elementId}</span>
+                    <div class="heuristic-tag">${heuristic}</div>
+                </div>
+                <div class="modification-details">
+                    ${changes.length > 0 ? 
+                        changes.map(change => `
+                            <div class="change-item">
+                                <div class="change-header">
+                                    <div class="change-property">${change.property || 'Property'}:</div>
+                                    ${change.heuristic ? `<div class="heuristic-tag small">${change.heuristic}</div>` : ''}
+                                </div>
+                                <div class="change-from-to">
+                                    <span class="from">${change.from || 'Current'}</span>
+                                    <span class="arrow">→</span>
+                                    <span class="to">${change.to || 'Suggested'}</span>
+                                </div>
+                                ${change.reason ? `<div class="change-reason">${change.reason}</div>` : ''}
+                                ${change.example ? `<div class="change-example"><strong>Example:</strong> ${change.example}</div>` : ''}
+                            </div>
+                        `).join('') :
+                        `<div class="no-changes">No specific changes suggested for this element</div>`
+                    }
+                </div>
+            `;
+            
+            // Add severity indicator to the header
+            const header = modItem.querySelector('.element-header');
+            header.insertBefore(severityIndicator, header.firstChild);
+            
+            fragment.appendChild(modItem);
+        });
+        
+        modList.appendChild(fragment);
+    }
+
+    // Handle image display
+    if (msg.modified_image) {
+        document.getElementById('design-preview').innerHTML = `
+            <h3>Design Comparison</h3>
+            <div class="image-comparison">
+                <div class="image-container">
+                    <h4>Original Design</h4>
+                    <img src="${msg.original_image}" class="design-image" />
+                </div>
+                <div class="image-container">
+                    <h4>Modified Design</h4>
+                    <img src="${msg.modified_image}" class="design-image" />
+                </div>
+            </div>
+        `;
+    } else if (msg.image) {
+        document.getElementById('design-preview').innerHTML = `
+            <h3>Modified Design Preview</h3>
+            <img src="${msg.image}" class="design-image" />
+        `;
+    }
+
+    document.getElementById('modifications-screen').style.display = 'block';
+    document.getElementById('feedback-screen').style.display = 'none';
 }
 
-if (msg.type === 'progress-update') {
-    document.getElementById('progress-bar').value = msg.progress;
-    document.getElementById('progress-text').textContent = `${msg.progress}%`;
-    return;
-}
+        if (msg.type === 'progress-update') {
+            document.getElementById('progress-bar').value = msg.progress;
+            document.getElementById('progress-text').textContent = `${msg.progress}%`;
+            return;
+        }
 
-});
+        });
 
 // Navigation buttons
 document.getElementById('prev').onclick = () => showPage(currentPageIndex - 1);
@@ -356,8 +583,7 @@ document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
 
 
-let currentSuggestions = null;
-let currentImages = null;
+
 
 // Modify the modify button handler
 document.getElementById('modify-button').onclick = async () => {
@@ -365,59 +591,18 @@ document.getElementById('modify-button').onclick = async () => {
     try {
         const currentFrame = pages[currentPageIndex];
         const frameName = currentFrame.querySelector('h2')?.textContent;
-        const frameId = feedbackData[frameName]?.item?.frameId;
-        const designName = "Untitled Design"; // You should get this from your data
         
-        // First get text suggestions
-        const suggestionsResponse = await ApiService.getSuggestions(frameId, designName);
-        currentSuggestions = suggestionsResponse.suggestions;
-        
-        // Show suggestions in UI
-        document.getElementById('modification-summary').innerHTML = `
-            <div class="suggestions-box">
-                <h3>Design Suggestions</h3>
-                <pre>${currentSuggestions}</pre>
-                <button id="show-modified-image" class="button">Show Modified Image</button>
-            </div>
-        `;
-        
-        // Set up click handler for showing modified image
-        document.getElementById('show-modified-image').onclick = async () => {
-            showLoading();
-            try {
-                const imagesResponse = await ApiService.getModifiedImage(frameId, designName);
-                currentImages = imagesResponse;
-                
-                // Show both images
-                document.getElementById('design-preview').innerHTML = `
-                    <h3>Design Comparison</h3>
-                    <div class="image-comparison">
-                        <div class="image-container">
-                            <h4>Original Design</h4>
-                            <img src="${imagesResponse.original_image}" class="design-image" />
-                        </div>
-                        <div class="image-container">
-                            <h4>Modified Design</h4>
-                            <img src="${imagesResponse.modified_image}" class="design-image" />
-                        </div>
-                    </div>
-                `;
-                
-                hideLoading();
-            } catch (error) {
-                showError(error);
+        parent.postMessage({
+            pluginMessage: {
+                type: 'request-modifications',
+                frameName: frameName
             }
-        };
-        
-        hideLoading();
-        document.getElementById('modifications-screen').style.display = 'block';
-        document.getElementById('feedback-screen').style.display = 'none';
+        }, '*');
         
     } catch (error) {
         showError(error);
     }
 };
-
 document.getElementById('back-to-feedback-from-mods').onclick = () => {
     document.getElementById('modifications-screen').style.display = 'none';
     document.getElementById('feedback-screen').style.display = 'block';

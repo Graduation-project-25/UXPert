@@ -248,12 +248,14 @@ figma.ui.onmessage = async (msg) => {
                 UiService.sendFeedbackToUI(allFeedback);
             }
         }
+        
         else if (msg.type === 'request-modifications') {
             try {
                 console.log('Requesting modifications for frame:', msg.frameName);
                 const frames = figma.currentPage.children.filter(node =>
                     node.type === "FRAME" && node.name === msg.frameName
                 ) as FrameNode[];
+                
                 if (frames.length === 0) {
                     figma.notify(`Frame "${msg.frameName}" not found`);
                     figma.ui.postMessage({
@@ -262,86 +264,31 @@ figma.ui.onmessage = async (msg) => {
                     });
                     return;
                 }
-
+        
                 const frame = frames[0];
-                const originalImage = await frame.exportAsync({ format: "PNG" });
-                const originalImageBase64 = figma.base64Encode(originalImage);
-                const designData = await FeatureExtractor.extractForAI(frame);
-
-                if (!designData.elements || designData.elements.length === 0) {
-                    console.error('No elements extracted for frame:', frame.name);
-                    figma.ui.postMessage({
-                        type: 'error',
-                        message: 'No elements found in the selected frame'
-                    });
-                    return;
+                const imageBytes = await frame.exportAsync({ format: "PNG" });
+                const imageBase64 = figma.base64Encode(imageBytes);
+                const imageDataUrl = `data:image/png;base64,${imageBase64}`;
+        
+                // Get the design name - use a default if not available
+                const designName = figma.root.name || "Untitled Design";
+                
+                // First get text suggestions
+                const suggestionsResponse = await ApiService.getSuggestions(frame.id, designName);
+                
+                if (suggestionsResponse.error) {
+                    throw new Error(suggestionsResponse.error);
                 }
-
-                const requestBody = {
-                    design_json: {
-                        metadata: { screenWidth: frame.width, screenHeight: frame.height },
-                        elements: designData.elements
-                    }
-                };
-                console.log('Sending request body:', JSON.stringify(requestBody, null, 2));
-
-                figma.ui.postMessage({
-                    type: 'progress-update',
-                    progress: 10,
-                    message: 'Preparing design data...'
-                });
-
-                const result = await ApiService.sendModificationRequest(frame.id, requestBody);
-
-                if (result.status === "error") {
-                    throw new Error(result.error);
-                }
-
-                // Merge original positions if missing
-                let designJson = result.designJson || {};
-                if (designJson.elements && designData.elements) {
-                    designJson.elements = designJson.elements.map((modEl: any) => {
-                        const origEl = designData.elements.find((o: any) => o.id === modEl.id);
-                        if (origEl && (!modEl.x || !modEl.y || !modEl.width || !modEl.height)) {
-                            return {
-                                ...modEl,
-                                x: origEl.x || 0,
-                                y: origEl.y || 0,
-                                width: origEl.width || 100,
-                                height: origEl.height || 100,
-                                fontSize: origEl.fontSize || 12,
-                                fontFamily: origEl.fontFamily || "Inter"
-                            };
-                        }
-                        return modEl;
-                    });
-                }
-
-                // Render the designJson as an image
-                let base64Image = '';
-                if (designJson && designJson.elements && designJson.elements.length > 0) {
-                    try {
-                        const renderedFrame = await applyJsonToFigma(designJson);
-                        const imageBytes = await exportFrameAsImage(renderedFrame);
-                        base64Image = bytesToBase64(imageBytes);
-                        renderedFrame.remove();
-                    } catch (error) {
-                        console.error('Failed to render design in backend:', error);
-                        throw new Error(`Failed to render modified design: ${error}`);
-                    }
-                } else {
-                    console.warn('No elements to render in designJson');
-                }
-
+        
+                // Send suggestions to UI
                 figma.ui.postMessage({
                     type: 'design-modifications',
                     frameId: frame.id,
                     frameName: frame.name,
-                    modifications: result.modifications || [],
-                    summary: result.summary || "",
-                    designJson: designJson,
-                    image: base64Image
+                    suggestions: suggestionsResponse.suggestions,
+                    original_image: imageDataUrl
                 });
+        
             } catch (error) {
                 console.error('Modification error:', error);
                 figma.ui.postMessage({
@@ -350,8 +297,10 @@ figma.ui.onmessage = async (msg) => {
                 });
             }
         }
-    } catch (error) {
+    }
+    catch (error) {
         console.error('Plugin error:', error);
         figma.notify('An error occurred. See console for details.');
     }
+
 };
