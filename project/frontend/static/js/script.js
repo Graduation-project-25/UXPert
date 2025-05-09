@@ -1,3 +1,5 @@
+import { ApiService } from './src/services/ApiService';
+
 let currentPageIndex = 0;
 const pages = [];
 let modifiedDesigns = [];
@@ -445,44 +447,62 @@ if (msg.type === 'design-modifications') {
             </div>
         `;
         
-        document.getElementById('show-modified-image').onclick = async () => {
-            showLoading();
+        document.getElementById('show-modified-image')?.addEventListener('click', async () => {
+            const button = document.getElementById('show-modified-image');
+            const preview = document.getElementById('design-preview');
+            
+            button.disabled = true;
+            button.textContent = 'Loading...';
+            preview.innerHTML = '<p>Loading modified design...</p>';
+            
             try {
                 const currentFrame = pages[currentPageIndex];
                 const frameName = currentFrame.querySelector('h2').textContent;
                 const frameId = feedbackData[frameName]?.item?.frameId;
-                const designName = "Untitled Design";
+                const designName = "Untitled Design"; // Or get from your data
+                
+                // Debug log
+                console.log("Requesting modified image for:", { frameId, designName });
                 
                 const response = await ApiService.getModifiedImage(frameId, designName);
                 
+                // Debug the response
+                console.log("Modified image response:", {
+                    length: response.modified_image?.length,
+                    type: typeof response.modified_image
+                });
+                
                 if (response.modified_image) {
-                    document.getElementById('design-preview').innerHTML = `
+                    preview.innerHTML = `
                         <h3>Design Comparison</h3>
                         <div class="image-comparison">
                             <div class="image-container">
                                 <h4>Original Design</h4>
-                                <img src="${msg.original_image}" class="design-image" />
+                                <img src="${currentFrame.querySelector('.screenshot').src}" class="design-image" />
                             </div>
                             <div class="image-container">
                                 <h4>Modified Design</h4>
-                                <img src="${response.modified_image}" class="design-image" />
+                                <img src="${response.modified_image}" class="design-image" 
+                                     onerror="this.src='fallback-image.png'" />
                             </div>
                         </div>
                     `;
                 } else {
-                    throw new Error('No modified image received');
+                    throw new Error('No image data in response');
                 }
             } catch (error) {
-                console.error('Error loading modified image:', error);
-                document.getElementById('design-preview').innerHTML = `
+                console.error("Image load error:", error);
+                preview.innerHTML = `
                     <div class="error-message">
                         Failed to load modified design: ${error.message}
+                        <button onclick="window.location.reload()">Retry</button>
                     </div>
                 `;
             } finally {
-                hideLoading();
+                button.disabled = false;
+                button.textContent = 'Show Modified Image';
             }
-        };
+        });
     }
     
     document.getElementById('modifications-screen').style.display = 'block';
