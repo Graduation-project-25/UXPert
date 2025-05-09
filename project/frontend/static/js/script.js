@@ -521,6 +521,33 @@ document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
 
 
+document.getElementById('show-image-button').onclick = async () => {
+    console.log("Show image button clicked");
+    showLoading();
+    try {
+        const currentFrame = pages[currentPageIndex];
+        const frameName = currentFrame.querySelector('h2').textContent;
+        const frameId = feedbackData[frameName]?.item?.frameId;
+        const designName = "Untitled Design";
+        
+        console.log(`Requesting image for frame: ${frameId}`);
+        const response = await ApiService.getModifiedImage(frameId, designName);
+        console.log("API Response:", response);
+        
+        if (response.modified_image) {
+            // ... existing image display code ...
+        } else {
+            console.error("No image data in response");
+            throw new Error('No image data received');
+        }
+    } catch (error) {
+        console.error("Full error:", error);
+        document.getElementById('error-message').textContent = `Failed to load modified image: ${error.message}`;
+        document.getElementById('error-screen').style.display = 'block';
+    } finally {
+        hideLoading();
+    }
+};
 // Modify the modify button handler
 document.getElementById('modify-button').onclick = async () => {
     showLoading();

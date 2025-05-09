@@ -51,19 +51,61 @@ class SuggestionsRepository(BaseRepository):
 
     def save_modified_image(self, design_name, user_name, frame_id, modified_image_data):
         """Save modified image for a specific frame"""
-        return self.update(
-            {
-                "design_name": design_name,
-                "user_name": user_name,
-                "images.id": frame_id
-            },
-            {
-                "$set": {
-                    "images.$.modified_image": modified_image_data,
-                    "images.$.modified_at": datetime.datetime.utcnow()
+        print(f"Saving modified image for frame {frame_id}")
+        try:
+            # First ensure the document exists
+            self.collection.update_one(
+                {
+                    "design_name": design_name,
+                    "user_name": user_name
+                },
+                {
+                    "$setOnInsert": {
+                        "design_name": design_name,
+                        "user_name": user_name,
+                        "created_at": datetime.datetime.utcnow()
+                    }
+                },
+                upsert=True
+            )
+
+            # Then update the specific image entry
+            result = self.collection.update_one(
+                {
+                    "design_name": design_name,
+                    "user_name": user_name,
+                    "images.id": frame_id
+                },
+                {
+                    "$set": {
+                        "images.$.modified_image": modified_image_data,
+                        "images.$.modified_at": datetime.datetime.utcnow()
+                    }
                 }
-            }
-        )
+            )
+
+            # If no matching image was found, push a new one
+            if result.matched_count == 0:
+                self.collection.update_one(
+                    {
+                        "design_name": design_name,
+                        "user_name": user_name
+                    },
+                    {
+                        "$push": {
+                            "images": {
+                                "id": frame_id,
+                                "modified_image": modified_image_data,
+                                "modified_at": datetime.datetime.utcnow()
+                            }
+                        }
+                    }
+                )
+            print("Image saved successfully")
+            return True
+        except Exception as e:
+            print(f"Error saving image: {str(e)}")
+            return False
     def get_modified_image(self, design_name, frame_id):
         document = self.collection.find_one({
             "design_name": design_name,

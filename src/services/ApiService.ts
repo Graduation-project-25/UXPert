@@ -27,25 +27,25 @@ export class ApiService {
     }
     
     static async getModifiedImage(frameId: string, designName: string): Promise<any> {
+        console.log(`Attempting to fetch modified image for frame ${frameId}`);
         try {
             const response = await fetch('http://localhost:3000/get-modified-image', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ frame_id: frameId, design_name: designName })
+                body: JSON.stringify({ 
+                    frame_id: frameId, 
+                    design_name: designName 
+                })
             });
             
-            const data = await response.json();
-            
-            // Ensure the image is properly formatted as data URL
-            if (data.modified_image) {
-                if (!data.modified_image.startsWith('data:image/png;base64,')) {
-                    data.modified_image = `data:image/png;base64,${data.modified_image}`;
-                }
+            console.log('Received response:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
             }
             
-            return data;
+            return await response.json();
         } catch (error) {
-            console.error("Error fetching modified image:", error);
+            console.error("Error in getModifiedImage:", error);
             throw error;
         }
     }
