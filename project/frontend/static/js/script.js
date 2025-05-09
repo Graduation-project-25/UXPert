@@ -449,72 +449,36 @@ if (msg.type === 'design-modifications') {
             <div class="suggestions-box">
                 <h3>Design Suggestions</h3>
                 <pre>${msg.suggestions}</pre>
-                <button id="show-modified-image" class="button">Show Modified Image</button>
+                ${msg.modified_image ? 
+                    `<button id="show-modified-image" class="button">Show Modified Image</button>` : 
+                    '<p>No modified image available</p>'
+                }
             </div>
         `;
         
-        document.getElementById('show-modified-image')?.addEventListener('click', async () => {
-            const button = document.getElementById('show-modified-image');
-            const preview = document.getElementById('design-preview');
-            
-            button.disabled = true;
-            button.textContent = 'Loading...';
-            preview.innerHTML = '<p>Loading modified design...</p>';
-            
-            try {
-                const currentFrame = pages[currentPageIndex];
-                const frameName = currentFrame.querySelector('h2').textContent;
-                const frameId = feedbackData[frameName]?.item?.frameId;
-                const designName = "Untitled Design"; // Or get from your data
-                
-                // Debug log
-                console.log("Requesting modified image for:", { frameId, designName });
-                
-                const response = await ApiService.getModifiedImage(frameId, designName);
-                
-                // Debug the response
-                console.log("Modified image response:", {
-                    length: response.modified_image?.length,
-                    type: typeof response.modified_image
-                });
-                
-                if (response.modified_image) {
-                    preview.innerHTML = `
-                        <h3>Design Comparison</h3>
-                        <div class="image-comparison">
-                            <div class="image-container">
-                                <h4>Original Design</h4>
-                                <img src="${currentFrame.querySelector('.screenshot').src}" class="design-image" />
-                            </div>
-                            <div class="image-container">
-                                <h4>Modified Design</h4>
-                                <img src="${response.modified_image}" class="design-image" 
-                                     onerror="this.src='fallback-image.png'" />
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    throw new Error('No image data in response');
-                }
-            } catch (error) {
-                console.error("Image load error:", error);
+        if (msg.modified_image) {
+            document.getElementById('show-modified-image')?.addEventListener('click', () => {
+                const preview = document.getElementById('design-preview');
                 preview.innerHTML = `
-                    <div class="error-message">
-                        Failed to load modified design: ${error.message}
-                        <button onclick="window.location.reload()">Retry</button>
+                    <h3>Design Comparison</h3>
+                    <div class="image-comparison">
+                        <div class="image-container">
+                            <h4>Original Design</h4>
+                            <img src="${msg.original_image}" class="design-image" />
+                        </div>
+                        <div class="image-container">
+                            <h4>Modified Design</h4>
+                            <img src="${msg.modified_image}" class="design-image" />
+                        </div>
                     </div>
                 `;
-            } finally {
-                button.disabled = false;
-                button.textContent = 'Show Modified Image';
-            }
-        });
+            });
+        }
     }
     
     document.getElementById('modifications-screen').style.display = 'block';
     document.getElementById('feedback-screen').style.display = 'none';
 }
-
         if (msg.type === 'progress-update') {
             document.getElementById('progress-bar').value = msg.progress;
             document.getElementById('progress-text').textContent = `${msg.progress}%`;
