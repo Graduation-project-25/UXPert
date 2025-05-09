@@ -545,6 +545,13 @@ if (msg.type === 'design-modifications') {
 
     // Handle image display
     if (msg.modified_image) {
+        let modifiedImgSrc = msg.modified_image;
+        
+        
+        if (!modifiedImgSrc.startsWith('data:image')) {
+            modifiedImgSrc = `data:image/png;base64,${modifiedImgSrc}`;
+        }
+        
         document.getElementById('design-preview').innerHTML = `
             <h3>Design Comparison</h3>
             <div class="image-comparison">
@@ -554,7 +561,8 @@ if (msg.type === 'design-modifications') {
                 </div>
                 <div class="image-container">
                     <h4>Modified Design</h4>
-                    <img src="${msg.modified_image}" class="design-image" />
+                    <img src="${modifiedImgSrc}" class="design-image" 
+                         onerror="this.onerror=null;this.src='fallback-image.png';this.alt='Failed to load modified design'" />
                 </div>
             </div>
         `;
