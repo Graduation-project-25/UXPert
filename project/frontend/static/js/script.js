@@ -532,7 +532,9 @@ document.getElementById('modify-button').onclick = async () => {
         }, '*');
         
     } catch (error) {
-        showError(error);
+        console.error("Error in modify-button handler:", error);
+        document.getElementById('error-message').textContent = `Failed to get suggestions: ${error.message}`;
+        document.getElementById('error-screen').style.display = 'block';
     }
 };
 document.getElementById('back-to-feedback-from-mods').onclick = () => {

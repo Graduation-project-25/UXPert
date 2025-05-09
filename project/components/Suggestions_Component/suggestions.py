@@ -38,33 +38,36 @@ class Suggestions(SuggestionsGenerator):
         return gpt_suggestions
     
     def generate_suggested_image(self, generated_text_suggestions): 
-        print(generated_text_suggestions)
-
-        result = self.client.images.edit(
-            model="gpt-image-1",
-            image=open(self.design_image, "rb"),
-            prompt= self.prompt.get_gpt_image_1_prompt(generated_text_suggestions), 
-            # quality = 'high',
-        )
-
-        modified_image_b64 = result.data[0].b64_json
-        modified_image_url = base64.b64decode(modified_image_b64)
+        try:
+            print("Generating suggested image...")
             
-       
-    
-    # Save base64 string directly, not decoded binary
-        self.suggestions_repository.save_modified_image(
-            design_name=self.feature_data["design_name"],
-            user_name=self.feature_data.get("user_name", "Unknown User"),
-            frame_id=self.feature_data.get("frame_id"),
-            modified_image_data=modified_image_b64  # Save the base64 string directly
-        )
-        # Optional: Save to local file
-        with open("modified_output.png", "wb") as f:
-            f.write(base64.b64decode(modified_image_b64))
-        # Return the base64 string for immediate use
-        return modified_image_b64
+            # Ensure the file is properly closed after opening
+            with open(self.design_image, "rb") as image_file:
+                result = self.client.images.edit(
+                    model="gpt-image-1", 
+                    image=image_file,
+                    prompt=self.prompt.get_gpt_image_1_prompt(generated_text_suggestions),
+                  
+                )
+
+            modified_image_b64 = result.data[0].b64_json
             
+            # Save to database
+            save_result = self.suggestions_repository.save_modified_image(
+                design_name=self.feature_data["design_name"],
+                user_name=self.feature_data.get("user_name", "Unknown User"),
+                frame_id=self.feature_data.get("frame_id"),
+                modified_image_data=modified_image_b64
+            )
+            
+            if not save_result:
+                raise Exception("Failed to save image to database")
+                
+            return modified_image_b64
+            
+        except Exception as e:
+            print(f"Error generating suggested image: {str(e)}")
+            raise
         
             
             

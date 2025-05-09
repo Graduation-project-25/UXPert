@@ -270,22 +270,22 @@ figma.ui.onmessage = async (msg) => {
                 const imageBase64 = figma.base64Encode(imageBytes);
                 const imageDataUrl = `data:image/png;base64,${imageBase64}`;
         
-                // Get the design name - use a default if not available
                 const designName = figma.root.name || "Untitled Design";
                 
-                // First get text suggestions
-                const suggestionsResponse = await ApiService.getSuggestions(frame.id, designName);
+           
+                const response = await ApiService.getSuggestions(frame.id, designName);
                 
-                if (suggestionsResponse.error) {
-                    throw new Error(suggestionsResponse.error);
+                if (response.error) {
+                    throw new Error(response.error);
                 }
         
-                // Send suggestions to UI
+                
                 figma.ui.postMessage({
                     type: 'design-modifications',
                     frameId: frame.id,
                     frameName: frame.name,
-                    suggestions: suggestionsResponse.suggestions,
+                    suggestions: response.suggestions,
+                    modified_image: response.modified_image,
                     original_image: imageDataUrl
                 });
         
@@ -302,5 +302,4 @@ figma.ui.onmessage = async (msg) => {
         console.error('Plugin error:', error);
         figma.notify('An error occurred. See console for details.');
     }
-
 };
