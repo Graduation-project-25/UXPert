@@ -50,17 +50,22 @@ class Suggestions(SuggestionsGenerator):
         modified_image_b64 = result.data[0].b64_json
         modified_image_url = base64.b64decode(modified_image_b64)
             
-        # Save to database if feature_data exists
+       
+    
+    # Save base64 string directly, not decoded binary
         self.suggestions_repository.save_modified_image(
             design_name=self.feature_data["design_name"],
             user_name=self.feature_data.get("user_name", "Unknown User"),
             frame_id=self.feature_data.get("frame_id"),
-            modified_image_data=modified_image_url
+            modified_image_data=modified_image_b64  # Save the base64 string directly
         )
-            
         # Optional: Save to local file
         with open("modified_output.png", "wb") as f:
             f.write(base64.b64decode(modified_image_b64))
+        # Return the base64 string for immediate use
+        return modified_image_b64
+            
+        
             
             
     def get_base64_string(self, data_url):
