@@ -430,149 +430,61 @@ window.addEventListener('message', async (event) => {
 
 if (msg.type === 'design-modifications') {
     hideLoading();
-    console.log('Received design modifications:', msg);
-
+    
     // Clear previous content
     document.getElementById('modification-list').innerHTML = '';
     document.getElementById('modification-summary').innerHTML = '';
-    document.getElementById('design-preview').innerHTML = '';
-
-    // Handle text suggestions
+    
+    // Handle suggestions
     if (msg.suggestions) {
         document.getElementById('modification-summary').innerHTML = `
             <div class="suggestions-box">
                 <h3>Design Suggestions</h3>
                 <pre>${msg.suggestions}</pre>
-                ${msg.modified_image ? '' : `<button id="show-modified-image" class="button">Show Modified Image</button>`}
+                <button id="show-modified-image" class="button">Show Modified Image</button>
             </div>
         `;
         
-        if (!msg.modified_image) {
-            // Set up click handler for showing modified image
-            document.getElementById('show-modified-image').onclick = async () => {
-                showLoading();
-                try {
-                    const currentFrame = pages[currentPageIndex];
-                    const frameName = currentFrame.querySelector('h2')?.textContent;
-                    const frameId = feedbackData[frameName]?.item?.frameId;
-                    const designName = "Untitled Design";
-                    
-                    const imagesResponse = await ApiService.getModifiedImage(frameId, designName);
-                    
-                    // Show both images
+        document.getElementById('show-modified-image').onclick = async () => {
+            showLoading();
+            try {
+                const currentFrame = pages[currentPageIndex];
+                const frameName = currentFrame.querySelector('h2').textContent;
+                const frameId = feedbackData[frameName]?.item?.frameId;
+                const designName = "Untitled Design";
+                
+                const response = await ApiService.getModifiedImage(frameId, designName);
+                
+                if (response.modified_image) {
                     document.getElementById('design-preview').innerHTML = `
                         <h3>Design Comparison</h3>
                         <div class="image-comparison">
                             <div class="image-container">
                                 <h4>Original Design</h4>
-                                <img src="${msg.original_image || imagesResponse.original_image}" class="design-image" />
+                                <img src="${msg.original_image}" class="design-image" />
                             </div>
                             <div class="image-container">
                                 <h4>Modified Design</h4>
-                                <img src="${imagesResponse.modified_image}" class="design-image" />
+                                <img src="${response.modified_image}" class="design-image" />
                             </div>
                         </div>
                     `;
-                    
-                    hideLoading();
-                } catch (error) {
-                    showError(error);
+                } else {
+                    throw new Error('No modified image received');
                 }
-            };
-        }
+            } catch (error) {
+                console.error('Error loading modified image:', error);
+                document.getElementById('design-preview').innerHTML = `
+                    <div class="error-message">
+                        Failed to load modified design: ${error.message}
+                    </div>
+                `;
+            } finally {
+                hideLoading();
+            }
+        };
     }
-
-    // Handle modifications list if available
-    if (msg.modifications && msg.modifications.length > 0) {
-        const modList = document.getElementById('modification-list');
-        const fragment = document.createDocumentFragment();
-        
-        msg.modifications.forEach(mod => {
-            const modItem = document.createElement('div');
-            modItem.className = 'modification-item';
-            
-            // Extract element details with fallbacks
-            const elementId = mod.element_id || mod.id || 'unknown';
-            const elementType = mod.type || 'element';
-            const elementName = mod.element_name || mod.text || `Untitled ${elementType}`;
-            const changes = mod.changes || mod.modifications || [];
-            const heuristic = mod.heuristic || 'General Improvement';
-            const severity = mod.severity || 'medium';
-            
-            // Create severity indicator
-            const severityIndicator = document.createElement('div');
-            severityIndicator.className = `severity-indicator ${severity}`;
-            severityIndicator.title = `Severity: ${severity}`;
-            
-            modItem.innerHTML = `
-                <div class="element-header">
-                    <h4>${elementName}</h4>
-                    <span class="element-type">${elementType}</span>
-                    <span class="element-id">ID: ${elementId}</span>
-                    <div class="heuristic-tag">${heuristic}</div>
-                </div>
-                <div class="modification-details">
-                    ${changes.length > 0 ? 
-                        changes.map(change => `
-                            <div class="change-item">
-                                <div class="change-header">
-                                    <div class="change-property">${change.property || 'Property'}:</div>
-                                    ${change.heuristic ? `<div class="heuristic-tag small">${change.heuristic}</div>` : ''}
-                                </div>
-                                <div class="change-from-to">
-                                    <span class="from">${change.from || 'Current'}</span>
-                                    <span class="arrow">→</span>
-                                    <span class="to">${change.to || 'Suggested'}</span>
-                                </div>
-                                ${change.reason ? `<div class="change-reason">${change.reason}</div>` : ''}
-                                ${change.example ? `<div class="change-example"><strong>Example:</strong> ${change.example}</div>` : ''}
-                            </div>
-                        `).join('') :
-                        `<div class="no-changes">No specific changes suggested for this element</div>`
-                    }
-                </div>
-            `;
-            
-            // Add severity indicator to the header
-            const header = modItem.querySelector('.element-header');
-            header.insertBefore(severityIndicator, header.firstChild);
-            
-            fragment.appendChild(modItem);
-        });
-        
-        modList.appendChild(fragment);
-    }
-
-    // Handle image display
-    if (msg.modified_image) {
-        let modifiedImgSrc = msg.modified_image;
-        
-        
-        if (!modifiedImgSrc.startsWith('data:image')) {
-            modifiedImgSrc = `data:image/png;base64,${modifiedImgSrc}`;
-        }
-        
-        document.getElementById('design-preview').innerHTML = `
-            <h3>Design Comparison</h3>
-            <div class="image-comparison">
-                <div class="image-container">
-                    <h4>Original Design</h4>
-                    <img src="${msg.original_image}" class="design-image" />
-                </div>
-                <div class="image-container">
-                    <h4>Modified Design</h4>
-                    <img src="${modifiedImgSrc}" class="design-image" 
-                         onerror="this.onerror=null;this.src='fallback-image.png';this.alt='Failed to load modified design'" />
-                </div>
-            </div>
-        `;
-    } else if (msg.image) {
-        document.getElementById('design-preview').innerHTML = `
-            <h3>Modified Design Preview</h3>
-            <img src="${msg.image}" class="design-image" />
-        `;
-    }
-
+    
     document.getElementById('modifications-screen').style.display = 'block';
     document.getElementById('feedback-screen').style.display = 'none';
 }
