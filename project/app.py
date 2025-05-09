@@ -61,22 +61,34 @@ def get_modified_image():
         data = request.get_json()
         print(f"Received request for modified image: {data}")
         
-        # Get the original image first
-        repo = FigmaFeaturesRepository()
-        frame_image = repo.get_image_by_frame_id(data['design_name'], data['frame_id'])
+        suggestions_repo = SuggestionsRepository()
+        modified_image = suggestions_repo.get_modified_image(
+            data['design_name'], 
+            data['frame_id']
+        )
         
-        if not frame_image:
-            return jsonify({'error': 'Original image not found'}), 404
+        if not modified_image:
+            # If not found in DB, generate a new one
+            repo = FigmaFeaturesRepository()
+            frame_image = repo.get_image_by_frame_id(data['design_name'], data['frame_id'])
+            
+            if not frame_image:
+                return jsonify({'error': 'Original image not found'}), 404
 
-        # Generate the modified image
-        suggestions = Suggestions(frame_image, data)
-        text_suggestions = suggestions.analyze_design()
-        modified_image_b64 = suggestions.generate_suggested_image(text_suggestions)
+            suggestions = Suggestions(frame_image, data)
+            text_suggestions = suggestions.analyze_design()
+            modified_image_b64 = suggestions.generate_suggested_image(text_suggestions)
+            
+            return jsonify({
+                'status': 'success',
+                'modified_image': modified_image_b64,
+                'original_image': frame_image
+            }), 200
         
         return jsonify({
             'status': 'success',
-            'modified_image': modified_image_b64,
-            'original_image': frame_image  
+            'modified_image': modified_image,
+            'original_image': frame_image
         }), 200
         
     except Exception as e:
