@@ -67,11 +67,22 @@ class SuggestionsRepository(BaseRepository):
     def get_modified_image(self, design_name, frame_id):
         document = self.collection.find_one({
             "design_name": design_name,
-            "frame_id": frame_id
+            "images.id": frame_id  
         })
-        if document and "modified_image" in document:
-            # Return the base64 string without Binary wrapper
-            return document["modified_image"].decode('utf-8') if isinstance(document["modified_image"], bytes) else document["modified_image"]
+        
+        if document:
+            # Find the specific image in the array
+            image_data = next(
+                (img for img in document.get("images", []) if img.get("id") == frame_id),
+                None
+            )
+            
+            if image_data and "modified_image" in image_data:
+                modified_image = image_data["modified_image"]
+                # Ensure we return a proper data URL
+                if not modified_image.startswith('data:image'):
+                    return f"data:image/png;base64,{modified_image}"
+                return modified_image
         return None
     def get_images_by_design(self, design_name, user_name="Unknown User"):
         """Get all images for a design"""
