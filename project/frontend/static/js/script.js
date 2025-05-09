@@ -317,7 +317,7 @@ function showModifications(data) {
                     </div>
                     <div class="image-container">
                         <h4>Modified Design</h4>
-                        <img src="${data.modified_image}" class="design-image" />
+                        <img src="data:image/png;base64,${data.modified_image}" class="design-image" />
                     </div>
                 </div>
             `;
@@ -487,43 +487,24 @@ document.getElementById('prev').onclick = () => showPage(currentPageIndex - 1);
 document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
 
-
-
-
-document.getElementById('show-image-button').onclick = async () => {
-    console.log("Show image button clicked");
-    showLoading();
-    try {
-        const currentFrame = pages[currentPageIndex];
-        const frameName = currentFrame.querySelector('h2').textContent;
-        const frameId = feedbackData[frameName]?.item?.frameId;
-        const designName = "Untitled Design";
-        
-        console.log(`Requesting image for frame: ${frameId}`);
-        const response = await ApiService.getModifiedImage(frameId, designName);
-        console.log("API Response:", response);
-        
-        if (response.modified_image) {
-            // ... existing image display code ...
-        } else {
-            console.error("No image data in response");
-            throw new Error('No image data received');
-        }
-    } catch (error) {
-        console.error("Full error:", error);
-        document.getElementById('error-message').textContent = `Failed to load modified image: ${error.message}`;
-        document.getElementById('error-screen').style.display = 'block';
-    } finally {
-        hideLoading();
-    }
-};
-// Modify the modify button handler
 document.getElementById('modify-button').onclick = async () => {
+    console.log("Modify button clicked"); // Debug log
     showLoading();
     try {
         const currentFrame = pages[currentPageIndex];
-        const frameName = currentFrame.querySelector('h2')?.textContent;
+        if (!currentFrame) {
+            throw new Error("No current frame found");
+        }
         
+        const frameNameElement = currentFrame.querySelector('h2');
+        if (!frameNameElement) {
+            throw new Error("Could not find frame name element");
+        }
+        
+        const frameName = frameNameElement.textContent;
+        console.log("Requesting modifications for frame:", frameName); // Debug log
+        
+        // Send message to Figma plugin
         parent.postMessage({
             pluginMessage: {
                 type: 'request-modifications',
@@ -535,6 +516,7 @@ document.getElementById('modify-button').onclick = async () => {
         console.error("Error in modify-button handler:", error);
         document.getElementById('error-message').textContent = `Failed to get suggestions: ${error.message}`;
         document.getElementById('error-screen').style.display = 'block';
+        hideLoading();
     }
 };
 document.getElementById('back-to-feedback-from-mods').onclick = () => {

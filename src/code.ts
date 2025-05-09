@@ -257,38 +257,40 @@ figma.ui.onmessage = async (msg) => {
                 ) as FrameNode[];
                 
                 if (frames.length === 0) {
-                    figma.notify(`Frame "${msg.frameName}" not found`);
+                    const errorMsg = `Frame "${msg.frameName}" not found`;
+                    console.error(errorMsg);
+                    figma.notify(errorMsg);
                     figma.ui.postMessage({
                         type: 'error',
-                        message: `Frame "${msg.frameName}" not found`
+                        message: errorMsg
                     });
                     return;
                 }
         
                 const frame = frames[0];
+                console.log("Exporting frame as image...");
                 const imageBytes = await frame.exportAsync({ format: "PNG" });
                 const imageBase64 = figma.base64Encode(imageBytes);
                 const imageDataUrl = `data:image/png;base64,${imageBase64}`;
         
                 const designName = figma.root.name || "Untitled Design";
+                const userName = figma.currentUser?.name ?? "Unknown User";
                 
-           
-                const response = await ApiService.getSuggestions(frame.id, designName);
+                console.log("Getting suggestions...");
+                const response = await ApiService.getSuggestions(frame.id, designName, userName);
                 
                 if (response.error) {
                     throw new Error(response.error);
                 }
-        
+
+                console.log("Showing modifications...");
+                UiService.showDesignModifications(
+                    frame.id,
+                    response.suggestions,
+                    imageDataUrl,
+                    response.modified_image
+                );
                 
-                figma.ui.postMessage({
-                    type: 'design-modifications',
-                    frameId: frame.id,
-                    frameName: frame.name,
-                    suggestions: response.suggestions,
-                    modified_image: response.modified_image,
-                    original_image: imageDataUrl
-                });
-        
             } catch (error) {
                 console.error('Modification error:', error);
                 figma.ui.postMessage({

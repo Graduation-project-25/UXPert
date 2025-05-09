@@ -19,29 +19,37 @@ export class ApiService {
     }
 
         
-        static async getSuggestions(frameId: string, designName: string): Promise<any> {
-            try {
-                const response = await fetch('http://localhost:3000/get-suggestions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        frame_id: frameId, 
-                        design_name: designName 
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error("Error getting suggestions:", error);
-                throw error;
+    static async getSuggestions(frameId: string, designName: string, userName: string): Promise<any> {
+        try {
+            console.log(`Fetching suggestions for frame ${frameId}`);
+            const response = await fetch('http://localhost:3000/get-suggestions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    frame_id: frameId, 
+                    design_name: designName,
+                    
+                    user_name: userName
+                })
+            });
+
+            console.log(`Response status: ${response.status}`);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! Status: ${response.status}, Body: ${errorText}`);
             }
+
+            const data = await response.json();
+            console.log('Suggestions response:', data);
+            return data;
+            
+        } catch (error) {
+            console.error("Error in getSuggestions:", error);
+            throw error;
         }
-    
-        
+    }
+
     
     
     static async sendModificationRequest(frameId: string, designData: any): Promise<any> {

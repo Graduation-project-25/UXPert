@@ -17,22 +17,16 @@ export class UiService {
         });
     }
 
-    static showModifiedDesign(frameId: string, original: string, modified: string, modifications: any[]) {
-        this.modifiedDesigns[frameId] = {
-            original,
-            modified,
-            modifications
-        };
-        
+    static showDesignModifications(frameId: string, suggestions: string, originalImage: string, modifiedImage: string) {
+        console.log("Sending design modifications to UI");
         figma.ui.postMessage({
             type: 'design-modifications',
             frameId,
-            original,
-            modified,
-            modifications
+            suggestions,
+            original_image: originalImage,
+            modified_image: modifiedImage
         });
     }
-
     static getModifiedDesign(frameId: string) {
         return this.modifiedDesigns[frameId] || null;
     }
