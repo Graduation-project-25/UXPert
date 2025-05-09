@@ -1,4 +1,4 @@
-import { ApiService } from './src/services/ApiService';
+
 
 let currentPageIndex = 0;
 const pages = [];
@@ -6,6 +6,12 @@ let modifiedDesigns = [];
 let feedbackData = {};
 let currentSuggestions = null;
 let currentImages = null;// Store all feedback data per frame
+const ApiService = window.ApiService || (function() {
+    console.error("ApiService not found!");
+    return {
+        getModifiedImage: () => Promise.reject("Service not available")
+    };
+})();
 
 // Initialize UI
 setTimeout(() => {

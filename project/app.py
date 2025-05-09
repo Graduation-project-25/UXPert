@@ -42,10 +42,14 @@ def get_suggestions():
         suggestions = Suggestions(frame_image, data)
         text_suggestions = suggestions.analyze_design()
         
-        # Return just the text suggestions first
+        # Generate and save the modified image
+        modified_image_b64 = suggestions.generate_suggested_image(text_suggestions)
+        
+        # Return both text suggestions and the modified image
         return jsonify({
             'status': 'success',
-            'suggestions': text_suggestions
+            'suggestions': text_suggestions,
+            'modified_image': modified_image_b64
         }), 200
         
     except Exception as e:
@@ -55,14 +59,15 @@ def get_suggestions():
 def get_modified_image():
     try:
         data = request.get_json()
-        if not data or 'frame_id' not in data or 'design_name' not in data:
-            return jsonify({'error': 'Missing required fields'}), 400
-
+        print(f"Received request for modified image: {data}")
+        
         suggestions_repo = SuggestionsRepository()
         modified_image = suggestions_repo.get_modified_image(
             data['design_name'], 
             data['frame_id']
         )
+        
+        print(f"Found modified image: {bool(modified_image)}")
         
         if not modified_image:
             return jsonify({'error': 'Modified image not found'}), 404
@@ -73,6 +78,7 @@ def get_modified_image():
         }), 200
         
     except Exception as e:
+        print(f"Error in get_modified_image: {str(e)}")
         return jsonify({'error': str(e)}), 500
 @app.route('/', methods=['GET'])
 def home():
