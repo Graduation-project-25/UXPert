@@ -17,38 +17,33 @@ export class ApiService {
             return null;
         }
     }
-    static async getSuggestions(frameId: string, designName: string): Promise<any> {
-        const response = await fetch('http://localhost:3000/get-suggestions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ frame_id: frameId, design_name: designName })
-        });
-        return await response.json();
-    }
-    
-    static async getModifiedImage(frameId: string, designName: string): Promise<any> {
-        console.log(`Attempting to fetch modified image for frame ${frameId}`);
-        try {
-            const response = await fetch('http://localhost:3000/get-modified-image', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    frame_id: frameId, 
-                    design_name: designName 
-                })
-            });
-            
-            console.log('Received response:', response.status);
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+
+        
+        static async getSuggestions(frameId: string, designName: string): Promise<any> {
+            try {
+                const response = await fetch('http://localhost:3000/get-suggestions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        frame_id: frameId, 
+                        design_name: designName 
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error("Error getting suggestions:", error);
+                throw error;
             }
-            
-            return await response.json();
-        } catch (error) {
-            console.error("Error in getModifiedImage:", error);
-            throw error;
         }
-    }
+    
+        
+    
+    
     static async sendModificationRequest(frameId: string, designData: any): Promise<any> {
         const response = await fetch('http://localhost:3000/modify-design', {
             method: 'POST',
