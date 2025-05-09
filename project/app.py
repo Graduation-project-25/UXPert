@@ -58,19 +58,17 @@ def get_modified_image():
         if not data or 'frame_id' not in data or 'design_name' not in data:
             return jsonify({'error': 'Missing required fields'}), 400
 
-        # Get both original and modified images
-        figma_repo = FigmaFeaturesRepository()
         suggestions_repo = SuggestionsRepository()
+        modified_image = suggestions_repo.get_modified_image(
+            data['design_name'], 
+            data['frame_id']
+        )
         
-        original_image = figma_repo.get_image_by_frame_id(data['design_name'], data['frame_id'])
-        modified_image = suggestions_repo.get_modified_image(data['design_name'], data['frame_id'])
-        
-        if not original_image or not modified_image:
-            return jsonify({'error': 'Images not found'}), 404
+        if not modified_image:
+            return jsonify({'error': 'Modified image not found'}), 404
 
         return jsonify({
             'status': 'success',
-            'original_image': original_image,
             'modified_image': modified_image
         }), 200
         
