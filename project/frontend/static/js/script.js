@@ -442,6 +442,7 @@ if (msg.type === 'design-modifications') {
     // Clear previous content
     document.getElementById('modification-list').innerHTML = '';
     document.getElementById('modification-summary').innerHTML = '';
+    document.getElementById('design-preview').innerHTML = '';
     
     // Handle suggestions
     if (msg.suggestions) {
@@ -449,31 +450,56 @@ if (msg.type === 'design-modifications') {
             <div class="suggestions-box">
                 <h3>Design Suggestions</h3>
                 <pre>${msg.suggestions}</pre>
-                ${msg.modified_image ? 
-                    `<button id="show-modified-image" class="button">Show Modified Image</button>` : 
-                    '<p>No modified image available</p>'
-                }
+                <button id="show-modified-image" class="button">Show Modified Image</button>
             </div>
         `;
         
-        if (msg.modified_image) {
-            document.getElementById('show-modified-image')?.addEventListener('click', () => {
-                const preview = document.getElementById('design-preview');
+        // Add event listener for the image button
+        document.getElementById('show-modified-image').addEventListener('click', async () => {
+            const button = document.getElementById('show-modified-image');
+            const preview = document.getElementById('design-preview');
+            
+            button.disabled = true;
+            button.textContent = 'Generating Image...';
+            preview.innerHTML = '<p>Generating modified design...</p>';
+            
+            try {
+                const currentFrame = pages[currentPageIndex];
+                const frameName = currentFrame.querySelector('h2').textContent;
+                const frameId = msg.frameId;  // Use the frameId from the message
+                const designName = "Untitled Design"; // Or get from your data
+                
+                const response = await ApiService.getModifiedImage(frameId, designName);
+                
+                if (response.modified_image) {
+                    preview.innerHTML = `
+                        <h3>Design Comparison</h3>
+                        <div class="image-comparison">
+                            <div class="image-container">
+                                <h4>Original Design</h4>
+                                <img src="${msg.original_image}" class="design-image" />
+                            </div>
+                            <div class="image-container">
+                                <h4>Modified Design</h4>
+                                <img src="${response.modified_image}" class="design-image" />
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    throw new Error('No image data in response');
+                }
+            } catch (error) {
+                console.error("Image generation error:", error);
                 preview.innerHTML = `
-                    <h3>Design Comparison</h3>
-                    <div class="image-comparison">
-                        <div class="image-container">
-                            <h4>Original Design</h4>
-                            <img src="${msg.original_image}" class="design-image" />
-                        </div>
-                        <div class="image-container">
-                            <h4>Modified Design</h4>
-                            <img src="${msg.modified_image}" class="design-image" />
-                        </div>
+                    <div class="error-message">
+                        Failed to generate modified design: ${error.message}
                     </div>
                 `;
-            });
-        }
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Show Modified Image';
+            }
+        });
     }
     
     document.getElementById('modifications-screen').style.display = 'block';
