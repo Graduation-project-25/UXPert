@@ -13,6 +13,62 @@ const ApiService = window.ApiService || (function() {
     };
 })();
 
+const LOADING_TYPES = {
+    FEEDBACK: {
+      title: "Analyzing Your Design",
+      messages: [
+        "Checking UX heuristics...",
+        "Evaluating visual hierarchy...",
+        "Identifying improvement areas...",
+        "Scanning for accessibility issues..."
+      ],
+      tips: [
+        "💡 Good UX can increase conversion rates by 400%",
+        "💡 94% of first impressions are design-related",
+        "💡 Consistent design increases user trust"
+      ]
+    },
+    SUGGESTIONS: {
+      title: "Generating Suggestions",
+      messages: [
+        "Creating design improvements...",
+        "Optimizing layout and spacing...",
+        "Enhancing visual appeal...",
+        "Applying UX best practices..."
+      ],
+      tips: [
+        "💡 Clear visual hierarchy improves usability by 30%",
+        "💡 Good color contrast helps all users",
+        "💡 Well-placed CTAs can double conversions"
+      ]
+    }
+  };
+  
+//   function showLoading(type = 'FEEDBACK') {
+//     const config = LOADING_TYPES[type] || LOADING_TYPES.FEEDBACK;
+//     const screen = document.getElementById('loading-screen');
+    
+//     // Set loading content
+//     document.getElementById('loading-title').textContent = config.title;
+//     document.getElementById('loading-message').textContent = 
+//       config.messages[Math.floor(Math.random() * config.messages.length)];
+//     document.getElementById('loading-tip').textContent = 
+//       config.tips[Math.floor(Math.random() * config.tips.length)];
+  
+//     // Reset progress
+//     document.getElementById('progress-fill').style.width = '0%';
+//     document.getElementById('progress-text').textContent = '0%';
+  
+//     // Show loading screen
+//     screen.style.display = 'flex';
+//     document.body.style.overflow = 'hidden';
+//   }
+  
+//   function hideLoading() {
+//     document.getElementById('loading-screen').style.display = 'none';
+//     document.body.style.overflow = 'auto';
+//   }
+
 // Initialize UI
 setTimeout(() => {
     document.getElementById('splash-screen').style.display = 'none';
@@ -22,6 +78,9 @@ setTimeout(() => {
 // Start detection handler
 document.getElementById('start').onclick = () => {
     document.getElementById('initial-screen').style.display = 'none';
+    // 
+    
+
     document.getElementById('processing-screen').style.display = 'block';
 
     const progressBar = document.getElementById('progress-bar');
@@ -125,31 +184,14 @@ function renderFeedback(item, feedbackIndex = 0) {
 }
 
 
-// function showLoading() {
-//     document.getElementById('processing-screen').style.display = 'block';
-// }
 function showLoading() {
-    document.getElementById('loading-screen').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    
-    // Random loading messages
-    const messages = [
-        "Polishing the user experience...",
-        "Analyzing design heuristics...",
-        "Generating smart suggestions...",
-        "Optimizing visual hierarchy...",
-        "Applying UX best practices..."
-    ];
-    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-    document.querySelector('.loading-message').textContent = randomMessage;
+    document.getElementById('processing-screen').style.display = 'block';
 }
-// function hideLoading() {
-//     document.getElementById('processing-screen').style.display = 'none';
-// }
+
 function hideLoading() {
-    document.getElementById('loading-screen').style.display = 'none';
-    document.body.style.overflow = 'auto';
+    document.getElementById('processing-screen').style.display = 'none';
 }
+
 
 function navigateFeedback(frameId) {
     if (!feedbackData[frameId]) return;
@@ -249,40 +291,36 @@ window.addEventListener('message', async (event) => {
 if (msg.type === 'design-modifications') {
     hideLoading();
     
-    // Clear previous content
-    document.getElementById('modification-list').innerHTML = '';
-    document.getElementById('modification-summary').innerHTML = '';
-    document.getElementById('design-preview').innerHTML = '';
+    // Clear and show modifications screen first
+    document.getElementById('feedback-screen').style.display = 'none';
+    document.getElementById('modifications-screen').style.display = 'block';
     
-    // Handle suggestions
-    if (msg.suggestions) {
-        document.getElementById('modification-summary').innerHTML = `
-            <div class="suggestions-box">
-                <h3>Design Suggestions</h3>
-                <pre>${msg.suggestions}</pre>
+    // Then update content
+    document.getElementById('modification-summary').innerHTML = `
+        <div class="suggestions-box">
+            <h3>Design Suggestions</h3>
+            <div class="suggestions-content">${msg.suggestions}</div>
+        </div>
+    `;
+    
+    if (msg.modified_image && msg.original_image) {
+        document.getElementById('design-preview').innerHTML = `
+            <div class="image-comparison">
+                <div class="image-container">
+                    <h4>Original Design</h4>
+                    <img src="${msg.original_image}" class="design-image" />
+                </div>
+                <div class="image-container">
+                    <h4>Modified Design</h4>
+                    <img src="data:image/png;base64,${msg.modified_image}" class="design-image" />
+                </div>
             </div>
         `;
     }
 
-    // Handle image display if available
-    if (msg.modified_image && msg.original_image) {
-        document.getElementById('design-preview').innerHTML = `
-            <h3>Design Comparison</h3>
-            <div class="image-comparison">
-                <div class="image-container">
-                    <h4>Original Design</h4>
-                    <img src="${msg.original_image}" class="design-image" style="max-height: none; width: 100%;" />
-                </div>
-                <div class="image-container">
-                    <h4>Modified Design</h4>
-                    <img src="data:image/png;base64,${msg.modified_image}" class="design-image" style="max-height: none; width: 100%;" />
-                </div>
-            </div>
-        `;
-    }
     
-    document.getElementById('modifications-screen').style.display = 'block';
-    document.getElementById('feedback-screen').style.display = 'none';
+    // document.getElementById('modifications-screen').style.display = 'block';
+    // document.getElementById('feedback-screen').style.display = 'none';
 }
 if (msg.type === 'progress-update') {
     const progressFill = document.querySelector('.progress-fill');

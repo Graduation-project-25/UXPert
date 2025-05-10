@@ -838,8 +838,7 @@ img {
   color: #666;
 }
 
-/* loading screen styling */
-
+/* Loading Screen Styles */
 #loading-screen {
   position: fixed;
   top: 0;
@@ -859,6 +858,12 @@ img {
   text-align: center;
   max-width: 500px;
   padding: 2rem;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .loader-dots {
@@ -876,20 +881,30 @@ img {
   animation: bounce 1.5s infinite ease-in-out;
 }
 
-.dot:nth-child(1) { animation-delay: 0s; }
-.dot:nth-child(2) { animation-delay: 0.2s; }
-.dot:nth-child(3) { animation-delay: 0.4s; }
-.dot:nth-child(4) { animation-delay: 0.6s; }
-
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-20px); }
 }
 
+.dot:nth-child(1) { animation-delay: 0s; }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+.dot:nth-child(4) { animation-delay: 0.6s; }
+
+#loading-title {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(90deg, #fff, #e0e0ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 .loading-message {
   font-size: 1.2rem;
   margin: 1rem 0;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .loading-tips {
@@ -898,6 +913,12 @@ img {
   background: rgba(255,255,255,0.1);
   border-radius: 8px;
   font-style: italic;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
 }
 
 .progress-container {
@@ -915,11 +936,53 @@ img {
 .progress-fill {
   height: 100%;
   width: 0%;
-  background: white;
+  background: linear-gradient(90deg, #ff7eee, #a17afe);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
 
+.progress-text {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+
+/* Special styles for suggestions loading */
+.suggestions-loading .loader-dots .dot {
+  animation: colorBounce 1.5s infinite ease-in-out;
+}
+
+@keyframes colorBounce {
+  0%, 100% { 
+      transform: translateY(0);
+      background: #ff7eee;
+  }
+  50% { 
+      transform: translateY(-20px);
+      background: #a17afe;
+  }
+}
+
+.suggestions-loading #loading-title {
+  animation: pulseTitle 2s infinite;
+}
+
+@keyframes pulseTitle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.suggestions-loading .progress-fill {
+  background: linear-gradient(90deg, #ff7eee, #a17afe);
+  animation: progressPulse 1.5s infinite;
+}
+
+@keyframes progressPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
 
 /* suggestion screen styling */
 .suggestions-box {
