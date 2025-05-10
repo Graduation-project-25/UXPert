@@ -922,47 +922,49 @@ img {
 
 
 /* suggestion screen styling */
-suggestions-box {
-  background: #f5f9ff;
-  border-left: 4px solid #4a90e2;
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+.suggestions-box {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
 .suggestions-box h3 {
-  color: #2c3e50;
+  color: #5d5fef;
   margin-top: 0;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #e0e6ed;
-}
-
-.suggestions-box pre {
-  white-space: pre-wrap;
-  font-family: 'Inter', sans-serif;
-  background: #fff;
-  padding: 15px;
-  border-radius: 4px;
-  line-height: 1.5;
-  color: #34495e;
-  border: 1px solid #e0e6ed;
-  overflow-x: auto;
+  font-size: 1.3rem;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 0.8rem;
+  margin-bottom: 1.2rem;
 }
 
 .suggestion-item {
-  padding: 10px;
-  margin: 10px 0;
-  background: white;
-  border-radius: 4px;
-  border-left: 3px solid #4a90e2;
+  background: #f9f9ff;
+  border-left: 4px solid #5d5fef;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0 8px 8px 0;
   transition: all 0.3s ease;
 }
 
 .suggestion-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(93, 95, 239, 0.1);
 }
+
+.suggestion-item h4 {
+  color: #5d5fef;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.suggestion-item p {
+  margin: 0;
+  color: #555;
+  line-height: 1.5;
+}
+/* image preview styling */
 
 .image-container {
   min-width: 45%;
