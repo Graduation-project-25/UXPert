@@ -82,27 +82,43 @@ class Suggestions(SuggestionsGenerator):
         else:
             return existing_suggestions
     
-    def generate_suggested_image(self, generated_text_suggestions): 
+    def generate_suggested_image(self, generated_text_suggestions):
         try:
-            print("Generating suggested image...")
+            # Check if we already have a modified image for this hash
+            existing_hash = self.suggestions_repository.get_image_hash_for_frame(
+                self.feature_data["design_name"],
+                self.feature_data.get("frame_id")
+            )
             
-            # Ensure the file is properly closed after opening
+            if existing_hash == self.current_image_hash:
+                # Try to get existing modified image
+                existing_image = self.suggestions_repository.get_modified_image(
+                    self.feature_data["design_name"],
+                    self.feature_data.get("frame_id")
+                )
+                if existing_image:
+                    if existing_image.startswith('data:image'):
+                        return existing_image.split(',')[1]
+                    return existing_image
+            
+            # If we get here, we need to generate a new image
+            print("Generating new suggested image...")
             with open(self.design_image, "rb") as image_file:
                 result = self.client.images.edit(
                     model="gpt-image-1", 
                     image=image_file,
                     prompt=self.prompt.get_gpt_image_1_prompt(generated_text_suggestions),
-                  
                 )
 
             modified_image_b64 = result.data[0].b64_json
             
-            # Save to database
+            # Save to database with the current hash
             save_result = self.suggestions_repository.save_modified_image(
                 design_name=self.feature_data["design_name"],
                 user_name=self.feature_data.get("user_name", "Unknown User"),
                 frame_id=self.feature_data.get("frame_id"),
-                modified_image_data=modified_image_b64
+                modified_image_data=modified_image_b64,
+                image_hash=self.current_image_hash
             )
             
             if not save_result:
