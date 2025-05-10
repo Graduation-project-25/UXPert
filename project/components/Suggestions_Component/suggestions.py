@@ -6,7 +6,7 @@ import base64, binascii
 from components.Suggestions_Component.prompt import Prompt
 from components.Suggestions_Component.suggestions_generator import SuggestionsGenerator
 from database.suggestions_repository import SuggestionsRepository
-
+import hashlib
 
 
 class Suggestions(SuggestionsGenerator):
@@ -20,6 +20,17 @@ class Suggestions(SuggestionsGenerator):
         self.suggestions_repository = SuggestionsRepository()
         self.design_image = self.convert_base64_to_png(frame_image)
         self.prompt = Prompt(self.design_image)
+        self.current_image_hash = self._calculate_image_hash(frame_image)
+
+    def _calculate_image_hash(self, image_data):
+        """Calculate a hash of the image data for change detection"""
+        if isinstance(image_data, str):
+            if image_data.startswith('data:image'):
+                image_data = image_data.split(',')[1]
+            image_bytes = base64.b64decode(image_data)
+        else:
+            image_bytes = image_data
+        return hashlib.sha256(image_bytes).hexdigest()
         
     def analyze_design(self):
         # Read and encode the image file as base64
