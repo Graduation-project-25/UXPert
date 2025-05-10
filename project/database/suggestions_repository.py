@@ -128,6 +128,23 @@ class SuggestionsRepository(BaseRepository):
         except Exception as e:
             print(f"Error saving suggestions: {str(e)}")
             return False
+        
+    def get_suggestions_for_frame(self, design_name, frame_id):
+            """Get saved suggestions for a frame"""
+            document = self.collection.find_one(
+                {
+                    "design_name": design_name,
+                    "images.id": frame_id
+                },
+                {
+                    "images.$": 1
+                }
+            )
+            
+            if document and "images" in document and len(document["images"]) > 0:
+                return document["images"][0].get("suggestions_text")
+            return None
+
 
     def get_modified_image(self, design_name, frame_id):
         document = self.collection.find_one({
