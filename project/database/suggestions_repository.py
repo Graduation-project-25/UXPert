@@ -49,8 +49,8 @@ class SuggestionsRepository(BaseRepository):
         # })
         # return str(doc["_id"]) if doc else None
 
-    def save_modified_image(self, design_name, user_name, frame_id, modified_image_data):
-        """Save modified image for a specific frame"""
+    def save_modified_image(self, design_name, user_name, frame_id, modified_image_data, image_hash=None):
+        """Save modified image for a specific frame with image hash"""
         print(f"Saving modified image for frame {frame_id}")
         try:
             # First ensure the document exists
@@ -69,6 +69,14 @@ class SuggestionsRepository(BaseRepository):
                 upsert=True
             )
 
+            update_data = {
+                "images.$.modified_image": modified_image_data,
+                "images.$.modified_at": datetime.datetime.utcnow()
+            }
+            
+            if image_hash:
+                update_data["images.$.image_hash"] = image_hash
+
             # Then update the specific image entry
             result = self.collection.update_one(
                 {
@@ -77,15 +85,21 @@ class SuggestionsRepository(BaseRepository):
                     "images.id": frame_id
                 },
                 {
-                    "$set": {
-                        "images.$.modified_image": modified_image_data,
-                        "images.$.modified_at": datetime.datetime.utcnow()
-                    }
+                    "$set": update_data
                 }
             )
 
             # If no matching image was found, push a new one
             if result.matched_count == 0:
+                new_image_data = {
+                    "id": frame_id,
+                    "modified_image": modified_image_data,
+                    "modified_at": datetime.datetime.utcnow()
+                }
+                
+                if image_hash:
+                    new_image_data["image_hash"] = image_hash
+                    
                 self.collection.update_one(
                     {
                         "design_name": design_name,
@@ -93,11 +107,7 @@ class SuggestionsRepository(BaseRepository):
                     },
                     {
                         "$push": {
-                            "images": {
-                                "id": frame_id,
-                                "modified_image": modified_image_data,
-                                "modified_at": datetime.datetime.utcnow()
-                            }
+                            "images": new_image_data
                         }
                     }
                 )
