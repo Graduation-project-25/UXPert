@@ -33,20 +33,54 @@ class Suggestions(SuggestionsGenerator):
         return hashlib.sha256(image_bytes).hexdigest()
         
     def analyze_design(self):
-        # Read and encode the image file as base64
-        base64_image = self.get_base64_string(self.frame_image)
-        if not base64_image:
-            raise ValueError("Invalid image data format")
+        # Check if we have existing suggestions for this image hash
+        existing_hash = self.suggestions_repository.get_image_hash_for_frame(
+            self.feature_data["design_name"],
+            self.feature_data.get("frame_id")
+        )
+        
+        existing_suggestions = self.suggestions_repository.get_suggestions_for_frame(
+            self.feature_data["design_name"],
+            self.feature_data.get("frame_id")
+        )
+        
+        # Only generate new suggestions if the image has changed or we don't have suggestions
+        if existing_hash != self.current_image_hash or not existing_suggestions:
+            base64_image = self.get_base64_string(self.frame_image)
+            if not base64_image:
+                raise ValueError("Invalid image data format")
 
-        # Create the chat completion request with the base64 image
-        response = self.client.chat.completions.create(
-            model="gpt-4o",  # Vision model
-            messages = self.prompt.get_gpt_4o_messages(base64_image)
-        )  
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=self.prompt.get_gpt_4o_messages(base64_image)
+            )
 
-        # Print the response
-        gpt_suggestions = response.choices[0].message.content
-        return gpt_suggestions
+            gpt_suggestions = response.choices[0].message.content
+            
+            # Save the new suggestions and image hash
+            self.suggestions_repository.save_text_suggestions(
+                self.feature_data["design_name"],
+                self.feature_data.get("user_name", "Unknown User"),
+                self.feature_data.get("frame_id"),
+                gpt_suggestions
+            )
+            
+            self.suggestions_repository.update_one(
+                {
+                    "design_name": self.feature_data["design_name"],
+                    "user_name": self.feature_data.get("user_name", "Unknown User"),
+                    "images.id": self.feature_data.get("frame_id")
+                },
+                {
+                    "$set": {
+                        "images.$.image_hash": self.current_image_hash
+                    }
+                }
+            )
+            
+            return gpt_suggestions
+        else:
+            return existing_suggestions
     
     def generate_suggested_image(self, generated_text_suggestions): 
         try:
