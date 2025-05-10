@@ -123,215 +123,7 @@ function renderFeedback(item, feedbackIndex = 0) {
     return html;
 }
 
-function showModifications(data) {
-    try {
-        console.log("Showing modifications:", data);
-        
-        // Hide other screens
-        document.getElementById('processing-screen').style.display = 'none';
-        document.getElementById('feedback-screen').style.display = 'none';
-        
-        const modScreen = document.getElementById('modifications-screen');
-        const modList = document.getElementById('modification-list');
-        const summaryEl = document.getElementById('modification-summary');
-        
-        // Clear previous content
-        modList.innerHTML = '';
-        summaryEl.innerHTML = '';
 
-        // Handle different response structures
-        if (data.suggestions) {
-            summaryEl.innerHTML = `
-                <div class="suggestions-box">
-                    <h3>Design Suggestions</h3>
-                    <pre>${data.suggestions}</pre>
-                    ${data.image ? '' : `<button id="show-modified-image" class="button">Show Modified Image</button>`}
-                </div>
-            `;
-        } else if (data.summary) {
-            summaryEl.innerHTML = `
-                <div class="summary-box">
-                    <h3>Design Assessment Summary</h3>
-                    <p>${data.summary}</p>
-                </div>
-            `;
-        }
-
-        // Handle modifications list
-        if (data.modifications && data.modifications.length > 0) {
-            const modList = document.getElementById('modification-list');
-            modList.innerHTML = '';
-            
-            const fragment = document.createDocumentFragment();
-            
-            data.modifications.forEach(mod => {
-                const modItem = document.createElement('div');
-                modItem.className = 'modification-item';
-                
-                // Extract element details with fallbacks
-                const elementId = mod.element_id || mod.id || 'unknown';
-                const elementType = mod.type || 'element';
-                const elementName = mod.element_name || mod.text || `Untitled ${elementType}`;
-                const changes = mod.changes || mod.modifications || [];
-                const heuristic = mod.heuristic || 'General Improvement';
-                const severity = mod.severity || 'medium';
-                
-                // Create severity indicator
-                const severityIndicator = document.createElement('div');
-                severityIndicator.className = `severity-indicator ${severity}`;
-                severityIndicator.title = `Severity: ${severity}`;
-                
-                modItem.innerHTML = `
-                    <div class="element-header">
-                        <h4>${elementName}</h4>
-                        <span class="element-type">${elementType}</span>
-                        <span class="element-id">ID: ${elementId}</span>
-                        <div class="heuristic-tag">${heuristic}</div>
-                    </div>
-                    <div class="modification-details">
-                        ${changes.length > 0 ? 
-                            changes.map(change => `
-                                <div class="change-item">
-                                    <div class="change-header">
-                                        <div class="change-property">${change.property || 'Property'}:</div>
-                                        ${change.heuristic ? `<div class="heuristic-tag small">${change.heuristic}</div>` : ''}
-                                    </div>
-                                    <div class="change-from-to">
-                                        <span class="from">${change.from || 'Current'}</span>
-                                        <span class="arrow">→</span>
-                                        <span class="to">${change.to || 'Suggested'}</span>
-                                    </div>
-                                    ${change.reason ? `<div class="change-reason">${change.reason}</div>` : ''}
-                                    ${change.example ? `<div class="change-example"><strong>Example:</strong> ${change.example}</div>` : ''}
-                                </div>
-                            `).join('') :
-                            `<div class="no-changes">No specific changes suggested for this element</div>`
-                        }
-                    </div>
-                `;
-                
-                // Add severity indicator to the header
-                const header = modItem.querySelector('.element-header');
-                header.insertBefore(severityIndicator, header.firstChild);
-                
-                fragment.appendChild(modItem);
-            });
-            
-            modList.appendChild(fragment);
-            
-            // Add CSS for new elements if not already present
-            const style = document.createElement('style');
-            style.textContent = `
-                .severity-indicator {
-                    width: 12px;
-                    height: 12px;
-                    border-radius: 50%;
-                    margin-right: 8px;
-                    display: inline-block;
-                }
-                .severity-indicator.high {
-                    background-color: #ff4d4f;
-                }
-                .severity-indicator.medium {
-                    background-color: #faad14;
-                }
-                .severity-indicator.low {
-                    background-color: #52c41a;
-                }
-                .heuristic-tag {
-                    display: inline-block;
-                    background-color: #f0f0f0;
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 0.8em;
-                    margin-left: 8px;
-                    color: #666;
-                }
-                .heuristic-tag.small {
-                    font-size: 0.7em;
-                    margin-left: 6px;
-                }
-                .change-header {
-                    display: flex;
-                    align-items: center;
-                    margin-bottom: 4px;
-                }
-                .change-property {
-                    font-weight: bold;
-                    margin-right: 8px;
-                }
-                .change-from-to {
-                    display: flex;
-                    align-items: center;
-                    margin: 4px 0;
-                }
-                .arrow {
-                    margin: 0 8px;
-                    color: #888;
-                }
-                .change-reason {
-                    font-size: 0.9em;
-                    color: #666;
-                    margin-top: 4px;
-                    font-style: italic;
-                }
-                .change-example {
-                    font-size: 0.85em;
-                    background: #f8f8f8;
-                    padding: 6px;
-                    border-radius: 4px;
-                    margin-top: 6px;
-                    border-left: 3px solid #1890ff;
-                }
-            `;
-            if (!document.querySelector('style.severity-styles')) {
-                style.className = 'severity-styles';
-                document.head.appendChild(style);
-            }
-        } else {
-            document.getElementById('modification-list').innerHTML = `
-                <div class="no-modifications">
-                    <p>No specific modifications suggested.</p>
-                    ${data.suggestions ? 
-                        '<p>Review the suggestions above for general improvements.</p>' : 
-                        '<p>Try analyzing the design again.</p>'
-                    }
-                </div>
-            `;
-        }
-
-        // Handle image display
-        const designPreview = document.getElementById('design-preview');
-        if (data.image) {
-            designPreview.innerHTML = `
-                <h3>Modified Design Preview</h3>
-                <img src="${data.image}" class="design-image" />
-            `;
-        } else if (data.original_image && data.modified_image) {
-            designPreview.innerHTML = `
-                <h3>Design Comparison</h3>
-                <div class="image-comparison">
-                    <div class="image-container">
-                        <h4>Original Design</h4>
-                        <img src="${data.original_image}" class="design-image" />
-                    </div>
-                    <div class="image-container">
-                        <h4>Modified Design</h4>
-                        <img src="data:image/png;base64,${data.modified_image}" class="design-image" />
-                    </div>
-                </div>
-            `;
-        }
-
-        modScreen.style.display = 'block';
-        
-    } catch (error) {
-        console.error("Error showing modifications:", error);
-        document.getElementById('error-message').textContent = "Could not display modifications";
-        document.getElementById('error-details').textContent = error.stack;
-        document.getElementById('error-screen').style.display = 'block';
-    }
-}
 
 function showLoading() {
     document.getElementById('processing-screen').style.display = 'block';
@@ -461,11 +253,11 @@ if (msg.type === 'design-modifications') {
             <div class="image-comparison">
                 <div class="image-container">
                     <h4>Original Design</h4>
-                    <img src="${msg.original_image}" class="design-image" />
+                    <img src="${msg.original_image}" class="design-image" style="max-height: none; width: 100%;" />
                 </div>
                 <div class="image-container">
                     <h4>Modified Design</h4>
-                    <img src="data:image/png;base64,${msg.modified_image}" class="design-image" />
+                    <img src="data:image/png;base64,${msg.modified_image}" class="design-image" style="max-height: none; width: 100%;" />
                 </div>
             </div>
         `;
@@ -534,3 +326,214 @@ document.getElementById('close').onclick = () => {
     
     parent.postMessage({ pluginMessage: { type: 'close' } }, '*'); 
 };
+
+
+// function showModifications(data) {
+//     try {
+//         console.log("Showing modifications:", data);
+        
+//         // Hide other screens
+//         document.getElementById('processing-screen').style.display = 'none';
+//         document.getElementById('feedback-screen').style.display = 'none';
+        
+//         const modScreen = document.getElementById('modifications-screen');
+//         const modList = document.getElementById('modification-list');
+//         const summaryEl = document.getElementById('modification-summary');
+        
+//         // Clear previous content
+//         modList.innerHTML = '';
+//         summaryEl.innerHTML = '';
+
+//         // Handle different response structures
+//         if (data.suggestions) {
+//             summaryEl.innerHTML = `
+//                 <div class="suggestions-box">
+//                     <h3>Design Suggestions</h3>
+//                     <pre>${data.suggestions}</pre>
+//                     ${data.image ? '' : `<button id="show-modified-image" class="button">Show Modified Image</button>`}
+//                 </div>
+//             `;
+//         } else if (data.summary) {
+//             summaryEl.innerHTML = `
+//                 <div class="summary-box">
+//                     <h3>Design Assessment Summary</h3>
+//                     <p>${data.summary}</p>
+//                 </div>
+//             `;
+//         }
+
+//         // Handle modifications list
+//         if (data.modifications && data.modifications.length > 0) {
+//             const modList = document.getElementById('modification-list');
+//             modList.innerHTML = '';
+            
+//             const fragment = document.createDocumentFragment();
+            
+//             data.modifications.forEach(mod => {
+//                 const modItem = document.createElement('div');
+//                 modItem.className = 'modification-item';
+                
+//                 // Extract element details with fallbacks
+//                 const elementId = mod.element_id || mod.id || 'unknown';
+//                 const elementType = mod.type || 'element';
+//                 const elementName = mod.element_name || mod.text || `Untitled ${elementType}`;
+//                 const changes = mod.changes || mod.modifications || [];
+//                 const heuristic = mod.heuristic || 'General Improvement';
+//                 const severity = mod.severity || 'medium';
+                
+//                 // Create severity indicator
+//                 const severityIndicator = document.createElement('div');
+//                 severityIndicator.className = `severity-indicator ${severity}`;
+//                 severityIndicator.title = `Severity: ${severity}`;
+                
+//                 modItem.innerHTML = `
+//                     <div class="element-header">
+//                         <h4>${elementName}</h4>
+//                         <span class="element-type">${elementType}</span>
+//                         <span class="element-id">ID: ${elementId}</span>
+//                         <div class="heuristic-tag">${heuristic}</div>
+//                     </div>
+//                     <div class="modification-details">
+//                         ${changes.length > 0 ? 
+//                             changes.map(change => `
+//                                 <div class="change-item">
+//                                     <div class="change-header">
+//                                         <div class="change-property">${change.property || 'Property'}:</div>
+//                                         ${change.heuristic ? `<div class="heuristic-tag small">${change.heuristic}</div>` : ''}
+//                                     </div>
+//                                     <div class="change-from-to">
+//                                         <span class="from">${change.from || 'Current'}</span>
+//                                         <span class="arrow">→</span>
+//                                         <span class="to">${change.to || 'Suggested'}</span>
+//                                     </div>
+//                                     ${change.reason ? `<div class="change-reason">${change.reason}</div>` : ''}
+//                                     ${change.example ? `<div class="change-example"><strong>Example:</strong> ${change.example}</div>` : ''}
+//                                 </div>
+//                             `).join('') :
+//                             `<div class="no-changes">No specific changes suggested for this element</div>`
+//                         }
+//                     </div>
+//                 `;
+                
+//                 // Add severity indicator to the header
+//                 const header = modItem.querySelector('.element-header');
+//                 header.insertBefore(severityIndicator, header.firstChild);
+                
+//                 fragment.appendChild(modItem);
+//             });
+            
+//             modList.appendChild(fragment);
+            
+//             // Add CSS for new elements if not already present
+//             const style = document.createElement('style');
+//             style.textContent = `
+//                 .severity-indicator {
+//                     width: 12px;
+//                     height: 12px;
+//                     border-radius: 50%;
+//                     margin-right: 8px;
+//                     display: inline-block;
+//                 }
+//                 .severity-indicator.high {
+//                     background-color: #ff4d4f;
+//                 }
+//                 .severity-indicator.medium {
+//                     background-color: #faad14;
+//                 }
+//                 .severity-indicator.low {
+//                     background-color: #52c41a;
+//                 }
+//                 .heuristic-tag {
+//                     display: inline-block;
+//                     background-color: #f0f0f0;
+//                     padding: 2px 8px;
+//                     border-radius: 4px;
+//                     font-size: 0.8em;
+//                     margin-left: 8px;
+//                     color: #666;
+//                 }
+//                 .heuristic-tag.small {
+//                     font-size: 0.7em;
+//                     margin-left: 6px;
+//                 }
+//                 .change-header {
+//                     display: flex;
+//                     align-items: center;
+//                     margin-bottom: 4px;
+//                 }
+//                 .change-property {
+//                     font-weight: bold;
+//                     margin-right: 8px;
+//                 }
+//                 .change-from-to {
+//                     display: flex;
+//                     align-items: center;
+//                     margin: 4px 0;
+//                 }
+//                 .arrow {
+//                     margin: 0 8px;
+//                     color: #888;
+//                 }
+//                 .change-reason {
+//                     font-size: 0.9em;
+//                     color: #666;
+//                     margin-top: 4px;
+//                     font-style: italic;
+//                 }
+//                 .change-example {
+//                     font-size: 0.85em;
+//                     background: #f8f8f8;
+//                     padding: 6px;
+//                     border-radius: 4px;
+//                     margin-top: 6px;
+//                     border-left: 3px solid #1890ff;
+//                 }
+//             `;
+//             if (!document.querySelector('style.severity-styles')) {
+//                 style.className = 'severity-styles';
+//                 document.head.appendChild(style);
+//             }
+//         } else {
+//             document.getElementById('modification-list').innerHTML = `
+//                 <div class="no-modifications">
+//                     <p>No specific modifications suggested.</p>
+//                     ${data.suggestions ? 
+//                         '<p>Review the suggestions above for general improvements.</p>' : 
+//                         '<p>Try analyzing the design again.</p>'
+//                     }
+//                 </div>
+//             `;
+//         }
+
+//         // Handle image display
+//         const designPreview = document.getElementById('design-preview');
+//         if (data.image) {
+//             designPreview.innerHTML = `
+//                 <h3>Modified Design Preview</h3>
+//                 <img src="${data.image}" class="design-image" />
+//             `;
+//         } else if (data.original_image && data.modified_image) {
+//             designPreview.innerHTML = `
+//                 <h3>Design Comparison</h3>
+//                 <div class="image-comparison">
+//                     <div class="image-container">
+//                         <h4>Original Design</h4>
+//                         <img src="${data.original_image}" class="design-image" />
+//                     </div>
+//                     <div class="image-container">
+//                         <h4>Modified Design</h4>
+//                         <img src="data:image/png;base64,${data.modified_image}" class="design-image" />
+//                     </div>
+//                 </div>
+//             `;
+//         }
+
+//         modScreen.style.display = 'block';
+        
+//     } catch (error) {
+//         console.error("Error showing modifications:", error);
+//         document.getElementById('error-message').textContent = "Could not display modifications";
+//         document.getElementById('error-details').textContent = error.stack;
+//         document.getElementById('error-screen').style.display = 'block';
+//     }
+// }
