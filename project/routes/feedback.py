@@ -151,6 +151,27 @@ class Feedback:
                 "recognition_results": existing_feedback.get("recognition_results", [])
             }), 200
 
+        # Get the stored screenshot for this design
+        stored_design = self.figma_repository.get_saved_design(design_name, frame_name)
+        stored_image = None
+        if stored_design and 'frames' in stored_design:
+            for frame in stored_design['frames']:
+                if frame.get('frameId') == frame_id:
+                    stored_image = frame.get('image64_string')
+                    break
+
+        # Compare screenshots if both exist
+        if stored_image and imageDataUrl:
+            if stored_image == imageDataUrl:
+                self._log("Screenshots match exactly - design hasn't changed", "SCREENSHOT_COMPARE")
+                return jsonify({
+                    "message": "Design hasn't changed since last analysis",
+                    "status": 304,
+                    "unchanged": True
+                }), 304
+            else:
+                self._log("Screenshots differ - design has changed", "SCREENSHOT_COMPARE")
+
         # If we get here, either it's new or content has changed
         if existing_feedback:
             self._log(f"Design content changed for '{design_name}', generating new feedback", "UPDATE")
@@ -193,8 +214,7 @@ class Feedback:
 
             # Store design data
             insert_result = self.figma_repository.update_or_insert_frame(feature_data)
-            # self.suggestions_repository.save_original_image_id(feature_data)
-
+            
             # Get the image for suggestions
             frame_image = self.figma_repository.get_image_by_frame_id(
                 feature_data["design_name"],
