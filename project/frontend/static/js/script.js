@@ -465,7 +465,7 @@ if (msg.type === 'design-modifications') {
                 </div>
                 <div class="image-container">
                     <h4>Modified Design</h4>
-                    <img src="${msg.modified_image}" class="design-image" />
+                    <img src="data:image/png;base64,${msg.modified_image}" class="design-image" />
                 </div>
             </div>
         `;
@@ -489,7 +489,8 @@ document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
 document.getElementById('modify-button').onclick = async () => {
     console.log("Modify button clicked"); // Debug log
-    showLoading();
+    // showLoading();
+    document.getElementById('feedback-screen').innerHTML = 'Loading...';
     try {
         const currentFrame = pages[currentPageIndex];
         if (!currentFrame) {
