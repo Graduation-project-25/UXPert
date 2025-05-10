@@ -992,6 +992,52 @@ img {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
+.feedback-category {
+  margin-bottom: 2rem;
+}
+
+.category-title {
+  color: #5d5fef;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.suggestions-list {
+  display: grid;
+  gap: 1rem;
+}
+
+/* Badges and Indicators */
+.score-badge {
+  display: inline-block;
+  background: #5d5fef;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+.positive {
+  border-left-color: #4caf50;
+}
+
+.positive h4 {
+  color: #4caf50;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .image-comparison {
+      grid-template-columns: 1fr;
+  }
+  
+  .suggestions-box {
+      padding: 1rem;
+  }
+}
 
 @keyframes colorFade {
   0% { opacity: 0.2; color: #ffffff; }

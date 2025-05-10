@@ -87,50 +87,68 @@ function getFeedbackTypes(item) {
 
 function renderFeedback(item, feedbackIndex = 0) {
     const feedbackTypes = getFeedbackTypes(item);
-    if (feedbackTypes.length === 0) return '<p>No feedback available</p>';
+    if (feedbackTypes.length === 0) return '<div class="no-feedback">No feedback available for this category</div>';
 
     const currentFeedback = feedbackTypes[feedbackIndex % feedbackTypes.length];
-    let html = `<h3>${currentFeedback.name} </h3><div class='divider'></div><ul>`;
+    let html = `
+        <div class="feedback-category">
+            <h3 class="category-title">${currentFeedback.name}</h3>
+            <div class="suggestions-list">
+    `;
 
-    // Handle both recognition and minimalist feedback as arrays
-    if (['Recognition Rather than Recall', 'Aesthetic and Minimalist Design'].includes(currentFeedback.name) && Array.isArray(currentFeedback.data)) {
-        currentFeedback.data.forEach(feedbackItem => {
-            if (typeof feedbackItem === 'string') {
-                // If feedbackItem is a string, display it directly
-                html += `<li>${feedbackItem}</li>`;
-            } else {
-                // Use specific keys for minimalist feedback
-                const issueLabel = feedbackItem.issue === "White Space Ratio" ? "White Space Ratio" :
-                                  feedbackItem.issue === "Number of Elements" ? "Number of Elements" :
-                                  feedbackItem.issue === "Irrelevant Elements" ? "Irrelevant Elements" :
-                                  feedbackItem.issue === "Score" ? "Score" :
-                                  feedbackItem.element_name || 'Issue';
-                html += `
-                    <li>
-                        <strong>${issueLabel}:</strong> ${feedbackItem.feedback}
-                    </li>
-                `;
-            }
+    if (Array.isArray(currentFeedback.data)) {
+        currentFeedback.data.forEach((feedbackItem, index) => {
+            const isPositive = feedbackItem.feedback?.toLowerCase().includes('good') || 
+                             feedbackItem.feedback?.toLowerCase().includes('well');
+            
+            html += `
+                <div class="suggestion-item ${isPositive ? 'positive' : ''}">
+                    <h4>${feedbackItem.element_name || 'General Feedback'}</h4>
+                    <p>${feedbackItem.feedback || feedbackItem}</p>
+                    ${feedbackItem.score ? `<div class="score-badge">Score: ${feedbackItem.score}</div>` : ''}
+                </div>
+            `;
         });
     } else {
-        // Handle object feedback (e.g., errorPreventionFeedback, consistencyFeedback)
         for (const [issue, solution] of Object.entries(currentFeedback.data)) {
-            html += `<li><strong>${issue}:</strong> ${solution}</li>`;
+            html += `
+                <div class="suggestion-item">
+                    <h4>${issue}</h4>
+                    <p>${solution}</p>
+                </div>
+            `;
         }
     }
 
-    html += '</ul>';
+    html += `</div></div>`;
     return html;
 }
 
 
-
+// function showLoading() {
+//     document.getElementById('processing-screen').style.display = 'block';
+// }
 function showLoading() {
-    document.getElementById('processing-screen').style.display = 'block';
+    document.getElementById('loading-screen').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Random loading messages
+    const messages = [
+        "Polishing the user experience...",
+        "Analyzing design heuristics...",
+        "Generating smart suggestions...",
+        "Optimizing visual hierarchy...",
+        "Applying UX best practices..."
+    ];
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    document.querySelector('.loading-message').textContent = randomMessage;
 }
-
+// function hideLoading() {
+//     document.getElementById('processing-screen').style.display = 'none';
+// }
 function hideLoading() {
-    document.getElementById('processing-screen').style.display = 'none';
+    document.getElementById('loading-screen').style.display = 'none';
+    document.body.style.overflow = 'auto';
 }
 
 function navigateFeedback(frameId) {
@@ -266,11 +284,12 @@ if (msg.type === 'design-modifications') {
     document.getElementById('modifications-screen').style.display = 'block';
     document.getElementById('feedback-screen').style.display = 'none';
 }
-        if (msg.type === 'progress-update') {
-            document.getElementById('progress-bar').value = msg.progress;
-            document.getElementById('progress-text').textContent = `${msg.progress}%`;
-            return;
-        }
+if (msg.type === 'progress-update') {
+    const progressFill = document.querySelector('.progress-fill');
+    const progressText = document.querySelector('.progress-text');
+    progressFill.style.width = `${msg.progress}%`;
+    progressText.textContent = `${msg.progress}%`;
+}
 
         });
 
