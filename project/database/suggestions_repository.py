@@ -106,6 +106,29 @@ class SuggestionsRepository(BaseRepository):
         except Exception as e:
             print(f"Error saving image: {str(e)}")
             return False
+
+
+    def save_text_suggestions(self, design_name, user_name, frame_id, suggestions_text):
+        """Save text suggestions for a frame"""
+        try:
+            result = self.collection.update_one(
+                {
+                    "design_name": design_name,
+                    "user_name": user_name,
+                    "images.id": frame_id
+                },
+                {
+                    "$set": {
+                        "images.$.suggestions_text": suggestions_text,
+                        "images.$.suggestions_updated_at": datetime.datetime.utcnow()
+                    }
+                }
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            print(f"Error saving suggestions: {str(e)}")
+            return False
+
     def get_modified_image(self, design_name, frame_id):
         document = self.collection.find_one({
             "design_name": design_name,
