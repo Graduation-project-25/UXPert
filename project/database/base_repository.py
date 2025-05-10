@@ -26,7 +26,9 @@ class BaseRepository:
             upsert=upsert, 
             array_filters=array_filters
         )  
-    
+    def update_one(self, filter_query, update_query, **kwargs):
+        """Properly exposed update_one method"""
+        return self.collection.update_one(filter_query, update_query, **kwargs)
     def update_many_element(self, filter_query, update_query, array_filters=None):
         return self.collection.update_many(
             filter_query, 

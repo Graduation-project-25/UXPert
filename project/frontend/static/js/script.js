@@ -281,8 +281,8 @@ document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
 document.getElementById('modify-button').onclick = async () => {
     console.log("Modify button clicked"); // Debug log
-    // showLoading();
-    document.getElementById('feedback-screen').innerHTML = 'Loading...';
+    showLoading();
+    // document.getElementById('feedback-screen').innerHTML = 'Loading...';
     try {
         const currentFrame = pages[currentPageIndex];
         if (!currentFrame) {

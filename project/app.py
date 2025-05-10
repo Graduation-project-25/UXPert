@@ -42,15 +42,17 @@ def get_suggestions():
         suggestions = Suggestions(frame_image, data)
         text_suggestions = suggestions.analyze_design()
         
-        # Generate and save the modified image
+        # Generate and save the modified image (only if needed)
         modified_image_b64 = suggestions.generate_suggested_image(text_suggestions)
         
-        # Return both text suggestions and the modified image
+        # Get the original image data URL for display
+        original_image_url = f"data:image/png;base64,{frame_image}" if not frame_image.startswith('data:image') else frame_image
+        
         return jsonify({
             'status': 'success',
             'suggestions': text_suggestions,
             'modified_image': modified_image_b64,
-            'original_image': frame_image
+            'original_image': original_image_url
         }), 200
         
     except Exception as e:
