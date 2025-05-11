@@ -19,13 +19,11 @@ const LOADING_TYPES = {
       messages: [
         "Checking UX heuristics...",
         "Evaluating visual hierarchy...",
-        "Identifying improvement areas...",
-        "Scanning for accessibility issues..."
+        "Identifying improvement areas..."
       ],
       tips: [
         "💡 Good UX can increase conversion rates by 400%",
-        "💡 94% of first impressions are design-related",
-        "💡 Consistent design increases user trust"
+        "💡 94% of first impressions are design-related"
       ]
     },
     SUGGESTIONS: {
@@ -33,41 +31,39 @@ const LOADING_TYPES = {
       messages: [
         "Creating design improvements...",
         "Optimizing layout and spacing...",
-        "Enhancing visual appeal...",
         "Applying UX best practices..."
       ],
       tips: [
         "💡 Clear visual hierarchy improves usability by 30%",
-        "💡 Good color contrast helps all users",
         "💡 Well-placed CTAs can double conversions"
       ]
     }
   };
   
-//   function showLoading(type = 'FEEDBACK') {
-//     const config = LOADING_TYPES[type] || LOADING_TYPES.FEEDBACK;
-//     const screen = document.getElementById('loading-screen');
+  function showLoading(type = 'FEEDBACK') {
+    const config = LOADING_TYPES[type] || LOADING_TYPES.FEEDBACK;
+    const screen = document.getElementById('loading-screen');
     
-//     // Set loading content
-//     document.getElementById('loading-title').textContent = config.title;
-//     document.getElementById('loading-message').textContent = 
-//       config.messages[Math.floor(Math.random() * config.messages.length)];
-//     document.getElementById('loading-tip').textContent = 
-//       config.tips[Math.floor(Math.random() * config.tips.length)];
+    // Update these selectors to match your HTML structure
+    const loadingContent = screen.querySelector('.loading-content');
+    loadingContent.querySelector('h1').textContent = config.title;
+    loadingContent.querySelector('.loading-message').textContent = 
+      config.messages[Math.floor(Math.random() * config.messages.length)];
+    loadingContent.querySelector('.loading-tips p').textContent = 
+      config.tips[Math.floor(Math.random() * config.tips.length)];
   
-//     // Reset progress
-//     document.getElementById('progress-fill').style.width = '0%';
-//     document.getElementById('progress-text').textContent = '0%';
-  
-//     // Show loading screen
-//     screen.style.display = 'flex';
-//     document.body.style.overflow = 'hidden';
-//   }
-  
-//   function hideLoading() {
-//     document.getElementById('loading-screen').style.display = 'none';
-//     document.body.style.overflow = 'auto';
-//   }
+    const progressBar = loadingContent.querySelector('.progress-fill');
+    const progressText = loadingContent.querySelector('.progress-text');
+    progressBar.style.width = '0%';
+    progressText.textContent = '60%';
+    
+    screen.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+  function hideLoading() {
+    document.getElementById('loading-screen').style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
 
 // Initialize UI
 setTimeout(() => {
@@ -184,13 +180,13 @@ function renderFeedback(item, feedbackIndex = 0) {
 }
 
 
-function showLoading() {
-    document.getElementById('processing-screen').style.display = 'block';
-}
+// function showLoading() {
+//     document.getElementById('processing-screen').style.display = 'block';
+// }
 
-function hideLoading() {
-    document.getElementById('processing-screen').style.display = 'none';
-}
+// function hideLoading() {
+//     document.getElementById('processing-screen').style.display = 'none';
+// }
 
 
 function navigateFeedback(frameId) {
@@ -207,6 +203,34 @@ function navigateFeedback(frameId) {
         );
     }
 }
+
+function formatHeuristicItems(text, sectionType) {
+    const sectionRegex = sectionType === 'violations' 
+      ? /### Detected Heuristic Violations([\s\S]*?)### Suggestions to Fix/
+      : /### Suggestions to Fix([\s\S]*)/;
+    
+    const sectionContent = text.match(sectionRegex)[1].trim();
+    const items = sectionContent.split(/\d+\.\s+\*\*(.*?)\*\*/).slice(1);
+    
+    let html = '';
+    for (let i = 0; i < items.length; i += 2) {
+      const title = items[i];
+      const content = items[i+1]?.trim();
+      if (!title || !content) continue;
+      
+      html += `
+        <div class="heuristic-item">
+          <h3>${title}</h3>
+          <ul>
+            ${content.split('-').filter(x => x.trim()).map(item => 
+              `<li>${item.trim()}</li>`
+            ).join('')}
+          </ul>
+        </div>
+      `;
+    }
+    return html;
+  }
 
 // Message handling
 window.addEventListener('message', async (event) => {
@@ -269,20 +293,22 @@ window.addEventListener('message', async (event) => {
 
             // Add event listeners for modify buttons
 
-            document.querySelectorAll('modify-button').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const frameId = e.currentTarget.getAttribute('data-frame-id');
-                    const frameName = feedbackData[frameId].item.frameName;
-                    console.log('Requesting modifications for frame:', frameName);
-                    showLoading();
-                    parent.postMessage({
-                        pluginMessage: {
-                            type: 'request-modifications',
-                            frameName: frameName
-                        }
-                    }, '*');
-                });
-            });
+        //     document.querySelectorAll('modify-button').forEach(button => {
+        //         button.addEventListener('click', (e) => {
+        //             const frameId = e.currentTarget.getAttribute('data-frame-id');
+        //             const frameName = feedbackData[frameId].item.frameName;
+        //             console.log('Requesting modifications for frame:', frameName);
+        //             showLoading(SUGGESTIONS);
+        //             parent.postMessage({
+        //                 pluginMessage: {
+        //                     type: 'request-modifications',
+        //                     frameName: frameName
+        //                 }
+        //             }, '*');
+        //         });
+        //     }
+        
+        // );
         }, 300);
     
     return;
@@ -291,18 +317,75 @@ window.addEventListener('message', async (event) => {
 if (msg.type === 'design-modifications') {
     hideLoading();
     
-    // Clear and show modifications screen first
-    document.getElementById('feedback-screen').style.display = 'none';
-    document.getElementById('modifications-screen').style.display = 'block';
+    const suggestionsText = msg.suggestions;
     
-    // Then update content
+    // Parse the raw suggestions text into structured data
+    const parseSuggestions = (text) => {
+        const result = {
+            violations: [],
+            fixes: []
+        };
+        
+        let currentSection = null;
+        let currentHeuristic = null;
+        
+        text.split('\n').forEach(line => {
+            line = line.trim();
+            
+            // Detect section headers
+            if (line.startsWith('### Detected Heuristic Violations')) {
+                currentSection = 'violations';
+            } 
+            else if (line.startsWith('### Suggestions to Fix')) {
+                currentSection = 'fixes';
+            }
+            // Detect heuristic items (e.g., "1. **Visibility of System Status**")
+            else if (line.match(/^\d+\.\s+\*\*(.*?)\*\*/) && currentSection) {
+                currentHeuristic = {
+                    title: line.replace(/^\d+\.\s+\*\*(.*?)\*\*/, '$1').trim(),
+                    points: []
+                };
+                result[currentSection].push(currentHeuristic);
+            }
+            // Detect bullet points
+            else if (line.startsWith('- ') && currentSection && currentHeuristic) {
+                currentHeuristic.points.push(line.replace(/^-\s/, '').trim());
+            }
+        });
+        
+        return result;
+    };
+    
+    const parsed = parseSuggestions(suggestionsText);
+    
+    // Generate HTML for violations or fixes section
+    const generateSectionHTML = (items, sectionTitle) => {
+        if (!items || items.length === 0) return '';
+        
+        return `
+            <div class="feedback-section">
+                <h2>${sectionTitle}</h2>
+                ${items.map(item => `
+                    <div class="heuristic-item">
+                        <h3>${item.title}</h3>
+                        <ul>
+                            ${item.points.map(point => `<li>${point}</li>`).join('')}
+                        </ul>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    };
+    
+    // Build the complete HTML
     document.getElementById('modification-summary').innerHTML = `
-        <div class="suggestions-box">
-            <h3>Design Suggestions</h3>
-            <div class="suggestions-content">${msg.suggestions}</div>
+        <div class="feedback-container">
+          
+            ${generateSectionHTML(parsed.violations, 'Detected Heuristic Violations')}
+            ${generateSectionHTML(parsed.fixes, 'Suggested Improvements')}
         </div>
     `;
-    
+    // Handle image display
     if (msg.modified_image && msg.original_image) {
         document.getElementById('design-preview').innerHTML = `
             <div class="image-comparison">
@@ -317,10 +400,9 @@ if (msg.type === 'design-modifications') {
             </div>
         `;
     }
-
     
-    // document.getElementById('modifications-screen').style.display = 'block';
-    // document.getElementById('feedback-screen').style.display = 'none';
+    document.getElementById('modifications-screen').style.display = 'block';
+    document.getElementById('feedback-screen').style.display = 'none';
 }
 if (msg.type === 'progress-update') {
     const progressFill = document.querySelector('.progress-fill');
@@ -338,7 +420,7 @@ document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
 document.getElementById('modify-button').onclick = async () => {
     console.log("Modify button clicked"); // Debug log
-    showLoading();
+    showLoading('SUGGESTIONS');
     // document.getElementById('feedback-screen').innerHTML = 'Loading...';
     try {
         const currentFrame = pages[currentPageIndex];
