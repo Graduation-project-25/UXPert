@@ -10,28 +10,18 @@ import hashlib
 
 
 class Suggestions(SuggestionsGenerator):
- 
+
     def __init__(self, frame_image, feature_data):
         load_dotenv()  
         self.openai_key = os.getenv("OPENAI_API_KEY")
         self.client = openai.OpenAI(api_key = self.openai_key)
+        self.suggestions_repository = SuggestionsRepository()
         self.frame_image = frame_image
         self.feature_data = feature_data
-        self.suggestions_repository = SuggestionsRepository()
         self.design_image = self.convert_base64_to_png(frame_image)
-        self.prompt = Prompt(self.design_image)
         self.current_image_hash = self._calculate_image_hash(frame_image)
+        self.prompt = Prompt(self.design_image)
 
-    def _calculate_image_hash(self, image_data):
-        """Calculate a hash of the image data for change detection"""
-        if isinstance(image_data, str):
-            if image_data.startswith('data:image'):
-                image_data = image_data.split(',')[1]
-            image_bytes = base64.b64decode(image_data)
-        else:
-            image_bytes = image_data
-        return hashlib.sha256(image_bytes).hexdigest()
-        
     def analyze_design(self):
         # Check if we have existing suggestions for this image hash
         existing_hash = self.suggestions_repository.get_image_hash_for_frame(
@@ -56,28 +46,12 @@ class Suggestions(SuggestionsGenerator):
             )
 
             gpt_suggestions = response.choices[0].message.content
-            
-            # Save the new suggestions and image hash
+
             self.suggestions_repository.save_text_suggestions(
-                self.feature_data["design_name"],
-                self.feature_data.get("user_name", "Unknown User"),
-                self.feature_data.get("frame_id"),
+                self.feature_data,
                 gpt_suggestions
             )
-            
-            self.suggestions_repository.update_one(
-                {
-                    "design_name": self.feature_data["design_name"],
-                    "user_name": self.feature_data.get("user_name", "Unknown User"),
-                    "images.id": self.feature_data.get("frame_id")
-                },
-                {
-                    "$set": {
-                        "images.$.image_hash": self.current_image_hash
-                    }
-                }
-            )
-            
+            self.suggestions_repository.update_textual_suggestion(self.feature_data, self.current_image_hash)            
             return gpt_suggestions
         else:
             return existing_suggestions
@@ -114,13 +88,12 @@ class Suggestions(SuggestionsGenerator):
             
             # Save to database with the current hash
             save_result = self.suggestions_repository.save_modified_image(
-                design_name=self.feature_data["design_name"],
-                user_name=self.feature_data.get("user_name", "Unknown User"),
-                frame_id=self.feature_data.get("frame_id"),
+                self.feature_data,
                 modified_image_data=modified_image_b64,
                 image_hash=self.current_image_hash
             )
             
+            self.convert_base64_to_png_test(modified_image_b64)
             if not save_result:
                 raise Exception("Failed to save image to database")
                 
@@ -129,9 +102,7 @@ class Suggestions(SuggestionsGenerator):
         except Exception as e:
             print(f"Error generating suggested image: {str(e)}")
             raise
-        
-            
-            
+                     
     def get_base64_string(self, data_url):
         try:
             return str(data_url).split(",")[1]
@@ -139,19 +110,27 @@ class Suggestions(SuggestionsGenerator):
             print("Error: Invalid data URL format")
             return None
         
-    
-    # def convert_base64_to_png(self, data_url):
-    #     try:
-    #         base64_string = self.get_base64_string(data_url)
-    #         image = base64.b64decode(base64_string, validate=True)
-    #         file_to_save = "converted_image2.png"
-    #         with open(file_to_save, "wb") as f:
-    #             f.write(image)
-    #         return file_to_save
-    #     except binascii.Error as e:
-    #         print(e)
+    def convert_base64_to_png_test(self, base64_string):
+        try:
+            # base64_string = self.get_base64_string(data_url)
+            image = base64.b64decode(base64_string, validate=True)
+            file_to_save = "converted_image2.png"
+            with open(file_to_save, "wb") as f:
+                f.write(image)
+            return file_to_save
+        except binascii.Error as e:
+            print(e)
 
-
+    def _calculate_image_hash(self, image_data):
+        """Calculate a hash of the image data for change detection"""
+        if isinstance(image_data, str):
+            if image_data.startswith('data:image'):
+                image_data = image_data.split(',')[1]
+            image_bytes = base64.b64decode(image_data)
+        else:
+            image_bytes = image_data
+        return hashlib.sha256(image_bytes).hexdigest()
+        
     def convert_base64_to_png(self, data_url):
         try:
             base64_string = self.get_base64_string(data_url)
@@ -168,11 +147,11 @@ class Suggestions(SuggestionsGenerator):
         generated_text_suggestions = self.analyze_design()
         self.generate_suggested_image(generated_text_suggestions)
 
-    def __del__(self):
-        """Destructor to clean up the temporary file."""
-        if hasattr(self, 'design_image') and self.design_image and os.path.exists(self.design_image):
-            try:
-                os.unlink(self.design_image)
-                print(f"Deleted temporary file: {self.design_image}")
-            except OSError as e:
-                print(f"Error deleting temporary file {self.design_image}: {e}")
+    # def __del__(self):
+    #     """Destructor to clean up the temporary file."""
+    #     if hasattr(self, 'design_image') and self.design_image and os.path.exists(self.design_image):
+    #         try:
+    #             os.unlink(self.design_image)
+    #             print(f"Deleted temporary file: {self.design_image}")
+    #         except OSError as e:
+    #             print(f"Error deleting temporary file {self.design_image}: {e}")
