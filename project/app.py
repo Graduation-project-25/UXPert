@@ -22,7 +22,7 @@ feedback = Feedback()
 # Register routes
 app.route('/process', methods=['POST', 'OPTIONS'])(feedback.process_elements)
 # app.route('/modify-design', methods=['POST'])(suggestions.generate_suggestions)
-
+ 
 
 @app.route('/get-suggestions', methods=['POST'])
 def get_suggestions():
