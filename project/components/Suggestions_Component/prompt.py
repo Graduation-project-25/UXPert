@@ -16,7 +16,7 @@ class Prompt:
     }
 
 
-    def get_gpt_image_1_prompt(self, generated_text_suggestions,screen_width, screen_height):
+    def get_gpt_image_1_prompt(self, generated_text_suggestions):
         return f"""
         Using the uploaded UI design, make the following minimal improvements:
         {generated_text_suggestions}

@@ -81,16 +81,12 @@ class Suggestions(SuggestionsGenerator):
             screen_width = self.feature_data.get("screen_width")
             screen_height = self.feature_data.get("screen_height")
 
-
             supported_sizes = [
                 (1024, 1024),  # 1.0
                 (1024, 1536),  # 0.667
                 (1536, 1024),  # 1.5
             ]
             original_aspect = screen_width / screen_height
-
-            # target_size = min(supported_sizes, key=lambda x: abs(original_aspect - (x[0] / x[1])))
-            # target_width, target_height = target_size
 
             # Calculate differences in aspect ratios and sort to find the closest
             aspect_differences = [
@@ -106,7 +102,7 @@ class Suggestions(SuggestionsGenerator):
                     model="gpt-image-1", 
                     image=image_file,
                     size=f"{target_width}x{target_height}",
-                    prompt=self.prompt.get_gpt_image_1_prompt(generated_text_suggestions, screen_width,screen_height),
+                    prompt=self.prompt.get_gpt_image_1_prompt(generated_text_suggestions)
                 )
 
             modified_image_b64 = result.data[0].b64_json
@@ -118,7 +114,6 @@ class Suggestions(SuggestionsGenerator):
                 image_hash=self.current_image_hash
             )
             
-            self.convert_base64_to_png_test(modified_image_b64)
             if not save_result:
                 raise Exception("Failed to save image to database")
                 
@@ -135,17 +130,6 @@ class Suggestions(SuggestionsGenerator):
             print("Error: Invalid data URL format")
             return None
         
-    def convert_base64_to_png_test(self, base64_string):
-        try:
-            # base64_string = self.get_base64_string(data_url)
-            image = base64.b64decode(base64_string, validate=True)
-            file_to_save = "converted_image2.png"
-            with open(file_to_save, "wb") as f:
-                f.write(image)
-            return file_to_save
-        except binascii.Error as e:
-            print(e)
-
     def _calculate_image_hash(self, image_data):
         """Calculate a hash of the image data for change detection"""
         if isinstance(image_data, str):
