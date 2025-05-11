@@ -260,7 +260,7 @@ window.addEventListener('message', async (event) => {
                     feedbackTypes,
                     currentFeedbackIndex: 0
                 };
-
+ 
                 const pageSection = document.createElement('div');
                 pageSection.className = 'page-section';
                 pageSection.style.display = index === 0 ? 'block' : 'none';
