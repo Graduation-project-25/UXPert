@@ -208,6 +208,34 @@ function navigateFeedback(frameId) {
     }
 }
 
+function formatHeuristicItems(text, sectionType) {
+    const sectionRegex = sectionType === 'violations' 
+      ? /### Detected Heuristic Violations([\s\S]*?)### Suggestions to Fix/
+      : /### Suggestions to Fix([\s\S]*)/;
+    
+    const sectionContent = text.match(sectionRegex)[1].trim();
+    const items = sectionContent.split(/\d+\.\s+\*\*(.*?)\*\*/).slice(1);
+    
+    let html = '';
+    for (let i = 0; i < items.length; i += 2) {
+      const title = items[i];
+      const content = items[i+1]?.trim();
+      if (!title || !content) continue;
+      
+      html += `
+        <div class="heuristic-item">
+          <h3>${title}</h3>
+          <ul>
+            ${content.split('-').filter(x => x.trim()).map(item => 
+              `<li>${item.trim()}</li>`
+            ).join('')}
+          </ul>
+        </div>
+      `;
+    }
+    return html;
+  }
+
 // Message handling
 window.addEventListener('message', async (event) => {
     const msg = event.data.pluginMessage;
@@ -291,18 +319,75 @@ window.addEventListener('message', async (event) => {
 if (msg.type === 'design-modifications') {
     hideLoading();
     
-    // Clear and show modifications screen first
-    document.getElementById('feedback-screen').style.display = 'none';
-    document.getElementById('modifications-screen').style.display = 'block';
+    const suggestionsText = msg.suggestions;
     
-    // Then update content
+    // Parse the raw suggestions text into structured data
+    const parseSuggestions = (text) => {
+        const result = {
+            violations: [],
+            fixes: []
+        };
+        
+        let currentSection = null;
+        let currentHeuristic = null;
+        
+        text.split('\n').forEach(line => {
+            line = line.trim();
+            
+            // Detect section headers
+            if (line.startsWith('### Detected Heuristic Violations')) {
+                currentSection = 'violations';
+            } 
+            else if (line.startsWith('### Suggestions to Fix')) {
+                currentSection = 'fixes';
+            }
+            // Detect heuristic items (e.g., "1. **Visibility of System Status**")
+            else if (line.match(/^\d+\.\s+\*\*(.*?)\*\*/) && currentSection) {
+                currentHeuristic = {
+                    title: line.replace(/^\d+\.\s+\*\*(.*?)\*\*/, '$1').trim(),
+                    points: []
+                };
+                result[currentSection].push(currentHeuristic);
+            }
+            // Detect bullet points
+            else if (line.startsWith('- ') && currentSection && currentHeuristic) {
+                currentHeuristic.points.push(line.replace(/^-\s/, '').trim());
+            }
+        });
+        
+        return result;
+    };
+    
+    const parsed = parseSuggestions(suggestionsText);
+    
+    // Generate HTML for violations or fixes section
+    const generateSectionHTML = (items, sectionTitle) => {
+        if (!items || items.length === 0) return '';
+        
+        return `
+            <div class="feedback-section">
+                <h2>${sectionTitle}</h2>
+                ${items.map(item => `
+                    <div class="heuristic-item">
+                        <h3>${item.title}</h3>
+                        <ul>
+                            ${item.points.map(point => `<li>${point}</li>`).join('')}
+                        </ul>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    };
+    
+    // Build the complete HTML
     document.getElementById('modification-summary').innerHTML = `
-        <div class="suggestions-box">
-            <h3>Design Suggestions</h3>
-            <div class="suggestions-content">${msg.suggestions}</div>
+        <div class="feedback-container">
+          
+            ${generateSectionHTML(parsed.violations, 'Detected Heuristic Violations')}
+            ${generateSectionHTML(parsed.fixes, 'Suggested Improvements')}
         </div>
     `;
-    
+    // Handle image display
     if (msg.modified_image && msg.original_image) {
         document.getElementById('design-preview').innerHTML = `
             <div class="image-comparison">
@@ -317,10 +402,9 @@ if (msg.type === 'design-modifications') {
             </div>
         `;
     }
-
     
-    // document.getElementById('modifications-screen').style.display = 'block';
-    // document.getElementById('feedback-screen').style.display = 'none';
+    document.getElementById('modifications-screen').style.display = 'block';
+    document.getElementById('feedback-screen').style.display = 'none';
 }
 if (msg.type === 'progress-update') {
     const progressFill = document.querySelector('.progress-fill');
