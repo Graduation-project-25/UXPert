@@ -1,6 +1,7 @@
 import datetime
 from database.base_repository import BaseRepository
 from bson.objectid import ObjectId
+
 class SuggestionsRepository(BaseRepository):
     def __init__(self):
         super().__init__("suggestions")
@@ -39,30 +40,19 @@ class SuggestionsRepository(BaseRepository):
             upsert=True  # Create new document if it doesn't exist
         )
         
-        # # Return the document _id for future reference
-        # if result.upserted_id:
-        #     return result.upserted_id
-        # # If document existed, find and return its _id
-        # doc = self.find_one({
-        #     "design_name": feature_data["design_name"],
-        #     "user_name": feature_data.get("user_name", "Unknown User")
-        # })
-        # return str(doc["_id"]) if doc else None
-
-    def save_modified_image(self, design_name, user_name, frame_id, modified_image_data, image_hash=None):
-        """Save modified image for a specific frame with image hash"""
-        print(f"Saving modified image for frame {frame_id}")
+    def save_modified_image(self, feature_data, modified_image_data, image_hash=None):
+        print(f"Saving modified image for frame {feature_data.get("frame_id")}")
         try:
             # First ensure the document exists
             self.collection.update_one(
                 {
-                    "design_name": design_name,
-                    "user_name": user_name
+                    "design_name": feature_data["design_name"],
+                    "user_name": feature_data.get("user_name", "Unknown User")
                 },
                 {
                     "$setOnInsert": {
-                        "design_name": design_name,
-                        "user_name": user_name,
+                        "design_name": feature_data["design_name"],
+                        "user_name": feature_data.get("user_name", "Unknown User"),
                         "created_at": datetime.datetime.utcnow()
                     }
                 },
@@ -80,9 +70,9 @@ class SuggestionsRepository(BaseRepository):
             # Then update the specific image entry
             result = self.collection.update_one(
                 {
-                    "design_name": design_name,
-                    "user_name": user_name,
-                    "images.id": frame_id
+                    "design_name": feature_data["design_name"],
+                    "user_name": feature_data.get("user_name", "Unknown User"),
+                    "images.id": feature_data.get("frame_id")
                 },
                 {
                     "$set": update_data
@@ -92,7 +82,7 @@ class SuggestionsRepository(BaseRepository):
             # If no matching image was found, push a new one
             if result.matched_count == 0:
                 new_image_data = {
-                    "id": frame_id,
+                    "id": feature_data.get("frame_id"),
                     "modified_image": modified_image_data,
                     "modified_at": datetime.datetime.utcnow()
                 }
@@ -102,8 +92,8 @@ class SuggestionsRepository(BaseRepository):
                     
                 self.collection.update_one(
                     {
-                        "design_name": design_name,
-                        "user_name": user_name
+                        "design_name": feature_data["design_name"],
+                        "user_name": feature_data.get("user_name", "Unknown User")
                     },
                     {
                         "$push": {
@@ -117,15 +107,14 @@ class SuggestionsRepository(BaseRepository):
             print(f"Error saving image: {str(e)}")
             return False
 
-
-    def save_text_suggestions(self, design_name, user_name, frame_id, suggestions_text):
+    def save_text_suggestions(self, feature_data, suggestions_text):
         """Save text suggestions for a frame"""
         try:
             result = self.collection.update_one(
                 {
-                    "design_name": design_name,
-                    "user_name": user_name,
-                    "images.id": frame_id
+                    "design_name": feature_data["design_name"],
+                    "user_name": feature_data.get("user_name", "Unknown User"),
+                    "images.id": feature_data.get("frame_id")
                 },
                 {
                     "$set": {
@@ -154,6 +143,7 @@ class SuggestionsRepository(BaseRepository):
             if document and "images" in document and len(document["images"]) > 0:
                 return document["images"][0].get("suggestions_text")
             return None
+
     def get_image_hash_for_frame(self, design_name, frame_id):
         """Get the stored image hash for a frame"""
         document = self.collection.find_one(
@@ -186,6 +176,7 @@ class SuggestionsRepository(BaseRepository):
                         return f"data:image/png;base64,{modified_image}"
                     return modified_image
         return None
+    
     def get_images_by_design(self, design_name, user_name="Unknown User"):
         """Get all images for a design"""
         result = self.find_one(
@@ -194,3 +185,17 @@ class SuggestionsRepository(BaseRepository):
         )
         return result.get("images", []) if result else []
         
+
+    def update_textual_suggestion(self, feature_data, image_hash):
+        self.update_one(
+                {
+                    "design_name": feature_data["design_name"],
+                    "user_name": feature_data.get("user_name", "Unknown User"),
+                    "images.id": feature_data.get("frame_id")
+                },
+                {
+                    "$set": {
+                        "images.$.image_hash": image_hash
+                    }
+                }
+            )
