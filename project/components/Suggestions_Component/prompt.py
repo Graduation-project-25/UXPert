@@ -15,10 +15,11 @@ class Prompt:
         "Help and documentation": "Even though it's better if the system can be used without documentation"
     }
 
-    def get_gpt_image_1_prompt(self, generated_text_suggestions):
+
+    def get_gpt_image_1_prompt(self, generated_text_suggestions,screen_width, screen_height):
         return f"""
         Using the uploaded UI design, make the following minimal improvements:
-        {generated_text_suggestions}
+        {generated_text_suggestions} with image size of {screen_width}x{screen_height}
 
         - Keep the layout, style, theme, and visuals the same.
         - Only apply small UX changes according to the suggestions.

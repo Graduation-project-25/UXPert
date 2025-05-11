@@ -27,19 +27,19 @@ app.route('/process', methods=['POST', 'OPTIONS'])(feedback.process_elements)
 @app.route('/get-suggestions', methods=['POST'])
 def get_suggestions():
     try:
-        data = request.get_json()
-        if not data or 'frame_id' not in data or 'design_name' not in data:
+        feature_data = request.get_json()
+        if not feature_data or 'frame_id' not in feature_data or 'design_name' not in feature_data:
             return jsonify({'error': 'Missing required fields'}), 400
 
         # Get the original image
         repo = FigmaFeaturesRepository()
-        frame_image = repo.get_image_by_frame_id(data['design_name'], data['frame_id'])
+        frame_image = repo.get_image_by_frame_id(feature_data['design_name'], feature_data['frame_id'])
         
         if not frame_image:
             return jsonify({'error': 'Original image not found'}), 404
 
         # Generate suggestions
-        suggestions = Suggestions(frame_image, data)
+        suggestions = Suggestions(frame_image, feature_data)
         text_suggestions = suggestions.analyze_design()
         
         # Generate and save the modified image (only if needed)
@@ -58,6 +58,7 @@ def get_suggestions():
     except Exception as e:
         print(f"Error in get_suggestions: {str(e)}")
         return jsonify({'error': str(e)}), 500
+    
 @app.route('/', methods=['GET'])
 def home():
     return "Welcome to the Flask server!", 200

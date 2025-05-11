@@ -77,11 +77,19 @@ class Suggestions(SuggestionsGenerator):
             
             # If we get here, we need to generate a new image
             print("Generating new suggested image...")
+            
+            screen_width = self.feature_data.get("screen_width")
+            screen_height = self.feature_data.get("screen_width")
+            print("****************************************")
+            print(screen_width)
+            print(screen_height)
+            print("****************************************")
+
             with open(self.design_image, "rb") as image_file:
                 result = self.client.images.edit(
                     model="gpt-image-1", 
                     image=image_file,
-                    prompt=self.prompt.get_gpt_image_1_prompt(generated_text_suggestions),
+                    prompt=self.prompt.get_gpt_image_1_prompt(generated_text_suggestions, screen_width,screen_height),
                 )
 
             modified_image_b64 = result.data[0].b64_json
