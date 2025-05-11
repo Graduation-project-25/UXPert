@@ -266,14 +266,14 @@ window.addEventListener('message', async (event) => {
                 pageSection.style.display = index === 0 ? 'block' : 'none';
                 pageSection.innerHTML = `
                     <h2>${item.frameName}</h2>
+                    ${feedbackTypes.length > 1 ?
+                    `<button class="feedback-nav-button" data-frame-id="${frameId}">→</button>` : ''}
                     <div class="feedback-area">
                         <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
                         <div class="feedback-content">
                             <div id="feedback-${frameId}">
                                 ${renderFeedback(item)}
                             </div>
-                            ${feedbackTypes.length > 1 ?
-                        `<button class="feedback-nav-button" data-frame-id="${frameId}">→</button>` : ''}
                         </div>
                     </div>
                 `;

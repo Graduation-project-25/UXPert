@@ -1,6 +1,6 @@
 from flask import jsonify, request
 from database.figma_features_repository import FigmaFeaturesRepository
-from components.Suggestions_Component.suggestions import Suggestions
+from components.Suggestions_Component.suggestions import Suggestions as suggest
 
 
 class Suggestions:
@@ -34,7 +34,7 @@ class Suggestions:
                 return jsonify({'error': 'Original image not found'}), 404
 
             # Generate suggestions
-            suggestions = Suggestions(frame_image, feature_data)
+            suggestions = suggest(frame_image, feature_data)
             text_suggestions = suggestions.analyze_design()
             
             # Generate and save the modified image (only if needed)
