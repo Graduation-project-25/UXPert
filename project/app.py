@@ -28,6 +28,7 @@ app.route('/process', methods=['POST', 'OPTIONS'])(feedback.process_elements)
 def get_suggestions():
     try:
         data = request.get_json()
+
         # Extract Design Information
         user_name = data.get("userName", "Unknown User")
         design_name = data.get("designName", "Untitled Design")
@@ -46,6 +47,7 @@ def get_suggestions():
             "screen_width": screen_width,
             "screen_height": screen_height,
         }
+        print(feature_data)
 
 
 

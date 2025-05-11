@@ -185,7 +185,6 @@ class SuggestionsRepository(BaseRepository):
         )
         return result.get("images", []) if result else []
         
-
     def update_textual_suggestion(self, feature_data, image_hash):
         self.update_one(
                 {
