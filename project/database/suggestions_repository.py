@@ -41,7 +41,7 @@ class SuggestionsRepository(BaseRepository):
         )
         
     def save_modified_image(self, feature_data, modified_image_data, image_hash=None):
-        print(f"Saving modified image for frame {feature_data.get("frame_id")}")
+        # print(f"Saving modified image for frame {feature_data.get("frame_id")}")
         try:
             # First ensure the document exists
             self.collection.update_one(
