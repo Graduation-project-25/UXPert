@@ -88,4 +88,25 @@ export class ApiService {
             return null;
         }
     }
+
+
+    static async getUserHistory(userName: string): Promise<any> {
+        try {
+            const response = await fetch('http://localhost:3000/get-history', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_name: userName }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! Status: ${response.status}, Body: ${errorText}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Error getting user history:", error);
+            throw error;
+        }
+    }
 }

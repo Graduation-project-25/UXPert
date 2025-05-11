@@ -5,6 +5,7 @@ from components.Suggestions_Component.suggestions import Suggestions
 from database.suggestions_repository import SuggestionsRepository
 
 from database.figma_features_repository import FigmaFeaturesRepository
+from routes.feature_extraction import FeatureExtraction
 from routes.feedback import Feedback
 
 
@@ -18,11 +19,14 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # suggestions = Suggestions()
 # suggestions.generate_suggestions()
 feedback = Feedback()
+feature_extraction = FeatureExtraction()
+
  
 # Register routes
 app.route('/process', methods=['POST', 'OPTIONS'])(feedback.process_elements)
 # app.route('/modify-design', methods=['POST'])(suggestions.generate_suggestions)
- 
+app.route('/get-history', methods=['POST'])(feedback.get_user_history)
+
 
 @app.route('/get-suggestions', methods=['POST'])
 def get_suggestions():

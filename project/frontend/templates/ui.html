@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,7 +48,7 @@
         <div class="action-buttons">
             <button id="close">Close</button>
             <button id="modify-button" class="button">Suggestions Preview</button>
-          
+            <button id="view-history" class="button">View History</button>
         </div>
     </div>
 
@@ -60,31 +61,32 @@
         <button id="retry-button">Try Again</button>
     </div>
 
- <!-- Loading Screen -->
-<div id="loading-screen" style="display: none;">
-    <div class="loading-content">
-        <div class="loading-animation">
-            <div class="loader-dots">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
+    <!-- Loading Screen -->
+    <div id="loading-screen" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-animation">
+                <div class="loader-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <h1>Enhancing Your Design</h1>
+                <p class="loading-message">Our AI is working its magic...</p>
+                <div class="loading-tips">
+                    <p>💡 Did you know? Good UX increases conversion rates by up to 400%</p>
+                </div>
             </div>
-            <h1>Enhancing Your Design</h1>
-            <p class="loading-message">Our AI is working its magic...</p>
-            <div class="loading-tips">
-                <p>💡 Did you know? Good UX increases conversion rates by up to 400%</p>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <span class="progress-text">0%</span>
             </div>
-        </div>
-        <div class="progress-container">
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
-            <span class="progress-text">0%</span>
         </div>
     </div>
-</div>
-<!-- <div id="modifications-screen" style="display: none;">
+    
+    <!-- <div id="modifications-screen" style="display: none;">
     <div class="modifications-header">
         <h1>✨ Design Suggestions</h1>
         <p class="subtitle">Here's how we can improve your design</p>
@@ -117,26 +119,40 @@
             <p class="subtitle">Here's how we can improve your design</p>
         </div>
         <div class="suggestions-container">
-          <div id="modification-summary">
-            <!-- Suggestions will be inserted here -->
-          </div>
+            <div id="modification-summary">
+                <!-- Suggestions will be inserted here -->
+            </div>
         </div>
-        
+
         <div class="image-comparison-container">
-          <h2>Visual Comparison</h2>
-          <div id="design-preview">
-            <!-- Images will be inserted here -->
-          </div>
+            <h2>Visual Comparison</h2>
+            <div id="design-preview">
+                <!-- Images will be inserted here -->
+            </div>
         </div>
-        
+
         <button id="back-to-feedback-from-mods" class="button primary-button">
             ← Back to Feedback
         </button>
-      </div>
-</div>
-</div>
+    </div>
 
-    
+
+
+    <div id="history-screen" style="display: none;">
+        <div class="history-header">
+            <h1>Your Feedback History</h1>
+            <p>Review your previous design evaluations</p>
+        </div>
+
+        <div id="history-list" class="history-list scrollable">
+            <!-- History items will be inserted here -->
+        </div>
+
+        <button id="back-from-history" class="button primary-button">
+            Back to Feedback
+        </button>
+    </div>
 
 </body>
+
 </html>
