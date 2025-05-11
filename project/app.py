@@ -27,9 +27,27 @@ app.route('/process', methods=['POST', 'OPTIONS'])(feedback.process_elements)
 @app.route('/get-suggestions', methods=['POST'])
 def get_suggestions():
     try:
-        feature_data = request.get_json()
-        if not feature_data or 'frame_id' not in feature_data or 'design_name' not in feature_data:
-            return jsonify({'error': 'Missing required fields'}), 400
+        data = request.get_json()
+        # Extract Design Information
+        user_name = data.get("userName", "Unknown User")
+        design_name = data.get("designName", "Untitled Design")
+        frame_info = data.get("frame", {})
+        frame_name = frame_info.get("frameName")
+        frame_id = frame_info.get("frameId")
+        screen_width = frame_info.get("screen_width")
+        screen_height = frame_info.get("screen_height", "")
+
+        # Process design data
+        feature_data = {
+            "user_name": user_name,
+            "design_name": design_name,
+            "frame_name": frame_name,
+            "frame_id": frame_id,
+            "screen_width": screen_width,
+            "screen_height": screen_height,
+        }
+
+
 
         # Get the original image
         repo = FigmaFeaturesRepository()

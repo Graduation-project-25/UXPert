@@ -19,18 +19,14 @@ export class ApiService {
     }
 
         
-    static async getSuggestions(frameId: string, designName: string, userName: string): Promise<any> {
+    static async getSuggestions(userData: any, ): Promise<any> {
         try {
-            console.log(`Fetching suggestions for frame ${frameId}`);
+            // console.log(`Fetching suggestions for frame ${frameId}`);
             const response = await fetch('http://localhost:3000/get-suggestions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    frame_id: frameId, 
-                    design_name: designName,
-                    
-                    user_name: userName
-                })
+                body: JSON.stringify(userData),
+
             });
 
             console.log(`Response status: ${response.status}`);

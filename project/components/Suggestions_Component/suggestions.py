@@ -79,11 +79,7 @@ class Suggestions(SuggestionsGenerator):
             print("Generating new suggested image...")
             
             screen_width = self.feature_data.get("screen_width")
-            screen_height = self.feature_data.get("screen_width")
-            print("****************************************")
-            print(screen_width)
-            print(screen_height)
-            print("****************************************")
+            screen_height = self.feature_data.get("screen_height")
 
             with open(self.design_image, "rb") as image_file:
                 result = self.client.images.edit(

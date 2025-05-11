@@ -277,8 +277,19 @@ figma.ui.onmessage = async (msg) => {
                 const userName = figma.currentUser?.name ?? "Unknown User";
                 
                 console.log("Getting suggestions...");
-                const response = await ApiService.getSuggestions(frame.id, designName, userName);
-                
+                // const response = await ApiService.getSuggestions(frame.id, designName, userName);
+                const response = await ApiService.getSuggestions({
+                    userName,
+                    designName,
+                    imageDataUrl,
+                    frame: {
+                        frameName: frame.name,
+                        frameId: frame.id,
+                        screen_width: frame.width,
+                        screen_height: frame.height
+                    },
+                });
+
                 if (response.error) {
                     throw new Error(response.error);
                 }
