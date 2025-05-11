@@ -19,13 +19,11 @@ const LOADING_TYPES = {
       messages: [
         "Checking UX heuristics...",
         "Evaluating visual hierarchy...",
-        "Identifying improvement areas...",
-        "Scanning for accessibility issues..."
+        "Identifying improvement areas..."
       ],
       tips: [
         "💡 Good UX can increase conversion rates by 400%",
-        "💡 94% of first impressions are design-related",
-        "💡 Consistent design increases user trust"
+        "💡 94% of first impressions are design-related"
       ]
     },
     SUGGESTIONS: {
@@ -33,41 +31,39 @@ const LOADING_TYPES = {
       messages: [
         "Creating design improvements...",
         "Optimizing layout and spacing...",
-        "Enhancing visual appeal...",
         "Applying UX best practices..."
       ],
       tips: [
         "💡 Clear visual hierarchy improves usability by 30%",
-        "💡 Good color contrast helps all users",
         "💡 Well-placed CTAs can double conversions"
       ]
     }
   };
   
-//   function showLoading(type = 'FEEDBACK') {
-//     const config = LOADING_TYPES[type] || LOADING_TYPES.FEEDBACK;
-//     const screen = document.getElementById('loading-screen');
+  function showLoading(type = 'FEEDBACK') {
+    const config = LOADING_TYPES[type] || LOADING_TYPES.FEEDBACK;
+    const screen = document.getElementById('loading-screen');
     
-//     // Set loading content
-//     document.getElementById('loading-title').textContent = config.title;
-//     document.getElementById('loading-message').textContent = 
-//       config.messages[Math.floor(Math.random() * config.messages.length)];
-//     document.getElementById('loading-tip').textContent = 
-//       config.tips[Math.floor(Math.random() * config.tips.length)];
+    // Update these selectors to match your HTML structure
+    const loadingContent = screen.querySelector('.loading-content');
+    loadingContent.querySelector('h1').textContent = config.title;
+    loadingContent.querySelector('.loading-message').textContent = 
+      config.messages[Math.floor(Math.random() * config.messages.length)];
+    loadingContent.querySelector('.loading-tips p').textContent = 
+      config.tips[Math.floor(Math.random() * config.tips.length)];
   
-//     // Reset progress
-//     document.getElementById('progress-fill').style.width = '0%';
-//     document.getElementById('progress-text').textContent = '0%';
-  
-//     // Show loading screen
-//     screen.style.display = 'flex';
-//     document.body.style.overflow = 'hidden';
-//   }
-  
-//   function hideLoading() {
-//     document.getElementById('loading-screen').style.display = 'none';
-//     document.body.style.overflow = 'auto';
-//   }
+    const progressBar = loadingContent.querySelector('.progress-fill');
+    const progressText = loadingContent.querySelector('.progress-text');
+    progressBar.style.width = '0%';
+    progressText.textContent = '60%';
+    
+    screen.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+  function hideLoading() {
+    document.getElementById('loading-screen').style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
 
 // Initialize UI
 setTimeout(() => {
@@ -184,13 +180,13 @@ function renderFeedback(item, feedbackIndex = 0) {
 }
 
 
-function showLoading() {
-    document.getElementById('processing-screen').style.display = 'block';
-}
+// function showLoading() {
+//     document.getElementById('processing-screen').style.display = 'block';
+// }
 
-function hideLoading() {
-    document.getElementById('processing-screen').style.display = 'none';
-}
+// function hideLoading() {
+//     document.getElementById('processing-screen').style.display = 'none';
+// }
 
 
 function navigateFeedback(frameId) {
@@ -297,20 +293,22 @@ window.addEventListener('message', async (event) => {
 
             // Add event listeners for modify buttons
 
-            document.querySelectorAll('modify-button').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const frameId = e.currentTarget.getAttribute('data-frame-id');
-                    const frameName = feedbackData[frameId].item.frameName;
-                    console.log('Requesting modifications for frame:', frameName);
-                    showLoading();
-                    parent.postMessage({
-                        pluginMessage: {
-                            type: 'request-modifications',
-                            frameName: frameName
-                        }
-                    }, '*');
-                });
-            });
+        //     document.querySelectorAll('modify-button').forEach(button => {
+        //         button.addEventListener('click', (e) => {
+        //             const frameId = e.currentTarget.getAttribute('data-frame-id');
+        //             const frameName = feedbackData[frameId].item.frameName;
+        //             console.log('Requesting modifications for frame:', frameName);
+        //             showLoading(SUGGESTIONS);
+        //             parent.postMessage({
+        //                 pluginMessage: {
+        //                     type: 'request-modifications',
+        //                     frameName: frameName
+        //                 }
+        //             }, '*');
+        //         });
+        //     }
+        
+        // );
         }, 300);
     
     return;
@@ -422,7 +420,7 @@ document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
 document.getElementById('modify-button').onclick = async () => {
     console.log("Modify button clicked"); // Debug log
-    showLoading();
+    showLoading('SUGGESTIONS');
     // document.getElementById('feedback-screen').innerHTML = 'Loading...';
     try {
         const currentFrame = pages[currentPageIndex];
