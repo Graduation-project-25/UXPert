@@ -19,7 +19,7 @@ class Prompt:
     def get_gpt_image_1_prompt(self, generated_text_suggestions,screen_width, screen_height):
         return f"""
         Using the uploaded UI design, make the following minimal improvements:
-        {generated_text_suggestions} with image size of {screen_width}x{screen_height}
+        {generated_text_suggestions}
 
         - Keep the layout, style, theme, and visuals the same.
         - Only apply small UX changes according to the suggestions.
@@ -29,7 +29,7 @@ class Prompt:
         - Do NOT change the overall layout, screen size, or resolution of the original screenshot.
         - Do NOT change the colors, only make it brighter or darker
         - Do NOT alter the color scheme, typography, imagery, or content of the original design.
-        - Only overlay masks or annotations to highlight violations—do not edit or redesign any part of the design.
+        - Only overlay masks or annotations to highlight violations.
         - Limit the number of highlighted violations to 5 to avoid overcrowding the output."""
     
     def get_gpt_4o_messages(self,base64_image):

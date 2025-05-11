@@ -81,10 +81,31 @@ class Suggestions(SuggestionsGenerator):
             screen_width = self.feature_data.get("screen_width")
             screen_height = self.feature_data.get("screen_height")
 
+
+            supported_sizes = [
+                (1024, 1024),  # 1.0
+                (1024, 1536),  # 0.667
+                (1536, 1024),  # 1.5
+            ]
+            original_aspect = screen_width / screen_height
+
+            # target_size = min(supported_sizes, key=lambda x: abs(original_aspect - (x[0] / x[1])))
+            # target_width, target_height = target_size
+
+            # Calculate differences in aspect ratios and sort to find the closest
+            aspect_differences = [
+                (abs(original_aspect - (w / h)), (w, h))
+                for w, h in supported_sizes
+            ]
+            aspect_differences.sort(key=lambda x: x[0])  # Sort by difference
+            target_size = aspect_differences[0][1]  # Take the size with smallest difference
+            target_width, target_height = target_size
+
             with open(self.design_image, "rb") as image_file:
                 result = self.client.images.edit(
                     model="gpt-image-1", 
                     image=image_file,
+                    size=f"{target_width}x{target_height}",
                     prompt=self.prompt.get_gpt_image_1_prompt(generated_text_suggestions, screen_width,screen_height),
                 )
 
@@ -151,11 +172,11 @@ class Suggestions(SuggestionsGenerator):
         generated_text_suggestions = self.analyze_design()
         self.generate_suggested_image(generated_text_suggestions)
 
-    # def __del__(self):
-    #     """Destructor to clean up the temporary file."""
-    #     if hasattr(self, 'design_image') and self.design_image and os.path.exists(self.design_image):
-    #         try:
-    #             os.unlink(self.design_image)
-    #             print(f"Deleted temporary file: {self.design_image}")
-    #         except OSError as e:
-    #             print(f"Error deleting temporary file {self.design_image}: {e}")
+    def __del__(self):
+        """Destructor to clean up the temporary file."""
+        if hasattr(self, 'design_image') and self.design_image and os.path.exists(self.design_image):
+            try:
+                os.unlink(self.design_image)
+                print(f"Deleted temporary file: {self.design_image}")
+            except OSError as e:
+                print(f"Error deleting temporary file {self.design_image}: {e}")
