@@ -81,11 +81,28 @@ class Suggestions(SuggestionsGenerator):
             screen_width = self.feature_data.get("screen_width")
             screen_height = self.feature_data.get("screen_height")
 
+            supported_sizes = [
+                (1024, 1024),  # 1.0
+                (1024, 1536),  # 0.667
+                (1536, 1024),  # 1.5
+            ]
+            original_aspect = screen_width / screen_height
+
+            # Calculate differences in aspect ratios and sort to find the closest
+            aspect_differences = [
+                (abs(original_aspect - (w / h)), (w, h))
+                for w, h in supported_sizes
+            ]
+            aspect_differences.sort(key=lambda x: x[0])  # Sort by difference
+            target_size = aspect_differences[0][1]  # Take the size with smallest difference
+            target_width, target_height = target_size
+
             with open(self.design_image, "rb") as image_file:
                 result = self.client.images.edit(
                     model="gpt-image-1", 
                     image=image_file,
-                    prompt=self.prompt.get_gpt_image_1_prompt(generated_text_suggestions, screen_width,screen_height),
+                    size=f"{target_width}x{target_height}",
+                    prompt=self.prompt.get_gpt_image_1_prompt(generated_text_suggestions)
                 )
 
             modified_image_b64 = result.data[0].b64_json
@@ -97,7 +114,6 @@ class Suggestions(SuggestionsGenerator):
                 image_hash=self.current_image_hash
             )
             
-            self.convert_base64_to_png_test(modified_image_b64)
             if not save_result:
                 raise Exception("Failed to save image to database")
                 
@@ -114,17 +130,6 @@ class Suggestions(SuggestionsGenerator):
             print("Error: Invalid data URL format")
             return None
         
-    def convert_base64_to_png_test(self, base64_string):
-        try:
-            # base64_string = self.get_base64_string(data_url)
-            image = base64.b64decode(base64_string, validate=True)
-            file_to_save = "converted_image2.png"
-            with open(file_to_save, "wb") as f:
-                f.write(image)
-            return file_to_save
-        except binascii.Error as e:
-            print(e)
-
     def _calculate_image_hash(self, image_data):
         """Calculate a hash of the image data for change detection"""
         if isinstance(image_data, str):
@@ -151,11 +156,11 @@ class Suggestions(SuggestionsGenerator):
         generated_text_suggestions = self.analyze_design()
         self.generate_suggested_image(generated_text_suggestions)
 
-    # def __del__(self):
-    #     """Destructor to clean up the temporary file."""
-    #     if hasattr(self, 'design_image') and self.design_image and os.path.exists(self.design_image):
-    #         try:
-    #             os.unlink(self.design_image)
-    #             print(f"Deleted temporary file: {self.design_image}")
-    #         except OSError as e:
-    #             print(f"Error deleting temporary file {self.design_image}: {e}")
+    def __del__(self):
+        """Destructor to clean up the temporary file."""
+        if hasattr(self, 'design_image') and self.design_image and os.path.exists(self.design_image):
+            try:
+                os.unlink(self.design_image)
+                print(f"Deleted temporary file: {self.design_image}")
+            except OSError as e:
+                print(f"Error deleting temporary file {self.design_image}: {e}")
