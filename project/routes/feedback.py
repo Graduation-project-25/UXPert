@@ -105,7 +105,6 @@ class Feedback:
             },
             "error_handling_results": {
                 "ErrorHandlingScore": f"Error Handling Score: {error_handling_results.get('ErrorHandlingScore', 0)}%.",
-                "ErrorIssues": error_handling_results.get("ErrorIssues", []),
                 "RecoveryIssues": error_handling_results.get("RecoveryIssues", []),
                 "Feedback": error_handling_results
             },
