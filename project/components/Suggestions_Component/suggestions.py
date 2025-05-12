@@ -26,12 +26,14 @@ class Suggestions(SuggestionsGenerator):
         # Check if we have existing suggestions for this image hash
         existing_hash = self.suggestions_repository.get_image_hash_for_frame(
             self.feature_data["design_name"],
-            self.feature_data.get("frame_id")
+            self.feature_data.get("frame_id"),
+            self.feature_data.get("user_name")
         )
         
         existing_suggestions = self.suggestions_repository.get_suggestions_for_frame(
             self.feature_data["design_name"],
-            self.feature_data.get("frame_id")
+            self.feature_data.get("frame_id"),
+            self.feature_data.get("user_name")
         )
         
         # Only generate new suggestions if the image has changed or we don't have suggestions
@@ -61,14 +63,16 @@ class Suggestions(SuggestionsGenerator):
             # Check if we already have a modified image for this hash
             existing_hash = self.suggestions_repository.get_image_hash_for_frame(
                 self.feature_data["design_name"],
-                self.feature_data.get("frame_id")
+                self.feature_data.get("frame_id"),
+                self.feature_data.get("user_name")
             )
             
             if existing_hash == self.current_image_hash:
                 # Try to get existing modified image
                 existing_image = self.suggestions_repository.get_modified_image(
                     self.feature_data["design_name"],
-                    self.feature_data.get("frame_id")
+                    self.feature_data.get("frame_id"),
+                    self.feature_data.get("user_name")
                 )
                 if existing_image:
                     if existing_image.startswith('data:image'):

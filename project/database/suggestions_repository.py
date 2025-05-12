@@ -128,12 +128,13 @@ class SuggestionsRepository(BaseRepository):
             print(f"Error saving suggestions: {str(e)}")
             return False
         
-    def get_suggestions_for_frame(self, design_name, frame_id):
+    def get_suggestions_for_frame(self, design_name, frame_id, user_name):
             """Get saved suggestions for a frame"""
             document = self.collection.find_one(
                 {
                     "design_name": design_name,
-                    "images.id": frame_id
+                    "images.id": frame_id,
+                    "user_name": user_name
                 },
                 {
                     "images.$": 1
@@ -144,12 +145,13 @@ class SuggestionsRepository(BaseRepository):
                 return document["images"][0].get("suggestions_text")
             return None
 
-    def get_image_hash_for_frame(self, design_name, frame_id):
+    def get_image_hash_for_frame(self, design_name, frame_id, user_name):
         """Get the stored image hash for a frame"""
         document = self.collection.find_one(
             {
                 "design_name": design_name,
-                "images.id": frame_id
+                "images.id": frame_id,
+                "user_name": user_name
             },
             {
                 "images.$": 1
@@ -160,10 +162,11 @@ class SuggestionsRepository(BaseRepository):
             return document["images"][0].get("image_hash")
         return None
 
-    def get_modified_image(self, design_name, frame_id):
+    def get_modified_image(self, design_name, frame_id, user_name):
         document = self.collection.find_one({
             "design_name": design_name,
-            "images.id": frame_id  
+            "images.id": frame_id ,
+            "user_name": user_name
         })
         
         if document:
