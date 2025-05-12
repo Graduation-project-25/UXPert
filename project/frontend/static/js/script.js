@@ -303,6 +303,7 @@ window.addEventListener('message', async (event) => {
                 });
             });
 
+
         }, 300);
     
     return;
@@ -513,7 +514,25 @@ document.getElementById('back-from-history').onclick = () => {
 };
 
 
-
+document.getElementById('apply-modifications').onclick = async () => {
+    try {
+        // Get the ACTUAL displayed image
+        const modifiedImg = document.querySelector('#design-preview .image-container:nth-child(2) img');
+        if (!modifiedImg?.src) throw new Error("No modified image found");
+        const frameName = frameNameElement.textContent;
+        // Send FULL data URL to plugin
+        parent.postMessage({
+            pluginMessage: {
+                type: 'apply-modifications',
+                imageData: modifiedImg.src, // Full data URL
+                frameName:frameName
+            }
+        }, '*');
+        
+    } catch (error) {
+        figma.notify(`UI Error: ${error.message}`);
+    }
+};
 
 
 // function showModifications(data) {

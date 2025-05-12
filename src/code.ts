@@ -310,9 +310,88 @@ figma.ui.onmessage = async (msg) => {
                 });
             }
         }
+
+        
+        
+    
+        else if (msg.type === 'apply-modifications') {
+            try {
+                // 1. Validate incoming message
+                if (!msg.imageData || typeof msg.imageData !== 'string') {
+                    throw new Error("Invalid or missing image data");
+                }
+
+                // 2. Create frame
+                const frame = figma.createFrame();
+                frame.name = `${msg.frameName} (Modified)`;
+                
+                // 3. Verify base64 format
+                const base64Data = msg.imageData.startsWith('data:image') 
+                    ? msg.imageData.split(',')[1] 
+                    : msg.imageData;
+                    
+                if (!base64Data.match(/^[A-Za-z0-9+/]+={0,2}$/)) {
+                    throw new Error("Invalid base64 image format");
+                }
+
+                // 4. Convert to bytes with validation
+                let imageBytes;
+                try {
+                    imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+                    if (imageBytes.length === 0) throw new Error("Empty image data");
+                } catch (e) {
+                    throw new Error(`Failed to decode image: ${e}`);
+                }
+
+                // 5. Create image with verification
+                let image;
+                try {
+                    image = figma.createImage(imageBytes);
+                    if (!image.hash) throw new Error("Invalid image created");
+                    console.log("Image created with hash:", image.hash);
+                } catch (e) {
+                    throw new Error(`Figma couldn't create image: ${e}`);
+                }
+
+                // 6. Create rectangle with image fill
+                const rect = figma.createRectangle();
+                rect.resize(1440, 717);
+                
+                const imagePaint: ImagePaint = {
+                    type: 'IMAGE',
+                    imageHash: image.hash,
+                    scaleMode: 'FILL',
+                    opacity: 1,
+                    visible: true
+                };
+                rect.fills = [imagePaint];
+                frame.appendChild(rect);
+
+                // 7. Position and display
+                frame.resize(1440, 717);
+                frame.x = figma.viewport.center.x - 400;
+                frame.y = figma.viewport.center.y - 300;
+                
+                figma.currentPage.selection = [frame];
+                figma.viewport.scrollAndZoomIntoView([frame]);
+                
+                figma.notify(' Modified design applied successfully!');
+
+            } catch (error) {
+                console.error("Full error details:", {
+                    message: error,
+                    stack: error,
+                    inputData: msg.imageData ? `${msg.imageData.substring(0, 30)}...` : null,
+                    inputLength: msg.imageData?.length
+                });
+                figma.notify(` Failed: ${error}`);
+            }
+        }
     }
     catch (error) {
         console.error('Plugin error:', error);
         figma.notify('An error occurred. See console for details.');
     }
+
+    
 };

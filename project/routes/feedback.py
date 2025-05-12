@@ -317,7 +317,7 @@ class Feedback:
             self._log(f"Processing error: {str(e)}", "ERROR")
             return jsonify({"error": f"Server error: {str(e)}"}), 500
         
-
+        
     def get_user_history(self):
         """Get feedback history for the current user"""
         data = request.get_json()
