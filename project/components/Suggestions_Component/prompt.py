@@ -63,4 +63,23 @@ class Prompt:
             1. List of detected heuristic violations (short bullet points)
             2. Small specific suggestions to fix them
             Keep suggestions minimal — don't redesign the whole page.
+            3.  Please provide feedback in this exact format:
+
+            ### Detected Heuristic Violations
+            
+            1. **Heuristic Name**
+            - Specific issue 1
+            - Specific issue 2
+            
+            2. **Another Heuristic**
+            - Specific issue
+            
+            ### Suggestions to Fix
+            
+            1. **Heuristic Name**
+            - Suggested fix 1
+            - Suggested fix 2
+            
+            2. **Another Heuristic**
+            - Suggested fix
             """      

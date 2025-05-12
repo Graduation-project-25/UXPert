@@ -303,24 +303,6 @@ window.addEventListener('message', async (event) => {
                 });
             });
 
-            // Add event listeners for modify buttons
-
-        //     document.querySelectorAll('modify-button').forEach(button => {
-        //         button.addEventListener('click', (e) => {
-        //             const frameId = e.currentTarget.getAttribute('data-frame-id');
-        //             const frameName = feedbackData[frameId].item.frameName;
-        //             console.log('Requesting modifications for frame:', frameName);
-        //             showLoading(SUGGESTIONS);
-        //             parent.postMessage({
-        //                 pluginMessage: {
-        //                     type: 'request-modifications',
-        //                     frameName: frameName
-        //                 }
-        //             }, '*');
-        //         });
-        //     }
-        
-        // );
         }, 300);
     
     return;

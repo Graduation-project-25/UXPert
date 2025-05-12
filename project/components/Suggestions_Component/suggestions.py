@@ -23,40 +23,46 @@ class Suggestions(SuggestionsGenerator):
         self.prompt = Prompt(self.design_image)
 
     def analyze_design(self):
-        # Check if we have existing suggestions for this image hash
-        existing_hash = self.suggestions_repository.get_image_hash_for_frame(
-            self.feature_data["design_name"],
-            self.feature_data.get("frame_id"),
-            self.feature_data.get("user_name")
-        )
-        
+        # First check if we have existing suggestions for this exact image hash
         existing_suggestions = self.suggestions_repository.get_suggestions_for_frame(
             self.feature_data["design_name"],
             self.feature_data.get("frame_id"),
             self.feature_data.get("user_name")
         )
         
-        # Only generate new suggestions if the image has changed or we don't have suggestions
-        if existing_hash != self.current_image_hash or not existing_suggestions:
-            base64_image = self.get_base64_string(self.frame_image)
-            if not base64_image:
-                raise ValueError("Invalid image data format")
-
-            response = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=self.prompt.get_gpt_4o_messages(base64_image)
-            )
-
-            gpt_suggestions = response.choices[0].message.content
-
-            self.suggestions_repository.save_text_suggestions(
-                self.feature_data,
-                gpt_suggestions
-            )
-            self.suggestions_repository.update_textual_suggestion(self.feature_data, self.current_image_hash)            
-            return gpt_suggestions
-        else:
+        existing_hash = self.suggestions_repository.get_image_hash_for_frame(
+            self.feature_data["design_name"],
+            self.feature_data.get("frame_id"),
+            self.feature_data.get("user_name")
+        )
+        
+        # Only use existing suggestions if the hash matches exactly
+        if existing_hash == self.current_image_hash and existing_suggestions:
             return existing_suggestions
+        
+        # Generate new suggestions
+        base64_image = self.get_base64_string(self.frame_image)
+        if not base64_image:
+            raise ValueError("Invalid image data format")
+
+        response = self.client.chat.completions.create(
+            model="gpt-4o",
+            messages=self.prompt.get_gpt_4o_messages(base64_image)
+        )
+
+        gpt_suggestions = response.choices[0].message.content
+
+        # Save suggestions and hash in a single atomic operation
+        self.suggestions_repository.save_text_suggestions(
+            self.feature_data,
+            gpt_suggestions
+        )
+        self.suggestions_repository.update_textual_suggestion(
+            self.feature_data, 
+            self.current_image_hash
+        )
+        
+        return gpt_suggestions
     
     def generate_suggested_image(self, generated_text_suggestions):
         try:
@@ -157,7 +163,9 @@ class Suggestions(SuggestionsGenerator):
             return None
 
     def generate_suggestions(self):
+        
         generated_text_suggestions = self.analyze_design()
+        self.analyze_design()
         self.generate_suggested_image(generated_text_suggestions)
 
     def __del__(self):
