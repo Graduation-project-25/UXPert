@@ -9,6 +9,8 @@ from utils.helpers import clean_prefix
 from datetime import datetime
 import hashlib
 import json
+import concurrent.futures
+from functools import partial
 
 class Feedback:
     def __init__(self):
@@ -110,6 +112,73 @@ class Feedback:
             "recognition_results": recognition_feedback_list if recognition_feedback_list else []
         }
 
+    def _evaluate_heuristics_parallel(self, elements_df, elements, screen_width, screen_height):
+        """Evaluate all heuristics in parallel using ThreadPoolExecutor"""
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # Prepare evaluators
+            consistency_evaluator = HeuristicFactory.check_rule("consistency")
+            minimalist_evaluator = HeuristicFactory.check_rule("minimalist")
+            error_handling_evaluator = HeuristicFactory.check_rule("errorHandling")
+            error_prevention_evaluator = HeuristicFactory.check_rule("errorPrevention")
+
+            # Submit all tasks
+            future_consistency = executor.submit(
+                consistency_evaluator.evaluate_rule, 
+                elements_df
+            )
+            future_minimalist = executor.submit(
+                minimalist_evaluator.evaluate_rule,
+                {"elements": elements},
+                screen_width,
+                screen_height
+            )
+            future_error_handling = executor.submit(
+                error_handling_evaluator.evaluate_rule,
+                elements_df
+            )
+            future_error_prevention = executor.submit(
+                error_prevention_evaluator.evaluate_rule,
+                elements_df
+            )
+
+            # Get results
+            consistency_results = future_consistency.result()
+            minimalist_results, _ = future_minimalist.result()
+            error_handling_results = future_error_handling.result()
+            error_prevention_results = future_error_prevention.result()
+
+            return (
+                consistency_results,
+                minimalist_results,
+                error_handling_results,
+                error_prevention_results
+            )
+
+    def _process_recognition_feedback(self, elements, screen_width, screen_height):
+        """Process recognition feedback sequentially (element-by-element)"""
+        recognition_feedback_list = []
+        recognition_evaluator = HeuristicFactory.check_rule("recognition")
+        
+        for element in elements:
+            recognition_results = recognition_evaluator.evaluate_rule(
+                element, 
+                element["type"], 
+                screen_width, 
+                screen_height, 
+                element["isIconLabeled"], 
+                element["width"], 
+                element["height"]
+            )
+            if recognition_results:
+                recognition_feedback_list.append({
+                    "element_id": element["id"],
+                    "element_name": element["name"],
+                    "element_type": element["type"],
+                    "Feedback": recognition_results,
+                })
+        
+        return recognition_feedback_list
+
     def process_elements(self):
         if request.method == 'OPTIONS':
             return '', 200
@@ -178,29 +247,13 @@ class Feedback:
         else:
             self._log(f"Processing new feedback for design '{design_name}'", "NEW")
 
-        # Retrieve existing elements from the database
-        latest_saved_data = self.figma_repository.get_saved_design(design_name, frame_name)
-        existing_elements = []
-        if latest_saved_data:
-            frames = latest_saved_data.get("frames", [])
-            existing_elements = [elem for frame in frames for elem in frame.get("elements", [])]
-        
-        # Compare incoming elements with existing elements
-        existing_element_ids = {elem["id"] for elem in existing_elements}
-        new_elements = [elem for elem in elements if elem["id"] not in existing_element_ids]
-
-        # Log new elements if any
-        if new_elements:
-            self._log("New elements found:", "INFO")
-            for elem in new_elements:
-                self._log(f"- Element ID: {elem['id']}, Name: {elem.get('name', 'Unnamed')}, Type: {elem.get('type', 'Unknown')}", "INFO")
-        else:
-            self._log("No new elements found", "INFO")
-
+        # Prepare data for processing
         elements_df = pd.DataFrame(elements)
+        screen_width = frame_info["screen_width"]
+        screen_height = frame_info["screen_height"]
 
         try:
-            # Process design data
+            # Store design data first
             feature_data = {
                 "user_name": user_name,
                 "design_name": design_name,
@@ -211,85 +264,32 @@ class Feedback:
                 "elements": elements,
                 "image64_string": imageDataUrl
             }
+            self.figma_repository.update_or_insert_frame(feature_data)
 
-            # Store design data
-            insert_result = self.figma_repository.update_or_insert_frame(feature_data)
-            
-            # Get the image for suggestions
-            frame_image = self.figma_repository.get_image_by_frame_id(
-                feature_data["design_name"],
-                feature_data["frame_id"]
+            # Process heuristics in parallel
+            self._log("Starting parallel heuristic evaluation...", "PROCESSING")
+            (consistency_results,
+             minimalist_results,
+             error_handling_results,
+             error_prevention_results) = self._evaluate_heuristics_parallel(
+                elements_df, elements, screen_width, screen_height
+             )
+
+            # Process recognition feedback sequentially
+            recognition_feedback_list = self._process_recognition_feedback(
+                elements, screen_width, screen_height
             )
-            if frame_image:
-                self.suggestions_repository.save_original_image_id(feature_data)
-            
-            # Retrieve Saved Design
-            latest_saved_data = self.figma_repository.get_saved_design(design_name, frame_name)
-            if not latest_saved_data:
-                self._log("Failed to retrieve saved design data", "ERROR")
-                return jsonify({"error": "Failed to retrieve saved design data"}), 500
 
-            # Process elements
-            frames = latest_saved_data.get("frames", [])
-            if not frames:
-                self._log("No frames found in design", "ERROR")
-                return jsonify({"error": "No frames found in the retrieved design"}), 500
-
-            elements_list = [elem for frame in frames for elem in frame.get("elements", [])]
-            if not elements_list:
-                self._log("No elements found in frames", "ERROR")
-                return jsonify({"error": "No elements found in the retrieved frames"}), 500
-
-            elements_db = pd.DataFrame(elements_list)
-            screen_width = frame_info["screen_width"]
-            screen_height = frame_info["screen_height"]
-
-            # Initialize evaluators
-            self._log("Initializing heuristic evaluators...", "PROCESSING")
-            consistency_evaluator = HeuristicFactory.check_rule("consistency")
-            minimalist_evaluator = HeuristicFactory.check_rule("minimalist")
-            recognition_evaluator = HeuristicFactory.check_rule("recognition")
-            error_handling_evaluator = HeuristicFactory.check_rule("errorHandling")
-            error_prevention_evaluator = HeuristicFactory.check_rule("errorPrevention")
-
-            # Evaluate Rules
-            self._log("Evaluating design heuristics...", "PROCESSING")
-            consistency_results = consistency_evaluator.evaluate_rule(elements_df)
-            minimalist_results, minimalist_score = minimalist_evaluator.evaluate_rule({"elements": elements}, screen_width, screen_height)
-            error_handling_results = error_handling_evaluator.evaluate_rule(elements_df)
-            error_prevention_results = error_prevention_evaluator.evaluate_rule(elements_db)
-            
-            # Process recognition feedback
-            recognition_feedback_list = []
-            for element in elements:
-                recognition_results = recognition_evaluator.evaluate_rule(
-                    element, 
-                    element["type"], 
-                    screen_width, 
-                    screen_height, 
-                    element["isIconLabeled"], 
-                    element["width"], 
-                    element["height"]
-                )
-                if recognition_results:
-                    recognition_feedback_list.append({
-                        "element_id": element["id"],
-                        "element_name": element["name"],
-                        "element_type": element["type"],
-                        "Feedback": recognition_results,
-                    })
-
-            # Prepare feedback data with content hash
+            # Prepare and save feedback
             feedback_data = {
                 "error_prevention_results": error_prevention_results,
                 "consistency_results": consistency_results,
                 "error_handling_results": error_handling_results,
                 "minimalist_results": self._transform_minimalist_results(minimalist_results),
                 "content_hash": current_content_hash,
-                "recognition_results": recognition_feedback_list if recognition_feedback_list else []
+                "recognition_results": recognition_feedback_list
             }
 
-            # Save feedback to database only if content changed or it's new
             update_result = self.feedback_repository.update_feedback(
                 design_name, 
                 frame_name, 
@@ -297,14 +297,10 @@ class Feedback:
             )
             
             if update_result.matched_count > 0:
-                self._log(f"Updated feedback for design '{design_name}' with new content", "UPDATE")
+                self._log(f"Updated feedback for design '{design_name}'", "UPDATE")
             elif update_result.upserted_id:
                 self._log(f"Created new feedback for design '{design_name}'", "CREATE")
-            else:
-                self._log("Failed to save feedback", "ERROR")
-                return jsonify({"error": "Failed to save feedback to database"}), 500
 
-            self._log("Feedback processing completed successfully", "SUCCESS")
             return jsonify(self._prepare_response_data(
                 error_prevention_results,
                 consistency_results,
@@ -316,7 +312,6 @@ class Feedback:
         except Exception as e:
             self._log(f"Processing error: {str(e)}", "ERROR")
             return jsonify({"error": f"Server error: {str(e)}"}), 500
-        
 
     def get_user_history(self):
         """Get feedback history for the current user"""
