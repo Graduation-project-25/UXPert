@@ -10,13 +10,13 @@ from datetime import datetime
 import hashlib
 import json
 import concurrent.futures
-from functools import partial
 
 class Feedback:
-    def __init__(self):
+    def __init__(self, verbose=False):
         self.figma_repository = FigmaFeaturesRepository()
         self.suggestions_repository = SuggestionsRepository()
         self.feedback_repository = FeedbackRepository()
+        self.verbose = verbose  # Control whether to print logs
 
     def _generate_content_hash(self, elements):
         """Generate a stable hash of the design elements to detect changes"""
@@ -24,12 +24,13 @@ class Feedback:
         return hashlib.md5(elements_str.encode()).hexdigest()
 
     def _log(self, message, feedback_type=None):
-        """Helper method for consistent logging with timestamps"""
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        if feedback_type:
-            print(f"[{timestamp}] [{feedback_type}] {message}")
-        else:
-            print(f"[{timestamp}] {message}")
+        """Helper method for logging (now silent by default)"""
+        if self.verbose:  # Only log if verbose mode is enabled
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            if feedback_type:
+                print(f"[{timestamp}] [{feedback_type}] {message}")
+            else:
+                print(f"[{timestamp}] {message}")
 
     def _transform_minimalist_results(self, minimalist_results):
         """Helper method to transform minimalist results into consistent format"""
@@ -165,14 +166,14 @@ class Feedback:
                 element["type"], 
                 screen_width, 
                 screen_height, 
-                element["isIconLabeled"], 
+                element.get("isIconLabeled", False), 
                 element["width"], 
                 element["height"]
             )
             if recognition_results:
                 recognition_feedback_list.append({
                     "element_id": element["id"],
-                    "element_name": element["name"],
+                    "element_name": element.get("name", "Unnamed"),
                     "element_type": element["type"],
                     "Feedback": recognition_results,
                 })
@@ -240,12 +241,6 @@ class Feedback:
                 }), 304
             else:
                 self._log("Screenshots differ - design has changed", "SCREENSHOT_COMPARE")
-
-        # If we get here, either it's new or content has changed
-        if existing_feedback:
-            self._log(f"Design content changed for '{design_name}', generating new feedback", "UPDATE")
-        else:
-            self._log(f"Processing new feedback for design '{design_name}'", "NEW")
 
         # Prepare data for processing
         elements_df = pd.DataFrame(elements)
