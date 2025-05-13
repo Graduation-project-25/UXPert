@@ -1,7 +1,6 @@
 import pandas as pd
 from flask import jsonify, request
 from components.Heuristics_Component.heuristic_factory import HeuristicFactory
-from components.Suggestions_Component.suggestions import Suggestions
 from database.feedback_repository import FeedbackRepository
 from database.figma_features_repository import FigmaFeaturesRepository
 from database.suggestions_repository import SuggestionsRepository

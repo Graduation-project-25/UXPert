@@ -3,7 +3,7 @@ from database.figma_features_repository import FigmaFeaturesRepository
 
 
 class FeatureExtractionRoute:
-    def check_frame():
+    def check_frame(self):
         try:
             data = request.get_json()
             if not data or not all(key in data for key in ['design_name', 'frame_name', 'elements']):
