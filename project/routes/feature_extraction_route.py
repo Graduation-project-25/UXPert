@@ -2,7 +2,7 @@ from flask import jsonify, request
 from database.figma_features_repository import FigmaFeaturesRepository
 
 
-class FeatureExtraction:
+class FeatureExtractionRoute:
     def check_frame():
         try:
             data = request.get_json()

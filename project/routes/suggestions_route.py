@@ -3,7 +3,7 @@ from database.figma_features_repository import FigmaFeaturesRepository
 from components.Suggestions_Component.suggestions import Suggestions as suggest
 
 
-class Suggestions:
+class SuggestionsRoute:
     def get_suggestions(self):
         try:
             data = request.get_json()

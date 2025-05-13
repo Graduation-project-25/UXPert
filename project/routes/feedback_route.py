@@ -10,7 +10,7 @@ from datetime import datetime
 import hashlib
 import json
 
-class Feedback:
+class FeedbackRoute:
     def __init__(self):
         self.figma_repository = FigmaFeaturesRepository()
         self.suggestions_repository = SuggestionsRepository()
