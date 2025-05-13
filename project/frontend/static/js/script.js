@@ -264,10 +264,12 @@ if (msg.type === 'collective-feedback') {
                         `<button class="feedback-nav-button prev" data-frame-id="${frameId}">←</button>
                          <button class="feedback-nav-button next" data-frame-id="${frameId}">→</button>` : ''}
                     </div>
-                    <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
-                    <div class="feedback-content">
-                        <div id="feedback-${frameId}">
-                            ${renderFeedback(item)}
+                    <div class="content-wrapper">
+                        <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
+                        <div class="feedback-content">
+                            <div id="feedback-${frameId}">
+                                ${renderFeedback(item)}
+                            </div>
                         </div>
                     </div>
                 </div>
