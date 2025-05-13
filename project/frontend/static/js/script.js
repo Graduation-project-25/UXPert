@@ -480,15 +480,18 @@ document.getElementById('close').onclick = () => {
 };
 
 document.getElementById('view-history').onclick = async () => {
+    console.log("View History button clicked"); // Debug log
     try {
         showLoading('HISTORY');
+        console.log("Sending history request to plugin"); // Debug log
         parent.postMessage({
             pluginMessage: {
-                type: 'request-history'
+                type: 'request-history',
+                debug: "History request from UI"
             }
         }, '*');
     } catch (error) {
-        console.error("Error loading history:", error);
+        console.error("Error in view-history handler:", error); // Debug log
         hideLoading();
         document.getElementById('error-message').textContent = `Failed to load history: ${error.message}`;
         document.getElementById('error-screen').style.display = 'block';

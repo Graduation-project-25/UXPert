@@ -91,6 +91,7 @@ export class ApiService {
 
 
     static async getUserHistory(userName: string): Promise<any> {
+        console.log(`Making history request for user: ${userName}`); // Debug log
         try {
             const response = await fetch('http://localhost:3000/get-history', {
                 method: 'POST',
@@ -98,14 +99,19 @@ export class ApiService {
                 body: JSON.stringify({ user_name: userName }),
             });
 
+            console.log(`History response status: ${response.status}`); // Debug log
+            
             if (!response.ok) {
                 const errorText = await response.text();
+                console.error("History API error:", errorText); // Debug log
                 throw new Error(`HTTP error! Status: ${response.status}, Body: ${errorText}`);
             }
 
-            return await response.json();
+            const data = await response.json();
+            console.log("History API response data:", data); // Debug log
+            return data;
         } catch (error) {
-            console.error("Error getting user history:", error);
+            console.error("Error in getUserHistory:", error); // Debug log
             throw error;
         }
     }

@@ -29,8 +29,7 @@ class FeedbackRepository(BaseRepository):
             'design_name': 1,
             'frame_name': 1,
             'created_at': 1,
-            'error_prevention_results.ErrorPreventionScore': 1,
-            'minimalist_results.Feedback': 1
+            'error_prevention_results': 1
         }).sort('created_at', -1).limit(20))
 
     def update_feedback(self, design_name, frame_name, feedback_data):

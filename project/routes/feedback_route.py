@@ -297,11 +297,28 @@ class FeedbackRoute:
         user_name = data.get("user_name", "Unknown User")
         try:
             history = self.feedback_repository.get_user_history(user_name)
-            logger.debug(f"Retrieved history for user '{user_name}'")
+            self._log(f"Retrieved history for user '{user_name}'", "HISTORY")
+            
+            # Format the history data
+            formatted_history = []
+            for item in history:
+                formatted_item = {
+                    "design_name": item.get("design_name", "Untitled Design"),
+                    "frame_name": item.get("frame_name", "Unnamed Frame"),
+                    "date": item.get("created_at", "").strftime("%Y-%m-%d %H:%M") if item.get("created_at") else "Unknown date",
+                    "error_prevention_score": next((score for score in [
+                        item.get("error_prevention_results", {}).get("ErrorPreventionScore"),
+                        item.get("error_prevention_results", {}).get("feedback", {}).get("ErrorPreventionScore")
+                    ] if score is not None), "N/A"),
+                }
+                formatted_history.append(formatted_item)
+            
             return jsonify({
                 "status": 200,
-                "history": self.formatter.format_user_history(history)
+                "history": formatted_history
             }), 200
+            
         except Exception as e:
-            logger.error(f"Error retrieving history: {str(e)}")
+            self._log(f"Error retrieving history: {str(e)}", "ERROR")
             return jsonify({"error": f"Server error: {str(e)}"}), 500
+        

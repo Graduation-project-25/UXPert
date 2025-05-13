@@ -386,19 +386,24 @@ figma.ui.onmessage = async (msg) => {
         }
 
         else if (msg.type === 'request-history') {
+            console.log("Received history request in plugin"); // Debug log
             try {
                 const userName = figma.currentUser?.name ?? "Unknown User";
+                console.log(`Fetching history for user: ${userName}`); // Debug log
                 const response = await ApiService.getUserHistory(userName);
+                console.log("History response:", response); // Debug log
                 
                 figma.ui.postMessage({
                     type: 'history-data',
-                    history: response.history
+                    history: response.history,
+                    debug: "History data from plugin"
                 });
             } catch (error) {
-                console.error('History error:', error);
+                console.error('History error:', error); // Debug log
                 figma.ui.postMessage({
                     type: 'history-error',
-                    message: error instanceof Error ? error.message : 'Failed to load history'
+                    message: error instanceof Error ? error.message : 'Failed to load history',
+                    debug: "History error from plugin"
                 });
             }
             return;
