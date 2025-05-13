@@ -175,15 +175,20 @@ progress::-moz-progress-bar {
   background-color: #e0e0e0;
   margin: 10px 0;
 }
-/* Container for the navigation buttons */
-
-/* Container for the navigation buttons */
+/* Container for the feedback area */
 .feedback-area {
     display: flex; /* Use Flexbox */
-    justify-content: space-between; /* Pushes buttons to opposite ends */
-    align-items: center; /* Vertically centers the buttons */
-    width: 100%; /* Ensures full width */
+    flex-direction: column; /* Stack children vertically */
+    width: 100%; /* Full width of the container */
     margin: 10px 0; /* Optional spacing */
+}
+
+/* Navigation buttons wrapper */
+.nav-buttons {
+    display: flex; /* Use Flexbox for button layout */
+    justify-content: space-between; /* Pushes buttons to opposite ends */
+    width: 100%; /* Full width to ensure edge-to-edge placement */
+    margin-bottom: 10px; /* Space between buttons and content */
 }
 
 /* Style for the navigation buttons */
@@ -194,7 +199,7 @@ progress::-moz-progress-bar {
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 16px; /* Matches arrow size */
+    font-size: 16px; /* Matches arrow size in your screenshot */
     transition: background-color 0.3s; /* Smooth hover effect */
 }
 
@@ -203,11 +208,11 @@ progress::-moz-progress-bar {
     background-color: #40a9ff;
 }
 
-/* Ensure buttons are treated as flex items */
+/* Ensure buttons don't stretch unnecessarily */
 .feedback-nav-button.prev,
 .feedback-nav-button.next {
-    flex: 0 0 auto; /* Prevents buttons from stretching */
-    margin: 0; /* Reset any default margins */
+    flex: 0 0 auto; /* Prevents stretching */
+    margin: 0; /* Reset margins */
 }
 
 #nav-buttons {

@@ -230,71 +230,72 @@ window.addEventListener('message', async (event) => {
     const msg = event.data.pluginMessage;
     if (!msg) return;
 
-    if (msg.type === 'collective-feedback') {
+if (msg.type === 'collective-feedback') {
+    document.getElementById('processing-screen').style.display = 'none';
+    document.getElementById('feedback-screen').style.display = 'block';
+
+    setTimeout(() => {
         document.getElementById('processing-screen').style.display = 'none';
         document.getElementById('feedback-screen').style.display = 'block';
 
-        setTimeout(() => {
-            document.getElementById('processing-screen').style.display = 'none';
-            document.getElementById('feedback-screen').style.display = 'block';
+        const pagesContainer = document.getElementById('pages-container');
+        pagesContainer.innerHTML = '';
+        pages.length = 0;
+        feedbackData = {};
 
-            const pagesContainer = document.getElementById('pages-container');
-            pagesContainer.innerHTML = '';
-            pages.length = 0;
-            feedbackData = {};
+        msg.feedback.forEach((item, index) => {
+            const frameId = item.frameId || `frame-${index}`;
+            const feedbackTypes = getFeedbackTypes(item);
 
-            msg.feedback.forEach((item, index) => {
-                const frameId = item.frameId || `frame-${index}`;
-                const feedbackTypes = getFeedbackTypes(item);
+            feedbackData[frameId] = {
+                item,
+                feedbackTypes,
+                currentFeedbackIndex: 0
+            };
 
-                feedbackData[frameId] = {
-                    item,
-                    feedbackTypes,
-                    currentFeedbackIndex: 0
-                };
-
-                const pageSection = document.createElement('div');
-                pageSection.className = 'page-section';
-                pageSection.style.display = index === 0 ? 'block' : 'none';
-                pageSection.innerHTML = `
-                    <h2>${item.frameName}</h2>
-                    ${feedbackTypes.length > 1 ?
-                    `<div><button class="feedback-nav-button prev" data-frame-id="${frameId}">←</button>
-                     <button class="feedback-nav-button next" data-frame-id="${frameId}">→</button>` : ''}
-                    <div class="feedback-area">
-                        <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
-                        <div class="feedback-content">
-                            <div id="feedback-${frameId}">
-                                ${renderFeedback(item)}
-                            </div>
+            const pageSection = document.createElement('div');
+            pageSection.className = 'page-section';
+            pageSection.style.display = index === 0 ? 'block' : 'none';
+            pageSection.innerHTML = `
+                <h2>${item.frameName}</h2>
+                <div class="feedback-area">
+                    <div class="nav-buttons">
+                        ${feedbackTypes.length > 1 ?
+                        `<button class="feedback-nav-button prev" data-frame-id="${frameId}">←</button>
+                         <button class="feedback-nav-button next" data-frame-id="${frameId}">→</button>` : ''}
+                    </div>
+                    <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
+                    <div class="feedback-content">
+                        <div id="feedback-${frameId}">
+                            ${renderFeedback(item)}
                         </div>
                     </div>
-                `;
-                pagesContainer.appendChild(pageSection);
-                pages.push(pageSection);
+                </div>
+            `;
+            pagesContainer.appendChild(pageSection);
+            pages.push(pageSection);
+        });
+
+        showPage(0);
+
+        document.querySelectorAll('.feedback-nav-button.prev').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const frameId = e.currentTarget.getAttribute('data-frame-id');
+                navigateFeedback(frameId, -1);
             });
+        });
 
-            showPage(0);
-
-            document.querySelectorAll('.feedback-nav-button.prev').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const frameId = e.currentTarget.getAttribute('data-frame-id');
-                    navigateFeedback(frameId, -1);
-                });
+        document.querySelectorAll('.feedback-nav-button.next').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const frameId = e.currentTarget.getAttribute('data-frame-id');
+                navigateFeedback(frameId, 1);
             });
+        });
 
-            document.querySelectorAll('.feedback-nav-button.next').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const frameId = e.currentTarget.getAttribute('data-frame-id');
-                    navigateFeedback(frameId, 1);
-                });
-            });
+    }, 300);
 
-        }, 300);
-
-        return;
-    }
-
+    return;
+}
     if (msg.type === 'design-modifications') {
         hideLoading();
 
