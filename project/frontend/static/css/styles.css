@@ -175,27 +175,39 @@ progress::-moz-progress-bar {
   background-color: #e0e0e0;
   margin: 10px 0;
 }
+/* Container for the navigation buttons */
+.feedback-area {
+    display: flex; /* Use Flexbox for layout control */
+    justify-content: space-between; /* Pushes buttons to opposite ends */
+    align-items: center; /* Vertically centers the buttons */
+    margin: 10px 0; /* Optional: Adds some spacing */
+    width: 100%; /* Ensures the container takes full width */
+}
 
+/* Style for the navigation buttons */
 .feedback-nav-button {
-  padding: 5px 10px;
-  font-size: 16px;
-  cursor: pointer;
-  border: none;
-  background: #008CBA;
-  color: white;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  float: inline-end;
-  justify-content: center;
-  margin-left: 10px;
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px; /* Matches the arrow size in your image */
+    transition: background-color 0.3s; /* Smooth hover effect */
 }
 
 .feedback-nav-button:hover {
-  background: #00c6ff;
+    background-color: #40a9ff;
 }
 
+/* Optional: Ensure buttons don't wrap or overlap */
+.feedback-nav-button.prev {
+    margin-right: auto; /* Pushes the prev button to the left */
+}
+
+.feedback-nav-button.next {
+    margin-left: auto; /* Pushes the next button to the right */
+}
 #nav-buttons {
   display: flex;
   justify-content: space-between;
