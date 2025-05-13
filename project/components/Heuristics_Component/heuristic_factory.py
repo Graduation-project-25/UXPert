@@ -7,7 +7,7 @@ from components.Heuristics_Component.recognition import Recognition
 
 
 class HeuristicFactory:
-   def check_rule(rule_type: str, df=None) -> HeuristicInterface:
+   def check_rule(rule_type: str) -> HeuristicInterface:
         match rule_type:
             case "consistency":
                 return Consistency()
