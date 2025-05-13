@@ -259,7 +259,7 @@ window.addEventListener('message', async (event) => {
                 pageSection.innerHTML = `
                     <h2>${item.frameName}</h2>
                     ${feedbackTypes.length > 1 ?
-                    `<button class="feedback-nav-button prev" data-frame-id="${frameId}">←</button>
+                    `<div><button class="feedback-nav-button prev" data-frame-id="${frameId}">←</button>
                      <button class="feedback-nav-button next" data-frame-id="${frameId}">→</button>` : ''}
                     <div class="feedback-area">
                         <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
