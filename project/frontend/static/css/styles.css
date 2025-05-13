@@ -155,12 +155,11 @@ progress::-moz-progress-bar {
 /* Wrapper for side-by-side layout */
 .content-wrapper {
     display: flex;
-    flex-direction: row; /* Arrange children side by side */
-    align-items: flex-start; /* Align items at the top */
+    flex-direction: row;
+    align-items: center;
     width: 100%;
-    gap: 15px; /* Use gap instead of margin-right to avoid redundancy */
+    gap: 15px;
 }
-
 /* Screenshot styling */
 .screenshot {
     max-width: 300px;
