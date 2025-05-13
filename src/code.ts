@@ -311,9 +311,6 @@ figma.ui.onmessage = async (msg) => {
             }
         }
 
-        
-        
-    
         else if (msg.type === 'apply-modifications') {
             try {
                 // 1. Validate incoming message
@@ -387,6 +384,26 @@ figma.ui.onmessage = async (msg) => {
                 figma.notify(` Failed: ${error}`);
             }
         }
+
+        else if (msg.type === 'request-history') {
+            try {
+                const userName = figma.currentUser?.name ?? "Unknown User";
+                const response = await ApiService.getUserHistory(userName);
+                
+                figma.ui.postMessage({
+                    type: 'history-data',
+                    history: response.history
+                });
+            } catch (error) {
+                console.error('History error:', error);
+                figma.ui.postMessage({
+                    type: 'history-error',
+                    message: error instanceof Error ? error.message : 'Failed to load history'
+                });
+            }
+            return;
+        }
+        
     }
     catch (error) {
         console.error('Plugin error:', error);
