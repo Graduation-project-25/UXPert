@@ -34,7 +34,6 @@ def get_user_history():
     user_name = data.get("user_name", "Unknown User")
     
     try:
-        # Assuming you have access to your repository instance
         history = feedback_repository.get_user_history(user_name)
         print(f"Retrieved history for user '{user_name}'")  # Debug log
         
