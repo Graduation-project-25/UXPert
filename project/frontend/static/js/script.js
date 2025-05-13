@@ -126,7 +126,7 @@ function showPage(index) {
         page.style.display = i === index ? 'block' : 'none';
     });
     currentPageIndex = index;
-    document.getElementById('prev').disabled = currentPageIndex === 0;
+    document.getElementById('page-back').disabled = currentPageIndex === 0;
     document.getElementById('next').disabled = currentPageIndex === pages.length - 1;
 }
 
@@ -276,7 +276,6 @@ window.addEventListener('message', async (event) => {
 
             showPage(0);
 
-            // Add event listeners for navigation buttons
             document.querySelectorAll('.feedback-nav-button.prev').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const frameId = e.currentTarget.getAttribute('data-frame-id');
@@ -389,7 +388,7 @@ window.addEventListener('message', async (event) => {
 });
 
 // Navigation buttons
-document.getElementById('prev').onclick = () => showPage(currentPageIndex - 1);
+document.getElementById('page-back').onclick = () => showPage(currentPageIndex - 1);
 document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 document.getElementById('back').onclick = () => {
     document.getElementById('modifications-screen').style.display = 'none';

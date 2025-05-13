@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +7,6 @@
     <link rel="stylesheet" href="http://127.0.0.1:3000/static/css/styles.css">
     <script src="http://127.0.0.1:3000/static/js/script.js" defer></script>
 </head>
-
 <body>
     <div id="splash-screen">
         <h1>
@@ -42,16 +40,14 @@
         <h1>Feedback</h1>
         <div id="pages-container" class="scrollable"></div>
         <div id="nav-buttons">
-            <button id="prev" disabled>Previous</button>
+            <button id="page-back" disabled>previous</button>
             <button id="next" disabled>Next</button>
         </div>
         <div class="action-buttons">
-            <!-- <button id="close">Close</button> -->
             <button id="modify-button" class="button">Suggestions Preview</button>
             <button id="view-history" class="button">View History</button>
         </div>
     </div>
-
 
     <div id="error-screen" style="display: none;">
         <h2>Error Modifying Design</h2>
@@ -85,8 +81,6 @@
             </div>
         </div>
     </div>
-    
-  
 
     <div id="modifications-screen" style="display: none;">
         <div class="modifications-header">
@@ -109,12 +103,7 @@
         <button id="back-to-feedback-from-mods" class="button primary-button">
             ← Back to Feedback
         </button>
-        <!-- <button id="apply-modifications" class="button primary-button">
-        Apply Modifications in Canvas
-    </button> -->
     </div>
-
-
 
     <div id="history-screen" style="display: none;">
         <div class="history-header">
@@ -130,34 +119,5 @@
             Back to Feedback
         </button>
     </div>
-
-      <!-- <div id="modifications-screen" style="display: none;">
-    <div class="modifications-header">
-        <h1>✨ Design Suggestions</h1>
-        <p class="subtitle">Here's how we can improve your design</p>
-    </div>
-    
-    <div class="modifications-container">
-        <div class="suggestions-column">
-            <div class="suggestions-box">
-                <h3>Recommendations</h3>
-                <div id="modification-summary" class="suggestions-content"></div>
-            </div>
-        </div>
-        
-        <div class="visual-column">
-            <div class="comparison-box">
-                <h3>Visual Comparison</h3>
-                <div id="design-preview" class="visual-comparison"></div>
-            </div>
-        </div>
-    </div>
-    
-    <button id="back-to-feedback-from-mods" class="button primary-button">
-        ← Back to Feedback
-    </button> -->
-
-
 </body>
-
 </html>
