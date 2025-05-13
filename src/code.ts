@@ -128,7 +128,7 @@ UiService.showUI();
 
 figma.ui.onmessage = async (msg) => {
     try {
-        console.log('Plugin received message:', msg.type);
+        console.log('Plugin received message:', msg.type); // Debug log
 
         if (msg.type === 'start-detection') {
             const frames = figma.currentPage.children.filter(node => node.type === "FRAME") as FrameNode[];
@@ -387,6 +387,7 @@ figma.ui.onmessage = async (msg) => {
 
         else if (msg.type === 'request-history') {
             console.log("Received history request in plugin"); // Debug log
+            figma.notify("History request received in plugin"); // Visual confirmation
             try {
                 const userName = figma.currentUser?.name ?? "Unknown User";
                 console.log(`Fetching history for user: ${userName}`); // Debug log

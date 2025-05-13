@@ -226,8 +226,41 @@ function formatHeuristicItems(text, sectionType) {
     return html;
 }
 
+// Ensure script runs after DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM fully loaded, initializing UI handlers"); // Debug log
+
+    // Verify view-history button exists
+    const viewHistoryButton = document.getElementById('view-history');
+    if (viewHistoryButton) {
+        console.log("View History button found, attaching event listener"); // Debug log
+        viewHistoryButton.onclick = async () => {
+            console.log("View History button clicked"); // Debug log
+            alert("View History button clicked!"); // Visual confirmation
+            try {
+                showLoading('HISTORY');
+                console.log("Sending request-history message"); // Debug log
+                parent.postMessage({
+                    pluginMessage: {
+                        type: 'request-history'
+                    }
+                }, '*');
+            } catch (error) {
+                console.error("Error in view-history handler:", error); // Debug log
+                hideLoading();
+                document.getElementById('error-message').textContent = `Failed to load history: ${error.message}`;
+                document.getElementById('error-screen').style.display = 'block';
+            }
+        };
+    } else {
+        console.error("View History button not found in DOM"); // Debug log
+        alert("Error: View History button not found!");
+    }
+});
+
 // Message handling
 window.addEventListener('message', async (event) => {
+    console.log("Received message in UI:", event.data); // Debug log
     const msg = event.data.pluginMessage;
     if (!msg) return;
 
@@ -393,6 +426,7 @@ window.addEventListener('message', async (event) => {
 
     if (msg.type === 'history-data') {
         console.log("Received history-data:", msg); // Debug log
+        alert("History data received!"); // Visual confirmation
         hideLoading();
         const historyList = document.getElementById('history-list');
         historyList.innerHTML = '';
@@ -420,6 +454,7 @@ window.addEventListener('message', async (event) => {
 
     if (msg.type === 'history-error') {
         console.error("Received history-error:", msg); // Debug log
+        alert("History error: " + msg.message); // Visual confirmation
         hideLoading();
         document.getElementById('error-message').textContent = `Failed to load history: ${msg.message}`;
         document.getElementById('error-screen').style.display = 'block';
