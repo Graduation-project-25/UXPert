@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import os
 from flask_cors import CORS
+from database import feedback_repository
 from routes.feature_extraction_route import FeatureExtractionRoute
 from routes.feedback_route import FeedbackRoute
 from routes.suggestions_route import SuggestionsRoute
@@ -19,9 +20,49 @@ feature_extraction = FeatureExtractionRoute()
  
 # Register routes
 app.route('/process', methods=['POST', 'OPTIONS'])(feedback.process_elements)
-app.route('/get-history', methods=['POST'])(feedback.get_user_history)
+# app.route('/get-history', methods=['POST'])(feedback.get_user_history)
 app.route('/get-suggestions', methods=['POST'])(suggestions.get_suggestions)
 app.route('/check-frame', methods=['POST'])(feature_extraction.check_frame)
+
+@app.route('/get-history', methods=['POST'])
+def get_user_history():
+    """Get feedback history for the current user"""
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data received"}), 400
+
+    user_name = data.get("user_name", "Unknown User")
+    
+    try:
+        # Assuming you have access to your repository instance
+        history = feedback_repository.get_user_history(user_name)
+        print(f"Retrieved history for user '{user_name}'")  # Debug log
+        
+        # Format the history data
+        formatted_history = []
+        for item in history:
+            formatted_item = {
+                "design_name": item.get("design_name", "Untitled Design"),
+                "frame_name": item.get("frame_name", "Unnamed Frame"),
+                "date": item.get("created_at", "").strftime("%Y-%m-%d %H:%M") if item.get("created_at") else "Unknown date",
+                "error_prevention_score": next(
+                    (score for score in [
+                        item.get("error_prevention_results", {}).get("ErrorPreventionScore"),
+                        item.get("error_prevention_results", {}).get("feedback", {}).get("ErrorPreventionScore")
+                    ] if score is not None),
+                    "N/A"
+                )
+            }
+            formatted_history.append(formatted_item)
+        
+        return jsonify({
+            "status": 200,
+            "history": formatted_history
+        }), 200
+        
+    except Exception as e:
+        print(f"Error retrieving history: {str(e)}")  # Debug log
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 @app.route('/', methods=['GET'])
 def home():
