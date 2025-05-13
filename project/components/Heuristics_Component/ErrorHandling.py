@@ -118,7 +118,6 @@ class ErrorHandling(HeuristicInterface):
 
         feedback = {
             "ErrorHandlingScore": round(error_handling_score, 2),
-            "ErrorIssues": error_issues,
             "RecoveryIssues": recovery_issues,
             "Feedback": f"Errors: {' '.join(error_issues) if error_issues else 'No issues found.'} | "
                         f"Recovery: {' '.join(recovery_issues) if recovery_issues else 'Recovery options are available.'}",
