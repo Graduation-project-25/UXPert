@@ -86,17 +86,18 @@ setTimeout(() => {
 // Start detection handler
 document.getElementById('start').onclick = () => {
     document.getElementById('initial-screen').style.display = 'none';
-    // 
-    
-
     document.getElementById('processing-screen').style.display = 'block';
+
 
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
     progressBar.value = 0;
     progressText.textContent = '0%';
 
+
     // Start both the progress animation and processing simultaneously
+    parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+
     const progressInterval = setInterval(() => {
         const currentProgress = parseInt(progressBar.value);
         if (currentProgress < 90) { // Only animate up to 90% during processing
@@ -104,10 +105,7 @@ document.getElementById('start').onclick = () => {
             progressBar.value = newProgress;
             progressText.textContent = `${newProgress}%`;
         }
-    }, 300);
-
-    // Start the actual processing
-    parent.postMessage({ pluginMessage: { type: 'start-detection' } }, '*');
+    }, 1000);
 
     // Listen for progress updates from the processing
     const progressListener = (event) => {
