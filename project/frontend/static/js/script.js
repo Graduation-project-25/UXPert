@@ -295,116 +295,117 @@ if (msg.type === 'collective-feedback') {
         showPage(0);
 
             // Add event listeners for navigation buttons
-            document.querySelectorAll('.feedback-nav-button.prev').forEach(button => {
+            document.querySelectorAll('.feedback-nav-button').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const frameId = e.currentTarget.getAttribute('data-frame-id');
-                    navigateFeedback(frameId, -1);
+                    navigateFeedback(frameId);
                 });
             });
 
-            document.querySelectorAll('.feedback-nav-button.next').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const frameId = e.currentTarget.getAttribute('data-frame-id');
-                    navigateFeedback(frameId, 1);
-                });
-            });
 
         }, 300);
+    
+    return;
+}
 
-        return;
-    }
-
-    if (msg.type === 'design-modifications') {
-        hideLoading();
-
-        const suggestionsText = msg.suggestions;
-
-        const parseSuggestions = (text) => {
-            const result = {
-                violations: [],
-                fixes: []
-            };
-            
-            let currentSection = null;
-            let currentHeuristic = null;
-            
-            text.split('\n').forEach(line => {
-                line = line.trim();
-                
-                if (line.startsWith('### Detected Heuristic Violations')) {
-                    currentSection = 'violations';
-                } 
-                else if (line.startsWith('### Suggestions to Fix')) {
-                    currentSection = 'fixes';
-                }
-                else if (line.match(/^\d+\.\s+\*\*(.*?)\*\*/) && currentSection) {
-                    currentHeuristic = {
-                        title: line.replace(/^\d+\.\s+\*\*(.*?)\*\*/, '$1').trim(),
-                        points: []
-                    };
-                    result[currentSection].push(currentHeuristic);
-                }
-                else if (line.startsWith('- ') && currentSection && currentHeuristic) {
-                    currentHeuristic.points.push(line.replace(/^-\s/, '').trim());
-                }
-            });
-            
-            return result;
+if (msg.type === 'design-modifications') {
+    hideLoading();
+    
+    const suggestionsText = msg.suggestions;
+    
+    // Parse the raw suggestions text into structured data
+    const parseSuggestions = (text) => {
+        const result = {
+            violations: [],
+            fixes: []
         };
-
-        const parsed = parseSuggestions(suggestionsText);
-
-        const generateSectionHTML = (items, sectionTitle) => {
-            if (!items || items.length === 0) return '';
+        
+        let currentSection = null;
+        let currentHeuristic = null;
+        
+        text.split('\n').forEach(line => {
+            line = line.trim();
             
-            return `
-                <div class="feedback-section">
-                    <h2>${sectionTitle}</h2>
-                    ${items.map(item => `
-                        <div class="heuristic-item">
-                            <h3>${item.title}</h3>
-                            <ul>
-                                ${item.points.map(point => `<li>${point}</li>`).join('')}
-                            </ul>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        };
-
-        document.getElementById('modification-summary').innerHTML = `
-            <div class="feedback-container">
-                ${generateSectionHTML(parsed.violations, 'Detected Heuristic Violations')}
-                ${generateSectionHTML(parsed.fixes, 'Suggested Improvements')}
+            // Detect section headers
+            if (line.startsWith('### Detected Heuristic Violations')) {
+                currentSection = 'violations';
+            } 
+            else if (line.startsWith('### Suggestions to Fix')) {
+                currentSection = 'fixes';
+            }
+            // Detect heuristic items (e.g., "1. **Visibility of System Status**")
+            else if (line.match(/^\d+\.\s+\*\*(.*?)\*\*/) && currentSection) {
+                currentHeuristic = {
+                    title: line.replace(/^\d+\.\s+\*\*(.*?)\*\*/, '$1').trim(),
+                    points: []
+                };
+                result[currentSection].push(currentHeuristic);
+            }
+            // Detect bullet points
+            else if (line.startsWith('- ') && currentSection && currentHeuristic) {
+                currentHeuristic.points.push(line.replace(/^-\s/, '').trim());
+            }
+        });
+        
+        return result;
+    };
+    
+    const parsed = parseSuggestions(suggestionsText);
+    
+    // Generate HTML for violations or fixes section
+    const generateSectionHTML = (items, sectionTitle) => {
+        if (!items || items.length === 0) return '';
+        
+        return `
+            <div class="feedback-section">
+                <h2>${sectionTitle}</h2>
+                ${items.map(item => `
+                    <div class="heuristic-item">
+                        <h3>${item.title}</h3>
+                        <ul>
+                            ${item.points.map(point => `<li>${point}</li>`).join('')}
+                        </ul>
+                    </div>
+                `).join('')}
             </div>
         `;
-
-        if (msg.modified_image && msg.original_image) {
-            document.getElementById('design-preview').innerHTML = `
-                <div class="image-comparison">
-                    <div class="image-container">
-                        <h4>Original Design</h4>
-                        <img src="${msg.original_image}" class="design-image" />
-                    </div>
-                    <div class="image-container">
-                        <h4>Modified Design</h4>
-                        <img src="data:image/png;base64,${msg.modified_image}" class="design-image" />
-                    </div>
+    };
+    
+    // Build the complete HTML
+    document.getElementById('modification-summary').innerHTML = `
+        <div class="feedback-container">
+          
+            ${generateSectionHTML(parsed.violations, 'Detected Heuristic Violations')}
+            ${generateSectionHTML(parsed.fixes, 'Suggested Improvements')}
+        </div>
+    `;
+    // Handle image display
+    if (msg.modified_image && msg.original_image) {
+        document.getElementById('design-preview').innerHTML = `
+            <div class="image-comparison">
+                <div class="image-container">
+                    <h4>Original Design</h4>
+                    <img src="${msg.original_image}" class="design-image" />
                 </div>
-            `;
-        }
-
-        document.getElementById('modifications-screen').style.display = 'block';
-        document.getElementById('feedback-screen').style.display = 'none';
+                <div class="image-container">
+                    <h4>Modified Design</h4>
+                    <img src="data:image/png;base64,${msg.modified_image}" class="design-image" />
+                </div>
+            </div>
+        `;
     }
+    
+    document.getElementById('modifications-screen').style.display = 'block';
+    document.getElementById('feedback-screen').style.display = 'none';
+}
+if (msg.type === 'progress-update') {
+    const progressFill = document.querySelector('.progress-fill');
+    const progressText = document.querySelector('.progress-text');
+    progressFill.style.width = `${msg.progress}%`;
+    progressText.textContent = `${msg.progress}%`;
+}
 
-    if (msg.type === 'progress-update') {
-        const progressFill = document.querySelector('.progress-fill');
-        const progressText = document.querySelector('.progress-text');
-        progressFill.style.width = `${msg.progress}%`;
-        progressText.textContent = `${msg.progress}%`;
-    }
-});
+        });
 
 // Navigation buttons
 document.getElementById('page-back').onclick = () => showPage(currentPageIndex - 1);
@@ -463,14 +464,19 @@ document.getElementById('close').onclick = () => {
 document.getElementById('view-history').onclick = async () => {
     console.log("View History button clicked"); // Debug log
     try {
+        // Get current user name from Figma
         const userName = figma.currentUser?.name || "Unknown User";
-
+        
+        // Show loading screen
         showLoading('HISTORY');
         
+        // Get history from backend
         const historyResponse = await ApiService.getUserHistory(userName);
         
+        // Hide loading screen
         hideLoading();
         
+        // Render history
         const historyList = document.getElementById('history-list');
         historyList.innerHTML = '';
         
@@ -491,6 +497,7 @@ document.getElementById('view-history').onclick = async () => {
             historyList.innerHTML = '<div class="no-history">No history found</div>';
         }
         
+        // Show history screen
         document.getElementById('feedback-screen').style.display = 'none';
         document.getElementById('history-screen').style.display = 'block';
     } catch (error) {
