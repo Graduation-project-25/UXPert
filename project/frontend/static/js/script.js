@@ -386,6 +386,39 @@ if (msg.type === 'collective-feedback') {
         progressFill.style.width = `${msg.progress}%`;
         progressText.textContent = `${msg.progress}%`;
     }
+
+    if (msg.type === 'history-data') {
+        hideLoading();
+        const historyList = document.getElementById('history-list');
+        historyList.innerHTML = '';
+        
+        if (msg.history && msg.history.length > 0) {
+            msg.history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <h3>${item.design_name} - ${item.frame_name}</h3>
+                    <div class="meta">
+                        <span>${item.date}</span>
+                    </div>
+                    <div class="score">Score: ${item.error_prevention_score}</div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        } else {
+            historyList.innerHTML = '<div class="no-history">No history found</div>';
+        }
+        
+        document.getElementById('feedback-screen').style.display = 'none';
+        document.getElementById('history-screen').style.display = 'block';
+    }
+
+    if (msg.type === 'history-error') {
+        hideLoading();
+        document.getElementById('error-message').textContent = msg.message;
+        document.getElementById('error-screen').style.display = 'block';
+    }
+
 });
 
 // Navigation buttons
@@ -446,36 +479,12 @@ document.getElementById('close').onclick = () => {
 
 document.getElementById('view-history').onclick = async () => {
     try {
-        const userName = figma.currentUser?.name || "Unknown User";
-
         showLoading('HISTORY');
-        
-        const historyResponse = await ApiService.getUserHistory(userName);
-        
-        hideLoading();
-        
-        const historyList = document.getElementById('history-list');
-        historyList.innerHTML = '';
-        
-        if (historyResponse.history && historyResponse.history.length > 0) {
-            historyResponse.history.forEach(item => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                historyItem.innerHTML = `
-                    <h3>${item.design_name} - ${item.frame_name}</h3>
-                    <div class="meta">
-                        <span>${item.date}</span>
-                    </div>
-                    <div class="score">Score: ${item.error_prevention_score}</div>
-                `;
-                historyList.appendChild(historyItem);
-            });
-        } else {
-            historyList.innerHTML = '<div class="no-history">No history found</div>';
-        }
-        
-        document.getElementById('feedback-screen').style.display = 'none';
-        document.getElementById('history-screen').style.display = 'block';
+        parent.postMessage({
+            pluginMessage: {
+                type: 'request-history'
+            }
+        }, '*');
     } catch (error) {
         console.error("Error loading history:", error);
         hideLoading();
