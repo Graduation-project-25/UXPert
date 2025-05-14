@@ -19,34 +19,29 @@ export class ApiService {
     }
 
         
-    static async getSuggestions(userData: any, ): Promise<any> {
-        try {
-            // console.log(`Fetching suggestions for frame ${frameId}`);
-            const response = await fetch('http://localhost:3000/get-suggestions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData),
+    static async getSuggestions(userData: any): Promise<any> {
+    try {
+        console.log('Getting suggestions with forceRefresh:', userData.forceRefresh);
+        const response = await fetch('http://localhost:3000/get-suggestions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...userData,
+                force_refresh: userData.forceRefresh || false
+            }),
+        });
 
-            });
-
-            console.log(`Response status: ${response.status}`);
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP error! Status: ${response.status}, Body: ${errorText}`);
-            }
-
-            const data = await response.json();
-            console.log('Suggestions response:', data);
-            return data;
-            
-        } catch (error) {
-            console.error("Error in getSuggestions:", error);
-            throw error;
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! Status: ${response.status}, Body: ${errorText}`);
         }
-    }
 
-    
+        return await response.json();
+    } catch (error) {
+        console.error("Error in getSuggestions:", error);
+        throw error;
+    }
+}
     
     static async sendModificationRequest(frameId: string, designData: any): Promise<any> {
         const response = await fetch('http://localhost:3000/modify-design', {
@@ -89,7 +84,33 @@ export class ApiService {
         }
     }
 
+    static async getSuggestionsHistory(requestData: {
+    designName: string;
+    frameId: string;
+    userName: string;
+}): Promise<any> {
+    try {
+        const response = await fetch('http://localhost:3000/get-suggestions-history', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                design_name: requestData.designName,
+                frame_id: requestData.frameId,
+                user_name: requestData.userName
+            }),
+        });
 
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! Status: ${response.status}, Body: ${errorText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error in getSuggestionsHistory:", error);
+        throw error;
+    }
+}
     static async getUserHistory(userName: string): Promise<any> {
         console.log(`Making history request for user: ${userName}`); // Debug log
         try {

@@ -4,6 +4,7 @@ let modifiedDesigns = [];
 let feedbackData = {};
 let currentSuggestions = null;
 let currentImages = null; // Store all feedback data per frame
+
 const ApiService = window.ApiService || (function() {
     console.error("ApiService not found!");
     return {
@@ -49,7 +50,29 @@ const LOADING_TYPES = {
         ]
     }
 };
+console.log("Script loaded - checking for history button");
 
+// Ensure we only add the listener once
+if (!window.historyButtonInitialized) {
+    document.getElementById('view-history-btn')?.addEventListener('click', function() {
+        const frameId = this.closest('#modifications-screen').dataset.frameId;
+        
+        if (!frameId) {
+            console.error("No frame ID in DOM");
+            alert("Please generate suggestions first");
+            return;
+        }
+
+        parent.postMessage({
+            pluginMessage: {
+                type: 'request-suggestions-history',
+                frameId: frameId
+            }
+        }, '*');
+    });
+    
+    window.historyButtonInitialized = true;
+}
 function showLoading(type = 'FEEDBACK') {
     const config = LOADING_TYPES[type] || LOADING_TYPES.FEEDBACK;
     const screen = document.getElementById('loading-screen');
@@ -225,11 +248,107 @@ function formatHeuristicItems(text, sectionType) {
     }
     return html;
 }
+// Show suggestions history
+function showSuggestionsHistory(frameId) {
+    const historyContainer = document.getElementById('history-container');
+    historyContainer.innerHTML = `
+        <div class="loading-state">
+            <div class="loader"></div>
+            <p>Loading suggestions history...</p>
+        </div>
+    `;
+    
+    // Use classList instead of style.display
+    document.getElementById('history-view').classList.remove('hidden');
+    document.getElementById('modifications-screen').classList.add('hidden');
+    
+    parent.postMessage({
+        pluginMessage: {
+            type: 'request-suggestions-history',
+            frameId: frameId
+        }
+    }, '*');
+}
 
+// Display history items
+function displayHistory(historyItems, frameId) {
+    console.log("Displaying history:", historyItems); // Debug log
+    
+    const historyContainer = document.getElementById('history-container');
+    const historyView = document.getElementById('history-view');
+    const modificationsScreen = document.getElementById('modifications-screen');
+    
+    // Ensure elements exist
+    if (!historyContainer || !historyView || !modificationsScreen) {
+        console.error("Critical elements missing in DOM");
+        return;
+    }
+
+    // Clear previous content
+    historyContainer.innerHTML = '';
+    
+    if (!historyItems || historyItems.length === 0) {
+        historyContainer.innerHTML = `
+            <div class="no-history-message">
+                <img src="https://cdn-icons-png.flaticon.com/512/4076/4076478.png" width="64">
+                <h3>No Suggestions History Found</h3>
+                <p>We couldn't find any previous suggestions for this design.</p>
+                <p>Modify the design to generate new suggestions.</p>
+            </div>
+        `;
+    } else {
+        historyItems.forEach((item, index) => {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <div class="history-header">
+                    <h3>Version ${index + 1}</h3>
+                    <small>${new Date(item.timestamp).toLocaleString()}</small>
+                </div>
+                <div class="history-suggestions">${item.text}</div>
+                <img src="data:image/png;base64,${item.image_data}" class="history-image" />
+                <button class="view-version" data-frame-id="${frameId}" data-version-id="${index}">
+                    View This Version
+                </button>
+            `;
+            historyContainer.appendChild(historyItem);
+        });
+    }
+    
+    // Update visibility
+    modificationsScreen.classList.add('hidden');
+    historyView.classList.remove('hidden');
+    
+    console.log("History view should now be visible"); // Debug log
+}
+// Click handler for version restoration
+document.addEventListener('click', function(event) {
+    // Get the clicked element with safety checks
+    var target = event.target;
+    while (target && target.nodeName !== 'BUTTON' && target !== document) {
+        target = target.parentNode;
+    }
+    
+    // Check if it's a version button
+    if (target && target.classList && target.classList.contains('view-version')) {
+        const frameId = target.getAttribute('data-frame-id');
+        const versionId = target.getAttribute('data-version-id');
+        
+        // Validate before sending
+        if (frameId && versionId) {
+            figma.ui.postMessage({
+                type: 'restore-version',
+                frameId: frameId,
+                versionId: parseInt(versionId, 10)  // Convert to number
+            });
+        }
+    }
+});
 // Message handling
 window.addEventListener('message', async (event) => {
     const msg = event.data.pluginMessage;
     if (!msg) return;
+    
 
     if (msg.type === 'collective-feedback') {
         document.getElementById('processing-screen').style.display = 'none';
@@ -302,6 +421,9 @@ window.addEventListener('message', async (event) => {
 
     if (msg.type === 'design-modifications') {
         hideLoading();
+
+        const modScreen = document.getElementById('modifications-screen');
+        modScreen.dataset.frameId = msg.frameId
 
         const suggestionsText = msg.suggestions;
 
@@ -390,6 +512,33 @@ window.addEventListener('message', async (event) => {
         progressFill.style.width = `${msg.progress}%`;
         progressText.textContent = `${msg.progress}%`;
     }
+    console.log("Attempting to attach history button listener");
+    const historyBtn = document.getElementById('view-history-btn');
+    console.log("Found button element:", historyBtn);
+
+    
+    if (msg?.type === 'suggestions-history-data') {
+        console.log("Received history data:", {
+            frameId: msg.frameId,
+            count: msg.history?.length || 0
+        });
+        displayHistory(msg.history, msg.frameId);
+    }
+    else if (msg?.type === 'history-error') {
+        console.error("History error:", msg.message);
+        const historyContainer = document.getElementById('history-container');
+        if (historyContainer) {
+            historyContainer.innerHTML = `
+                <div class="error-message">
+                    <h3>Error Loading History</h3>
+                    <p>${msg.message || 'Could not load suggestions history'}</p>
+                    <button onclick="showSuggestionsHistory('${msg.frameId}')">
+                        Try Again
+                    </button>
+                </div>
+            `;
+        }
+    }
 });
 
 // Navigation buttons
@@ -397,26 +546,26 @@ document.getElementById('page-back').onclick = () => showPage(currentPageIndex -
 document.getElementById('next').onclick = () => showPage(currentPageIndex + 1);
 
 document.getElementById('modify-button').onclick = async () => {
-    console.log("Modify button clicked"); // Debug log
+    console.log("Modify button clicked");
     showLoading('SUGGESTIONS');
     try {
         const currentFrame = pages[currentPageIndex];
-        if (!currentFrame) {
-            throw new Error("No current frame found");
-        }
+        if (!currentFrame) throw new Error("No current frame found");
         
         const frameNameElement = currentFrame.querySelector('h2');
-        if (!frameNameElement) {
-            throw new Error("Could not find frame name element");
-        }
+        if (!frameNameElement) throw new Error("Could not find frame name element");
         
         const frameName = frameNameElement.textContent;
-        console.log("Requesting modifications for frame:", frameName); // Debug log
+        const screenshot = currentFrame.querySelector('.screenshot').src;
+        
+        console.log("Requesting modifications with current screenshot");
         
         parent.postMessage({
             pluginMessage: {
                 type: 'request-modifications',
-                frameName: frameName
+                frameName: frameName,
+                currentImage: screenshot, // Pass current image data
+                forceRefresh: true       // Force new generation
             }
         }, '*');
         
@@ -427,7 +576,6 @@ document.getElementById('modify-button').onclick = async () => {
         hideLoading();
     }
 };
-
 document.getElementById('back-to-feedback-from-mods').onclick = () => {
     document.getElementById('modifications-screen').style.display = 'none';
     document.getElementById('feedback-screen').style.display = 'block';
@@ -443,46 +591,22 @@ document.getElementById('close').onclick = () => {
     parent.postMessage({ pluginMessage: { type: 'close' } }, '*'); 
 };
 
-document.getElementById('view-history').onclick = async () => {
-    console.log("View History button clicked"); // Debug log
-    try {
-        const userName = figma.currentUser?.name || "Unknown User";
-        
-        showLoading('HISTORY');
-        
-        const historyResponse = await ApiService.getUserHistory(userName);
-        
-        hideLoading();
-        
-        const historyList = document.getElementById('history-list');
-        historyList.innerHTML = '';
-        
-        if (historyResponse.history && historyResponse.history.length > 0) {
-            historyResponse.history.forEach(item => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                historyItem.innerHTML = `
-                    <h3>${item.design_name} - ${item.frame_name}</h3>
-                    <div class="meta">
-                        <span>${item.date}</span>
-                    </div>
-                    <div class="score">Score: ${item.error_prevention_score}</div>
-                `;
-                historyList.appendChild(historyItem);
-            });
-        } else {
-            historyList.innerHTML = '<div class="no-history">No history found</div>';
-        }
-        
-        document.getElementById('feedback-screen').style.display = 'none';
-        document.getElementById('history-screen').style.display = 'block';
-    } catch (error) {
-        console.error("Error in view-history handler:", error); // Debug log
-        hideLoading();
-        document.getElementById('error-message').textContent = `Failed to load history: ${error.message}`;
-        document.getElementById('error-screen').style.display = 'block';
+document.getElementById('view-history-btn')?.addEventListener('click', function() {
+    const frameId = this.closest('#modifications-screen').dataset.frameId;
+    
+    if (!frameId) {
+        console.error("No frame ID in DOM");
+        alert("Please generate suggestions first");
+        return;
     }
-};
+
+    parent.postMessage({
+        pluginMessage: {
+            type: 'request-suggestions-history',
+            frameId: frameId
+        }
+    }, '*');
+});
 
 document.getElementById('back-from-history').onclick = () => {
     document.getElementById('history-screen').style.display = 'none';
@@ -507,3 +631,25 @@ document.getElementById('apply-modifications').onclick = async () => {
         figma.notify(`UI Error: ${error.message}`);
     }
 };
+
+
+
+
+
+
+
+document.getElementById('close-history').addEventListener('click', function() {
+    const historyView = document.getElementById('history-view');
+    const modificationsScreen = document.getElementById('modifications-screen');
+    
+    if (historyView && modificationsScreen) {
+        historyView.classList.add('hidden');
+        modificationsScreen.classList.remove('hidden');
+    }
+});
+
+console.log("Debugging view history button...");
+
+// Check if button exists
+
+

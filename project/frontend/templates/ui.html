@@ -99,10 +99,40 @@
                 <!-- Images will be inserted here -->
             </div>
         </div>
-
+      
         <button id="back-to-feedback-from-mods" class="button primary-button">
             ← Back to Feedback
         </button>
+       <!-- <button id="view-history-btn" class="button primary-button">
+        View Suggestions History
+    </button> -->
+
+        
+        <div id="history-view" class="hidden history-view">
+    <div class="history-header">
+        <h2>Suggestions History</h2>
+        <button id="close-history" class="close-button">×</button>
+    </div>
+    <div id="history-container" class="history-items"></div>
+</div>
+
+<script>
+function renderHistoryItem(item) {
+    return `
+        <div class="history-item">
+            <div class="history-timestamp">${new Date(item.timestamp).toLocaleString()}</div>
+            <div class="history-suggestion">${item.text}</div>
+            <img class="history-image" src="data:image/png;base64,${item.image_data}" />
+        </div>
+    `;
+}
+
+function showHistory(historyItems) {
+    const container = document.querySelector('.history-items');
+    container.innerHTML = historyItems.map(renderHistoryItem).join('');
+    document.getElementById('history-view').classList.remove('hidden');
+}
+</script>
     </div>
 
     <div id="history-screen" style="display: none;">

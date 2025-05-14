@@ -3,6 +3,20 @@ import { ApiService } from "./services/ApiService";
 import { UiService } from "./services/UiService";
 import { FeedbackResult } from "./types";
 
+
+
+// Add these new interfaces for history functionality
+interface HistoryRequestMessage {
+    type: 'request-suggestions-history';  // Changed to match your implementation
+    frameId: string;
+}
+
+interface HistoryResponseMessage {
+    type: 'suggestions-history-data';  // Changed to match your implementation
+    history: any[];
+    frameId: string;
+}
+
 // Interface for recognition result to fix TypeScript error
 interface RecognitionResult {
     element_id?: string;
@@ -257,48 +271,43 @@ figma.ui.onmessage = async (msg) => {
                 ) as FrameNode[];
                 
                 if (frames.length === 0) {
-                    const errorMsg = `Frame "${msg.frameName}" not found`;
-                    console.error(errorMsg);
-                    figma.notify(errorMsg);
-                    figma.ui.postMessage({
-                        type: 'error',
-                        message: errorMsg
-                    });
-                    return;
+                    throw new Error(`Frame "${msg.frameName}" not found`);
                 }
-        
+
                 const frame = frames[0];
-                console.log("Exporting frame as image...");
+                console.log("Exporting current frame as image...");
                 const imageBytes = await frame.exportAsync({ format: "PNG" });
-                const imageBase64 = figma.base64Encode(imageBytes);
-                const imageDataUrl = `data:image/png;base64,${imageBase64}`;
-        
+                const currentImageBase64 = figma.base64Encode(imageBytes);
+                
+                // Compare with previous image if provided
+                if (msg.currentImage) {
+                    const previousImageBase64 = msg.currentImage.split(',')[1];
+                    if (currentImageBase64 === previousImageBase64 && !msg.forceRefresh) {
+                        console.log("Design hasn't changed - using cached suggestions");
+                        // Handle cached case
+                    }
+                }
+
                 const designName = figma.root.name || "Untitled Design";
                 const userName = figma.currentUser?.name ?? "Unknown User";
                 
-                console.log("Getting suggestions...");
-                // const response = await ApiService.getSuggestions(frame.id, designName, userName);
                 const response = await ApiService.getSuggestions({
                     userName,
                     designName,
-                    imageDataUrl,
+                    imageDataUrl: `data:image/png;base64,${currentImageBase64}`,
                     frame: {
                         frameName: frame.name,
                         frameId: frame.id,
                         screen_width: frame.width,
                         screen_height: frame.height
                     },
+                    forceRefresh: msg.forceRefresh
                 });
 
-                if (response.error) {
-                    throw new Error(response.error);
-                }
-
-                console.log("Showing modifications...");
                 UiService.showDesignModifications(
                     frame.id,
                     response.suggestions,
-                    imageDataUrl,
+                    `data:image/png;base64,${currentImageBase64}`,
                     response.modified_image
                 );
                 
@@ -409,6 +418,72 @@ figma.ui.onmessage = async (msg) => {
             return;
         }
         
+    
+
+    else if (msg.type === 'request-suggestions-history') {
+    console.log("Fetching suggestions history for frame:", msg.frameId);
+    try {
+        const designName = figma.root.name || "Untitled Design";
+        const userName = figma.currentUser?.name ?? "Unknown User";
+        
+        const response = await ApiService.getSuggestionsHistory({
+            designName,
+            frameId: msg.frameId,
+            userName
+        });
+
+        console.log("History response:", response);
+        
+        figma.ui.postMessage({
+            type: 'suggestions-history-data',
+            frameId: msg.frameId,
+            history: response.history || []
+        });
+    } catch (error) {
+        console.error('Error fetching suggestions history:', error);
+        figma.ui.postMessage({
+            type: 'history-error',
+            message: error instanceof Error ? error.message : 'Failed to load history',
+            frameId: msg.frameId
+        });
+    }
+    if (msg.type === 'request-suggestions-history' && !msg.frameId) {
+    figma.notify("Error: No frame ID provided");
+    return;
+}
+}
+    
+else if (msg.type === 'restore-version') {
+    try {
+        const designName = figma.root.name || "Untitled Design";
+        const userName = figma.currentUser?.name ?? "Unknown User";
+        
+        // Get the specific version from history
+        const historyResponse = await ApiService.getSuggestionsHistory({
+            designName,
+            frameId: msg.frameId,
+            userName
+        });
+        
+        const versionToRestore = historyResponse.history[msg.versionId];
+        
+        if (!versionToRestore) {
+            throw new Error('Requested version not found');
+        }
+        
+        // Update UI to show this version
+        figma.ui.postMessage({
+            type: 'version-restored',
+            frameId: msg.frameId,
+            suggestions: versionToRestore.text,
+            imageData: versionToRestore.image_data
+        });
+        
+    } catch (error) {
+        console.error('Error restoring version:', error);
+        figma.notify('Failed to restore version. See console for details.');
+    }
+}    
     }
     catch (error) {
         console.error('Plugin error:', error);

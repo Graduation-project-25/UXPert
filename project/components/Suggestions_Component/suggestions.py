@@ -163,8 +163,8 @@ class Suggestions(SuggestionsGenerator):
             return None
 
     def generate_suggestions(self):
-        generated_text_suggestions = self.analyze_design()
         
+        generated_text_suggestions = self.analyze_design()
         self.analyze_design()
         self.generate_suggested_image(generated_text_suggestions)
 
