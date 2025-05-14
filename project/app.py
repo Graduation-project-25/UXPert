@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import os
 from flask_cors import CORS
-from database import feedback_repository
+from database.feedback_repository import FeedbackRepository
 from routes.feature_extraction_route import FeatureExtractionRoute
 from routes.feedback_route import FeedbackRoute
 from routes.suggestions_route import SuggestionsRoute
@@ -32,11 +32,13 @@ def get_user_history():
         return jsonify({"error": "No data received"}), 400
 
     user_name = data.get("user_name", "Unknown User")
-    
+
     try:
-        history = feedback_repository.get_user_history(user_name)
+        # Create repository instance
+        repository = FeedbackRepository()
+        history = repository.get_user_history(user_name)
         print(f"Retrieved history for user '{user_name}'")  # Debug log
-        
+
         # Format the history data
         formatted_history = []
         for item in history:
@@ -62,7 +64,8 @@ def get_user_history():
     except Exception as e:
         print(f"Error retrieving history: {str(e)}")  # Debug log
         return jsonify({"error": f"Server error: {str(e)}"}), 500
-
+    
+    
 @app.route('/', methods=['GET'])
 def home():
     return "Welcome to the Flask server!", 200
