@@ -31,11 +31,12 @@ An intelligent Figma plugin that evaluates UI designs using established UX heuri
 | UX Rules Engine          | Custom logic for Nielsen heuristics      |
 
 ## 📸 Screenshots
-Original Design
-![original](assets/original.png)
 
-Modified Enhanced Design
-![Suggestion](assets/modified_output.png)
+Feedback Example
+![feedback](assets/modified_output.png)
+
+Suggestion Example
+![suggestion](assets/sug.png)
 
 
 
