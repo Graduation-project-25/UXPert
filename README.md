@@ -33,10 +33,10 @@ An intelligent Figma plugin that evaluates UI designs using established UX heuri
 ## 📸 Screenshots
 
 Feedback Example
-![feedback](assets/modified_output.png)
+![feedback](assets/feedback.png)
 
 Suggestion Example
-![suggestion](assets/sug.png)
+![suggestion](assets/sugg.png)
 
 
 
