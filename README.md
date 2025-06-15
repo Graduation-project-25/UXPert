@@ -30,9 +30,17 @@ An intelligent Figma plugin that evaluates UI designs using established UX heuri
 | Visualization (Optional) | Matplotlib, Seaborn                      |
 | UX Rules Engine          | Custom logic for Nielsen heuristics      |
 
+## 📸 Screenshots
 
 
-##🧠 How It Works
+| Original Design | Modified Enhanced Design |
+|------------------|--------------------|
+| ![Feedback](assets/original.png) | ![Suggestion](assets/modified_design.png) |
+
+
+
+
+## 🧠 How It Works
 1. Feature Extraction – Gathers layout, color, and positioning info from your Figma design.
 2. Heuristic Evaluation – Runs checks based on UX best practices.
 3. Feedback Generation – Generates actionable insights on each design frame.
