@@ -35,7 +35,7 @@ An intelligent Figma plugin that evaluates UI designs using established UX heuri
 
 | Original Design | Modified Enhanced Design |
 |------------------|--------------------|
-| ![Feedback](assets/original.png) | ![Suggestion](assets/modified_design.png) |
+| ![Feedback](assets/original.png) | ![Suggestion](assets/modified_output.png) |
 
 
 
