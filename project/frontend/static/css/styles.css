@@ -41,6 +41,56 @@ h1 {
   text-transform: uppercase;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
+mod_button{
+background: linear-gradient(45deg, #008CBA, #00c6ff);
+  color: white;
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+
+}
+.mod_button:hover {
+  background: linear-gradient(45deg, #008CBA, #00c6ff);
+  transform: scale(1.05);
+}
+
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 9px;
+}
+
+/* Make sure h1 and button are aligned perfectly */
+.feedback-header h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1; /* helps alignment */
+}
+
+/* Menu-link styling for visibility against blue background */
+.menu-link {
+  background: none;
+  border: none;
+  color: #ffffff; /* white for contrast */
+  font-size: 14px;
+  cursor: pointer;
+  padding: 6px 10px;
+  text-decoration: underline;
+  font-weight: 500;
+  align-self: center;
+}
+
+/* Optional: slightly darken on hover */
+.menu-link:hover {
+  color: #e0e0e0;
+}
+
+
 
 button {
   padding: 15px 30px;
@@ -1461,6 +1511,10 @@ img {
 
 #next {
   animation: bounce 1.5s infinite;
+}
+#modify-button {
+  float: right;
+  margin-top: 15px;
 }
 
 /* History Screen Styles */
