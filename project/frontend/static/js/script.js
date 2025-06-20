@@ -345,36 +345,36 @@ document.addEventListener('click', function(event) {
     }
 });
 // Ensure script runs after DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM fully loaded, initializing UI handlers"); // Debug log
+// document.addEventListener('DOMContentLoaded', () => {
+//     console.log("DOM fully loaded, initializing UI handlers"); // Debug log
 
-    // Verify view-history button exists
-    const viewHistoryButton = document.getElementById('view-history');
-    if (viewHistoryButton) {
-        console.log("View History button found, attaching event listener"); // Debug log
-        viewHistoryButton.onclick = async () => {
-            console.log("View History button clicked"); // Debug log
-            alert("View History button clicked!"); // Visual confirmation
-            try {
-                showLoading('HISTORY');
-                console.log("Sending request-history message"); // Debug log
-                parent.postMessage({
-                    pluginMessage: {
-                        type: 'request-history'
-                    }
-                }, '*');
-            } catch (error) {
-                console.error("Error in view-history handler:", error); // Debug log
-                hideLoading();
-                document.getElementById('error-message').textContent = `Failed to load history: ${error.message}`;
-                document.getElementById('error-screen').style.display = 'block';
-            }
-        };
-    } else {
-        console.error("View History button not found in DOM"); // Debug log
-        alert("Error: View History button not found!");
-    }
-});
+//     // Verify view-history button exists
+//     const viewHistoryButton = document.getElementById('view-history');
+//     if (viewHistoryButton) {
+//         console.log("View History button found, attaching event listener"); // Debug log
+//         viewHistoryButton.onclick = async () => {
+//             console.log("View History button clicked"); // Debug log
+//             alert("View History button clicked!"); // Visual confirmation
+//             try {
+//                 showLoading('HISTORY');
+//                 console.log("Sending request-history message"); // Debug log
+//                 parent.postMessage({
+//                     pluginMessage: {
+//                         type: 'request-history'
+//                     }
+//                 }, '*');
+//             } catch (error) {
+//                 console.error("Error in view-history handler:", error); // Debug log
+//                 hideLoading();
+//                 document.getElementById('error-message').textContent = `Failed to load history: ${error.message}`;
+//                 document.getElementById('error-screen').style.display = 'block';
+//             }
+//         };
+//     } else {
+//         console.error("View History button not found in DOM"); // Debug log
+//         alert("Error: View History button not found!");
+//     }
+// });
 
 // Message handling
 window.addEventListener('message', async (event) => {
@@ -650,6 +650,11 @@ document.getElementById('back-to-feedback-from-mods').onclick = () => {
     document.getElementById('feedback-screen').style.display = 'block';
     showPage(currentPageIndex);
 };
+document.getElementById('back-to-feedback-from-history').onclick = () => {
+    document.getElementById('history-screen').style.display = 'none';
+    document.getElementById('feedback-screen').style.display = 'block';
+    showPage(currentPageIndex);
+};
 
 document.getElementById('close').onclick = () => {
     document.getElementById('processing-screen').style.display = 'none'; 
@@ -660,22 +665,22 @@ document.getElementById('close').onclick = () => {
     parent.postMessage({ pluginMessage: { type: 'close' } }, '*'); 
 };
 
-document.getElementById('view-history-btn')?.addEventListener('click', function() {
-    const frameId = this.closest('#modifications-screen').dataset.frameId;
+// document.getElementById('view-history-btn')?.addEventListener('click', function() {
+//     const frameId = this.closest('#modifications-screen').dataset.frameId;
     
-    if (!frameId) {
-        console.error("No frame ID in DOM");
-        alert("Please generate suggestions first");
-        return;
-    }
+//     if (!frameId) {
+//         console.error("No frame ID in DOM");
+//         alert("Please generate suggestions first");
+//         return;
+//     }
 
-    parent.postMessage({
-        pluginMessage: {
-            type: 'request-suggestions-history',
-            frameId: frameId
-        }
-    }, '*');
-});
+//     parent.postMessage({
+//         pluginMessage: {
+//             type: 'request-suggestions-history',
+//             frameId: frameId
+//         }
+//     }, '*');
+// });
 document.getElementById('view-history').onclick = async () => {
     console.log("View History button clicked"); // Debug log
     try {
