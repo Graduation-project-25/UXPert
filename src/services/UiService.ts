@@ -49,6 +49,25 @@ export class UiService {
         history: historyItems
     });
 }
+
+    static showHistoryData(history: any) {
+        console.log("Sending history data to UI"); // Debug log
+        figma.ui.postMessage({
+            type: 'history-data',
+            history,
+            debug: "History data from UiService"
+        });
+    }
+
+    static showHistoryError(message: string) {
+        console.error("Sending history error to UI:", message); // Debug log
+        figma.ui.postMessage({
+            type: 'history-error',
+            message,
+            debug: "History error from UiService"
+        });
+    }
+
     static getModifiedDesign(frameId: string) {
         return this.modifiedDesigns[frameId] || null;
     }

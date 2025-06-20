@@ -142,7 +142,7 @@ UiService.showUI();
 
 figma.ui.onmessage = async (msg) => {
     try {
-        console.log('Plugin received message:', msg.type);
+        console.log('Plugin received message:', msg.type); // Debug log
 
         if (msg.type === 'start-detection') {
             const frames = figma.currentPage.children.filter(node => node.type === "FRAME") as FrameNode[];
@@ -396,24 +396,16 @@ figma.ui.onmessage = async (msg) => {
 
         else if (msg.type === 'request-history') {
             console.log("Received history request in plugin"); // Debug log
+            figma.notify("History request received in plugin"); // Visual confirmation
             try {
                 const userName = figma.currentUser?.name ?? "Unknown User";
                 console.log(`Fetching history for user: ${userName}`); // Debug log
                 const response = await ApiService.getUserHistory(userName);
-                console.log("History response:", response); // Debug log
-                
-                figma.ui.postMessage({
-                    type: 'history-data',
-                    history: response.history,
-                    debug: "History data from plugin"
-                });
+                console.log("History response:", JSON.stringify(response, null, 2)); // Debug log
+                UiService.showHistoryData(response.history);
             } catch (error) {
-                console.error('History error:', error); // Debug log
-                figma.ui.postMessage({
-                    type: 'history-error',
-                    message: error instanceof Error ? error.message : 'Failed to load history',
-                    debug: "History error from plugin"
-                });
+                console.error('History error:', error, error instanceof Error ? error.stack : ''); // Debug log
+                UiService.showHistoryError(error instanceof Error ? error.message : 'Failed to load history');
             }
             return;
         }

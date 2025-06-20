@@ -1,6 +1,7 @@
 from flask import Flask, Request, request, jsonify
 import os
 from flask_cors import CORS
+from database.feedback_repository import FeedbackRepository
 from database import feedback_repository
 from database.figma_features_repository import FigmaFeaturesRepository
 from database.suggestions_repository import SuggestionsRepository
@@ -93,12 +94,13 @@ def get_user_history():
         return jsonify({"error": "No data received"}), 400
 
     user_name = data.get("user_name", "Unknown User")
-    
+
     try:
-        # Assuming you have access to your repository instance
-        history = feedback_repository.get_user_history(user_name)
+        # Create repository instance
+        repository = FeedbackRepository()
+        history = repository.get_user_history(user_name)
         print(f"Retrieved history for user '{user_name}'")  # Debug log
-        
+
         # Format the history data
         formatted_history = []
         for item in history:
