@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, Request, request, jsonify
 import os
 from flask_cors import CORS
@@ -105,17 +106,21 @@ def get_user_history():
         formatted_history = []
         for item in history:
             formatted_item = {
-                "design_name": item.get("design_name", "Untitled Design"),
-                "frame_name": item.get("frame_name", "Unnamed Frame"),
-                "date": item.get("created_at", "").strftime("%Y-%m-%d %H:%M") if item.get("created_at") else "Unknown date",
-                "error_prevention_score": next(
-                    (score for score in [
-                        item.get("error_prevention_results", {}).get("ErrorPreventionScore"),
-                        item.get("error_prevention_results", {}).get("feedback", {}).get("ErrorPreventionScore")
-                    ] if score is not None),
-                    "N/A"
-                )
-            }
+            "design_name": item.get("design_name", "Untitled Design"),
+            "frame_name": item.get("frame_name", "Unnamed Frame"),
+            "date": (
+                datetime.strptime(item["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y-%m-%d %H:%M")
+                if isinstance(item.get("created_at"), str)
+                else item.get("created_at", "").strftime("%Y-%m-%d %H:%M")
+                if item.get("created_at") else "Unknown date"
+            ),
+            "error_prevention_results": item.get("error_prevention_results", {}),
+            "consistency_results": item.get("consistency_results", {}),
+            "error_handling_results": item.get("error_handling_results", {}),
+            "minimalist_results": item.get("minimalist_results", {}),
+            "recognition_results": item.get("recognition_results", {}),
+        }
+
             formatted_history.append(formatted_item)
         
         return jsonify({

@@ -21,16 +21,28 @@ class FeedbackRepository(BaseRepository):
         })      
 
     def get_user_history(self, user_name):
-        """Retrieve all feedback history for a specific user"""
-        return list(self.collection.find({
-            'user_name': user_name
-        }, {
-            '_id': 0,
-            'design_name': 1,
-            'frame_name': 1,
-            'created_at': 1,
-            'error_prevention_results': 1
-        }).sort('created_at', -1).limit(20))
+        """Retrieve all feedback history for a specific user from frames array"""
+        pipeline = [
+            { "$unwind": "$frames" },
+            { "$match": { "frames.user_name": user_name } },
+            { "$project": {
+                "_id": 0,
+                "design_name": 1,
+                "frame_name": "$frames.frame_name",
+                "created_at": "$frames.feedback.created_at",
+                "error_prevention_results": "$frames.feedback.error_prevention_results",
+                "consistency_results": "$frames.feedback.consistency_results",
+                "error_handling_results": "$frames.feedback.error_handling_results",
+                "minimalist_results": "$frames.feedback.minimalist_results",
+                "recognition_results": "$frames.feedback.recognition_results"
+            }},
+            { "$sort": { "created_at": -1 } },
+            { "$limit": 20 }
+        ]
+
+        return list(self.collection.aggregate(pipeline))
+
+
 
     def update_feedback(self, design_name, frame_name, feedback_data):
         try:
