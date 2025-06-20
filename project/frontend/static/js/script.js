@@ -622,7 +622,9 @@ window.addEventListener('message', async (event) => {
             <h4>Error Handling</h4>
             <p><strong>Score:</strong> ${eh.ErrorHandlingScore ?? 'N/A'}</p>
             <p><strong>Recovery Issues:</strong> ${eh.RecoveryIssues?.join(', ') || 'None'}</p>
-            <div><strong>Feedback:</strong><pre>${eh.Feedback ?? 'None'}</pre></div>
+            <div><strong>Feedback:</strong>
+                ${renderFeedbackObject(cons.Feedback)}
+            </div>
         </div>
 
         <div class="section minimalist">
@@ -630,7 +632,10 @@ window.addEventListener('message', async (event) => {
             ${min.map(f => `
                 <div class="minimal-item">
                     <p><strong>Issue:</strong> ${f.issue}</p>
-                    <p><strong>Feedback:</strong> ${f.feedback}</p>
+                    <div></div>
+                   <div><strong>Feedback:</strong>
+                ${renderFeedbackObject(cons.Feedback)}
+            </div>
                 </div>
             `).join('')}
         </div>
@@ -641,9 +646,9 @@ window.addEventListener('message', async (event) => {
                 <div class="recognition-item">
                     <p><strong>Element:</strong> ${f.element_name}</p>
                     <p><strong>Type:</strong> ${f.element_type}</p>
-                    <p><strong>Feedback:</strong><ul>
-                        ${f.Feedback?.map(line => `<li>${line}</li>`).join('') || '<li>None</li>'}
-                    </ul></p>
+                    <div><strong>Feedback:</strong>
+                        ${renderFeedbackObject(cons.Feedback)}
+                    </div>
                 </div>
             `).join('')}
         </div>
