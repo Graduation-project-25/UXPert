@@ -21,7 +21,7 @@ suggestions = SuggestionsRoute()
 feedback = FeedbackRoute()
 feature_extraction = FeatureExtractionRoute()
 
- 
+#  
 # Register routes
 app.route('/process', methods=['POST', 'OPTIONS'])(feedback.process_elements)
 # app.route('/get-history', methods=['POST'])(feedback.get_user_history)
