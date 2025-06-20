@@ -156,7 +156,7 @@ progress::-moz-progress-bar {
 .content-wrapper {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;;
     width: 100%;
     gap: 15px;
 }
@@ -1447,7 +1447,21 @@ img {
   100% { opacity: 0; visibility: hidden; }
 }
 
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0); 
+  }
+  40% {
+    transform: translateY(-8px); 
+  }
+  60% {
+    transform: translateY(-4px); 
+  }
+}
 
+#next {
+  animation: bounce 1.5s infinite;
+}
 
 /* History Screen Styles */
 .history-header {
