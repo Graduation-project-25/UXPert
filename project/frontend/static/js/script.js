@@ -441,26 +441,63 @@ window.addEventListener('message', async (event) => {
             pages.push(pageSection);
         });
 
-        // Add the "Suggestions Preview" button at the end of pagesContainer
-        // const modifyButtonContainer = document.createElement('div');
-        // modifyButtonContainer.style.display = 'flex';
-        // modifyButtonContainer.style.justifyContent = 'center';
-        // modifyButtonContainer.style.marginTop = '30px';
-        // modifyButtonContainer.style.marginBottom = '20px';
+        // ✅ Place Suggestions button inside #feedback-screen but after #pages-container
+        const feedbackScreen = document.getElementById('feedback-screen');
+        let modifyButtonContainer = document.getElementById('modify-button-container');
+        if (modifyButtonContainer) modifyButtonContainer.remove(); // Avoid duplicates
 
-        // const modifyButton = document.createElement('button');
-        // modifyButton.id = 'modify-button';
-        // modifyButton.className = 'mod_button';
-        // modifyButton.textContent = 'Suggestions Preview';
+        modifyButtonContainer = document.createElement('div');
+        modifyButtonContainer.id = 'modify-button-container';
+        modifyButtonContainer.style.display = 'flex';
+        modifyButtonContainer.style.justifyContent = 'center';
+        modifyButtonContainer.style.marginTop = '30px';
+        modifyButtonContainer.style.marginBottom = '20px';
 
-        // modifyButtonContainer.appendChild(modifyButton);
-        // pagesContainer.appendChild(modifyButtonContainer);
-        // modifyButton.addEventListener('click', () => {
-         
-        // });
+        const modifyButton = document.createElement('button');
+        modifyButton.id = 'modify-button';
+        modifyButton.className = 'mod_button';
+        modifyButton.textContent = 'Suggestions Preview';
 
+        modifyButtonContainer.appendChild(modifyButton);
+        feedbackScreen.appendChild(modifyButtonContainer); // ✅ Inside feedback screen
+
+        // ✅ Suggestions button handler
+        modifyButton.addEventListener('click', () => {
+            console.log("Modify button clicked");
+            showLoading('SUGGESTIONS');
+            try {
+                const currentFrame = pages[currentPageIndex];
+                if (!currentFrame) throw new Error("No current frame found");
+
+                const frameNameElement = currentFrame.querySelector('h2');
+                if (!frameNameElement) throw new Error("Could not find frame name element");
+
+                const frameName = frameNameElement.textContent;
+                const screenshot = currentFrame.querySelector('.screenshot').src;
+
+                console.log("Requesting modifications with current screenshot");
+
+                parent.postMessage({
+                    pluginMessage: {
+                        type: 'request-modifications',
+                        frameName: frameName,
+                        currentImage: screenshot,
+                        forceRefresh: true
+                    }
+                }, '*');
+
+            } catch (error) {
+                console.error("Error in modify-button handler:", error);
+                document.getElementById('error-message').textContent = `Failed to get suggestions: ${error.message}`;
+                document.getElementById('error-screen').style.display = 'block';
+                hideLoading();
+            }
+        });
+
+        // ✅ Show the first page
         showPage(0);
 
+        // ✅ Add navigation handlers
         document.querySelectorAll('.feedback-nav-button.prev').forEach(button => {
             button.addEventListener('click', (e) => {
                 const frameId = e.currentTarget.getAttribute('data-frame-id');
