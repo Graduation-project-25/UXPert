@@ -395,127 +395,72 @@ window.addEventListener('message', async (event) => {
     if (msg.type === 'collective-feedback') {
     document.getElementById('processing-screen').style.display = 'none';
     document.getElementById('feedback-screen').style.display = 'block';
-
     setTimeout(() => {
-        document.getElementById('processing-screen').style.display = 'none';
-        document.getElementById('feedback-screen').style.display = 'block';
+            document.getElementById('processing-screen').style.display = 'none';
+            document.getElementById('feedback-screen').style.display = 'block';
 
-        const pagesContainer = document.getElementById('pages-container');
-        pagesContainer.innerHTML = '';
-        pages.length = 0;
-        feedbackData = {};
+            const pagesContainer = document.getElementById('pages-container');
+            pagesContainer.innerHTML = '';
+            pages.length = 0;
+            feedbackData = {}
 
         msg.feedback.forEach((item, index) => {
-            const frameId = item.frameId || `frame-${index}`;
-            const feedbackTypes = getFeedbackTypes(item);
+                const frameId = item.frameId || `frame-${index}`;
+                const feedbackTypes = getFeedbackTypes(item);
 
-            feedbackData[frameId] = {
-                item,
-                feedbackTypes,
-                currentFeedbackIndex: 0
-            };
-
+                feedbackData[frameId] = {
+                    item,
+                    feedbackTypes,
+                    currentFeedbackIndex: 0
+                };
             const pageSection = document.createElement('div');
-            pageSection.className = 'page-section';
-            pageSection.style.display = index === 0 ? 'block' : 'none';
-            pageSection.innerHTML = `
-                <h2>${item.frameName}</h2>
-                <div class="feedback-area">
-                    <div class="nav-buttons">
-                        ${feedbackTypes.length > 1 ? `
+                pageSection.className = 'page-section';
+                pageSection.style.display = index === 0 ? 'block' : 'none';
+                pageSection.innerHTML = `
+                    <h2>${item.frameName}</h2> <!-- Restored h2 element -->
+                    <div class="feedback-area">
+                        <div class="nav-buttons">
+                            ${feedbackTypes.length > 1 ?`
                             <button class="feedback-nav-button prev" data-frame-id="${frameId}">←</button>
-                            <button class="feedback-nav-button next" data-frame-id="${frameId}">→</button>
-                        ` : ''}
-                    </div>
-                    <div class="content-wrapper">
-                        <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
-                        <div class="feedback-content">
-                            <div id="feedback-${frameId}">
-                                ${renderFeedback(item)}
+                             <button class="feedback-nav-button next" data-frame-id="${frameId}">→</button> `: ''}
+                        </div>
+                        <div class="content-wrapper">
+                            <img src="${item.screenshot}" class="screenshot" alt="${item.frameName}">
+                            <div class="feedback-content">
+                                <div id="feedback-${frameId}">
+                                    ${renderFeedback(item)}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-            pagesContainer.appendChild(pageSection);
-            pages.push(pageSection);
-        });
-
-        // ✅ Place Suggestions button inside #feedback-screen but after #pages-container
-        const feedbackScreen = document.getElementById('feedback-screen');
-        let modifyButtonContainer = document.getElementById('modify-button-container');
-        if (modifyButtonContainer) modifyButtonContainer.remove(); // Avoid duplicates
-
-        modifyButtonContainer = document.createElement('div');
-        modifyButtonContainer.id = 'modify-button-container';
-        modifyButtonContainer.style.display = 'flex';
-        modifyButtonContainer.style.justifyContent = 'center';
-        modifyButtonContainer.style.marginTop = '30px';
-        modifyButtonContainer.style.marginBottom = '20px';
-
-        const modifyButton = document.createElement('button');
-        modifyButton.id = 'modify-button';
-        modifyButton.className = 'mod_button';
-        modifyButton.textContent = 'Suggestions Preview';
-
-        modifyButtonContainer.appendChild(modifyButton);
-        feedbackScreen.appendChild(modifyButtonContainer); // ✅ Inside feedback screen
-
-        // ✅ Suggestions button handler
-        modifyButton.addEventListener('click', () => {
-            console.log("Modify button clicked");
-            showLoading('SUGGESTIONS');
-            try {
-                const currentFrame = pages[currentPageIndex];
-                if (!currentFrame) throw new Error("No current frame found");
-
-                const frameNameElement = currentFrame.querySelector('h2');
-                if (!frameNameElement) throw new Error("Could not find frame name element");
-
-                const frameName = frameNameElement.textContent;
-                const screenshot = currentFrame.querySelector('.screenshot').src;
-
-                console.log("Requesting modifications with current screenshot");
-
-                parent.postMessage({
-                    pluginMessage: {
-                        type: 'request-modifications',
-                        frameName: frameName,
-                        currentImage: screenshot,
-                        forceRefresh: true
-                    }
-                }, '*');
-
-            } catch (error) {
-                console.error("Error in modify-button handler:", error);
-                document.getElementById('error-message').textContent = `Failed to get suggestions: ${error.message}`;
-                document.getElementById('error-screen').style.display = 'block';
-                hideLoading();
-            }
-        });
-
-        // ✅ Show the first page
+                `;
+                pagesContainer.appendChild(pageSection);
+                pages.push(pageSection);
+            });
+    
         showPage(0);
 
-        // ✅ Add navigation handlers
-        document.querySelectorAll('.feedback-nav-button.prev').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const frameId = e.currentTarget.getAttribute('data-frame-id');
-                navigateFeedback(frameId, -1);
+            document.querySelectorAll('.feedback-nav-button.prev').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const frameId = e.currentTarget.getAttribute('data-frame-id');
+                    navigateFeedback(frameId, -1);
+                });
             });
-        });
 
-        document.querySelectorAll('.feedback-nav-button.next').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const frameId = e.currentTarget.getAttribute('data-frame-id');
-                navigateFeedback(frameId, 1);
+            document.querySelectorAll('.feedback-nav-button.next').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const frameId = e.currentTarget.getAttribute('data-frame-id');
+                    navigateFeedback(frameId, 1);
+                });
             });
-        });
-
     }, 300);
 
     return;
 }
+
+
+
+
 
     if (msg.type === 'design-modifications') {
         hideLoading();
